@@ -156,5 +156,13 @@
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
+  /* Cloud player: pointer-lock relock hint (toggled by cloud-input.ts) */
+  .relock-hint {
+    display: none;
+  }
+  .relock-hint.visible {
+    display: flex;
+  }
 }
 

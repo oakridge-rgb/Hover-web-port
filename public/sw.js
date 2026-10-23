@@ -1,10 +1,11 @@
 /* Fate v6 — Service Worker
  * Strategy:
  *  - Navigations:  network-first → cached app shell ("/") → built-in offline HTML
- *  - Static assets (/_next/static, /icons, fonts, manifest): cache-first → network
+ *  - JS/CSS:       network-first → cache fallback (stale-safe in dev)
+ *  - Immutable assets (icons/manifest/fonts/images): cache-first → network
  *  - Everything else: network passthrough
  */
-const VERSION = "fate-v6-v1.0.0";
+const VERSION = "fate-v6-v1.1.0";
 const SHELL_CACHE = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -119,27 +120,30 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // --- Static assets: cache-first ---
-  const isStatic =
-    url.pathname.startsWith("/_next/static") ||
-    url.pathname.startsWith("/icons/") ||
-    url.pathname === "/manifest.json" ||
-    url.pathname === "/apple-touch-icon.png" ||
-    /\.(png|jpe?g|gif|svg|webp|ico|css|js|woff2?|ttf|otf)$/i.test(url.pathname);
+  // --- Static assets ---
+  // JS/CSS change between deploys (and during dev): network-first with cache fallback.
+  // Icons/manifest/fonts are effectively immutable: cache-first.
+  const isJsCss = url.pathname.startsWith("/_next/static") || /\.(css|js)$/i.test(url.pathname);
+  const isImmutable =
+    (url.pathname.startsWith("/icons/") ||
+      url.pathname === "/manifest.json" ||
+      url.pathname === "/apple-touch-icon.png" ||
+      /\.(png|jpe?g|gif|svg|webp|ico|woff2?|ttf|otf)$/i.test(url.pathname)) &&
+    !isJsCss;
 
-  if (isStatic) {
+  if (isJsCss || isImmutable) {
     event.respondWith(
       (async () => {
         const runtime = await caches.open(RUNTIME_CACHE);
         const shell = await caches.open(SHELL_CACHE);
-        const hit =
-          (await runtime.match(req)) || (await shell.match(req));
-        if (hit) return hit;
+        const cached = (await runtime.match(req)) || (await shell.match(req));
+        if (isImmutable && cached) return cached;
         try {
           const fresh = await fetch(req);
           if (fresh && fresh.ok) runtime.put(req, fresh.clone()).catch(() => {});
           return fresh;
         } catch {
+          if (cached) return cached;
           return new Response("", { status: 504, statusText: "Offline" });
         }
       })()
