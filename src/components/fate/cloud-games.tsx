@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import {
-  coverUrl, fetchCloudGames, fetchStatus, getStratusHost, setStratusHost,
-  DEFAULT_STRATUS_HOST, type CloudGame,
+  autoSelectMirror, coverUrl, fetchCloudGames, fetchStatus, getStratusHost, isAutoMode,
+  probeAllMirrors, setAutoMode, setStratusHost, STRATUS_MIRRORS, type CloudGame, type MirrorState,
 } from "@/lib/stratus";
 import { CloudPlayer, type CloudPhase } from "@/lib/cloud-player";
 import {
-  Cloud, CloudCog, Gamepad2, Loader2, Maximize, MonitorPlay, Play, RefreshCw, Wifi, X, XCircle,
+  Cloud, CloudCog, Gamepad2, Loader2, Maximize, MonitorPlay, Play, RefreshCw, Wifi, X, XCircle, Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -19,8 +19,10 @@ export function CloudGames() {
   const { toast } = useToast();
 
   const [status, setStatus] = useState<Status>({ state: "checking" });
-  const [host, setHost] = useState(DEFAULT_STRATUS_HOST);
-  const [hostDraft, setHostDraft] = useState(DEFAULT_STRATUS_HOST);
+  const [host, setHost] = useState<string>(STRATUS_MIRRORS[0]);
+  const [hostDraft, setHostDraft] = useState<string>(STRATUS_MIRRORS[0]);
+  const [auto, setAuto] = useState(true);
+  const [mirrors, setMirrors] = useState<MirrorState[]>([]);
   const [games, setGames] = useState<CloudGame[]>([]);
   const [gamesError, setGamesError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,6 +48,10 @@ export function CloudGames() {
     try {
       // status + catalog probe in parallel — worst case ≈ direct timeout + proxy timeout
       const [s, g] = await Promise.all([fetchStatus(), fetchCloudGames()]);
+      // rotation may have switched mirrors while these were in flight
+      const active = getStratusHost();
+      setHost(active);
+      setHostDraft(active);
       if (s.error) setStatus({ state: "error", error: s.error, mode: s.mode });
       else setStatus({ state: "ok", idle: s.status?.pool?.idle, mode: s.mode });
       if (g.error) setGamesError(g.error);
@@ -61,7 +67,19 @@ export function CloudGames() {
     const id = window.setTimeout(() => {
       setHost(getStratusHost());
       setHostDraft(getStratusHost());
-      refresh();
+      setAuto(isAutoMode());
+      (async () => {
+        // pick the healthiest mirror before probing status/catalog
+        if (isAutoMode()) {
+          const { results } = await autoSelectMirror();
+          setMirrors(results);
+          setHost(getStratusHost());
+          setHostDraft(getStratusHost());
+        } else {
+          probeAllMirrors().then(setMirrors).catch(() => {});
+        }
+        refresh();
+      })();
     }, 0);
     return () => {
       window.clearTimeout(id);
@@ -69,14 +87,49 @@ export function CloudGames() {
     };
   }, [refresh]);
 
-  const applyHost = () => {
-    setStratusHost(hostDraft);
-    setHost(getStratusHost());
+  const invalidateCache = () => {
     try { localStorage.removeItem("fate-v6-cloud-games"); } catch { /* ignore */ }
+  };
+
+  const pickMirror = (h: string) => {
+    setStratusHost(h);
+    setAuto(false);
+    setHost(h);
+    setHostDraft(h);
+    invalidateCache();
     playerRef.current?.quit();
     setPlayerOpen(false);
     refresh();
-    toast({ title: "Backend updated", description: `Stratus host → ${getStratusHost()}` });
+    toast({ title: "Mirror pinned", description: h });
+  };
+
+  const goAuto = async () => {
+    setAutoMode();
+    setAuto(true);
+    invalidateCache();
+    playerRef.current?.quit();
+    setPlayerOpen(false);
+    const { picked, results } = await autoSelectMirror(true);
+    setMirrors(results);
+    const h = getStratusHost();
+    setHost(h);
+    setHostDraft(h);
+    refresh();
+    toast({
+      title: picked ? `Auto → ${picked}` : "No healthy mirror found",
+      description: picked ? undefined : "All mirrors failed from this network — try again later",
+    });
+  };
+
+  const applyHost = () => {
+    setStratusHost(hostDraft);
+    setAuto(false);
+    setHost(getStratusHost());
+    invalidateCache();
+    playerRef.current?.quit();
+    setPlayerOpen(false);
+    refresh();
+    toast({ title: "Backend pinned", description: `Stratus host → ${getStratusHost()}` });
   };
 
   const filtered = useMemo(() => {
@@ -164,7 +217,17 @@ export function CloudGames() {
             <XCircle className="h-4 w-4 text-rose-400" aria-hidden />
           )}
           <div className="text-xs">
-            <p className="font-medium text-stone-200">{host}</p>
+            <p className="flex items-center gap-1.5 font-medium text-stone-200">
+              <span className="truncate" data-testid="cloud-host">{host}</span>
+              <span
+                className={`shrink-0 rounded-full border px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide ${
+                  auto ? "border-amber-500/40 text-amber-300" : "border-sky-500/40 text-sky-300"
+                }`}
+                data-testid="cloud-host-mode"
+              >
+                {auto ? "auto" : "pinned"}
+              </span>
+            </p>
             <p className="text-muted-foreground">
               {status.state === "ok" &&
                 `${status.idle ?? "?"} idle instance${(status.idle ?? 0) === 1 ? "" : "s"} · ${status.mode === "proxy" ? "via proxy" : "direct"}`}
@@ -176,6 +239,44 @@ export function CloudGames() {
         <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground" aria-label="Refresh" onClick={refresh}>
           <RefreshCw className="h-4 w-4" aria-hidden />
         </Button>
+      </div>
+
+      {/* mirror picker — mirrors die often, so every one is probeable + pinnable */}
+      <div className="flex flex-wrap gap-1.5" data-testid="mirror-picker">
+        <button
+          onClick={goAuto}
+          data-testid="mirror-auto"
+          className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold transition-colors ${
+            auto
+              ? "border-amber-500/60 bg-amber-500/15 text-amber-200"
+              : "border-border/60 bg-card/40 text-muted-foreground hover:border-amber-500/40 hover:text-amber-200"
+          }`}
+        >
+          <Zap className="h-3 w-3" aria-hidden />
+          Auto
+        </button>
+        {STRATUS_MIRRORS.map((h) => {
+          const st = mirrors.find((m) => m.host === h);
+          const active = !auto && host === h;
+          const dot = st ? (st.ok ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" : st.challenge ? "bg-amber-400" : "bg-rose-500/70") : "bg-stone-600";
+          return (
+            <button
+              key={h}
+              onClick={() => pickMirror(h)}
+              data-testid={`mirror-chip-${h}`}
+              title={st ? (st.ok ? `${st.ms}ms via ${st.via}` : st.error) : "untested"}
+              className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] transition-colors ${
+                active
+                  ? "border-sky-500/60 bg-sky-500/15 text-sky-200"
+                  : "border-border/60 bg-card/40 text-muted-foreground hover:border-sky-500/40 hover:text-stone-200"
+              }`}
+            >
+              <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${dot}`} aria-hidden />
+              <span className="max-w-[110px] truncate">{h.replace(/^cdn\./, "").replace(/\.(org|com|net|cfd)$/, "")}</span>
+              {st?.ok && st.ms !== null && <span className="font-mono text-[9px] opacity-70">{st.ms}ms</span>}
+            </button>
+          );
+        })}
       </div>
 
       {/* host override */}
@@ -223,8 +324,8 @@ export function CloudGames() {
           <div className="rounded-xl border border-dashed border-rose-500/30 p-6 text-center text-sm text-rose-300/80">
             {gamesError}
             <p className="mt-2 text-xs text-muted-foreground">
-              The CDN only accepts real browser traffic from residential networks — try the Set
-              field above if the host rotated.
+              Mirrors die often — hit <b className="text-amber-300">Auto</b> to rotate to the fastest live one,
+              or pin a green dot above. The custom field accepts any mirror host.
             </p>
           </div>
         ) : !filtered.length ? (

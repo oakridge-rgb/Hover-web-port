@@ -13,10 +13,15 @@ import { NextRequest, NextResponse } from "next/server";
  *   /api/stratus/session/{uuid}/start
  */
 
-const DEFAULT_HOST = "cdn.vipersfutbol.com";
+const DEFAULT_HOST = "cdn.northstreetumc.org";
+
+// block SSRF-style hosts — the proxy should only ever reach public stratus mirrors
+const PRIVATE_HOST = /^(localhost|127\.|0\.|10\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1\]?)/i;
 
 function cleanHost(raw: string | null): string {
-  return (raw || DEFAULT_HOST).replace(/^https?:\/\//, "").replace(/\/+$/, "").slice(0, 200);
+  const h = (raw || DEFAULT_HOST).replace(/^https?:\/\//, "").replace(/\/+$/, "").slice(0, 200);
+  if (!/^[\w.-]+$/.test(h) || PRIVATE_HOST.test(h)) return "";
+  return h;
 }
 
 async function proxy(req: NextRequest, ctx: { params: Promise<{ path?: string[] }> }) {
@@ -24,6 +29,7 @@ async function proxy(req: NextRequest, ctx: { params: Promise<{ path?: string[] 
   const url = new URL(req.url);
   const host = cleanHost(url.searchParams.get("host"));
   url.searchParams.delete("host");
+  if (!host) return NextResponse.json({ error: "bad host" }, { status: 400 });
 
   const target = `https://${host}/stratus/${(path || []).join("/")}${url.search}`;
 

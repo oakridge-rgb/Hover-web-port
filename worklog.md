@@ -47,3 +47,23 @@ Stage Summary:
 - Cloud gaming CDN recovered and integrated: Stratus @ cdn.vipersfutbol.com (REST + WS signaling + WebRTC + JYSDK input), host overridable in UI.
 - Files: src/lib/{stratus,cloud-input,cloud-player}.ts, src/components/fate/cloud-games.tsx, src/app/api/stratus/[...path]/route.ts, public/sw.js v1.1.0.
 - Known sandbox limitation: CDN blocks datacenter IPs; user's residential browser should get catalog + sessions directly (proxy fallback exists for CORS).
+
+---
+Task ID: 3
+Agent: main (Z.ai)
+Task: "Games no longer loading, the cloud games are what I'm talking about, pls fix" — diagnose and fix cloud games; user attached their portal page (upload/test.html).
+
+Work Log:
+- Probed cdn.vipersfutbol.com: TLS connects, /stratus/* hangs (dead origin); / and /wi/* answer 404 fast → edge alive, stratus backend dead.
+- Extracted serverList from decoded-loader.js-fn0.txt: 9 cdn.* mirrors + 2 backup wss:// endpoints; portal's getWlsp() pings each (WebSocket binary ping) and picks the first alive → root cause: my integration (and test.html) hardcoded one mirror that died.
+- Parallel-probed all 11: cdn.northstreetumc.org ALIVE (Cloudflare bot-gate for datacenter IPs), vipersfutbol + 7 others dead/hanging, backups alive but stratus-less.
+- Rewrote src/lib/stratus.ts: STRATUS_MIRRORS list, probeDirect→probeProxy parallel health checks (challenge vs dead classification), autoSelectMirror (fastest ok, persisted to fate-v6-stratus-auto-host, throttled 60s), auto-failover inside apiWithFallback (direct → rotate → proxy), host-stamped games cache, per-session host pinning (sessionHost captured at createSession; signaling rides same mirror via buildSignalingUrl(host)).
+- Patched cloud-player.ts (signaling uses api.getHost()), proxy route (default host → northstreetumc, SSRF private-host guard), cloud-games.tsx (Auto chip + 9 mirror chips with ok/bot-checked/dead dots + latency, manual pin, host override stays).
+- Fixed TS errors: literal-type useState<string>, cache return mode, RTCDataChannelInit priority cast. eslint clean on all 4 files.
+- Browser-verified: mirror picker renders, auto picks northstreetumc, chips show honest per-mirror state (northstreetumc → bot-checked (Cloudflare), 8 others → timed out — correct for this datacenter IP; residential browsers expected green + catalog).
+- Wrote scripts/patch-test-html.py → download/test-fixed.html: same rotation ported into the user's static portal page (mirror list + parallel probe + 10-min localStorage cache + getBase() prefers pick + await ensureStratusBase() in init()).
+
+Stage Summary:
+- Cloud games no longer hardcode a dead mirror: auto-rotation across the portal's 9 mirrors + proxy fallback + manual pin UI.
+- Deliverables: updated Next.js app (Cloud tab), download/test-fixed.html for the user's static site.
+- Sandbox limitation remains: CDN bot-gates datacenter IPs, so live catalog can't be exercised here; from the user's network the auto-picked mirror should answer directly.

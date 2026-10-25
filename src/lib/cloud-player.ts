@@ -184,7 +184,8 @@ export class CloudPlayer {
 
   private connectSignaling(signalingWs: string, iceServers?: RTCIceServer[], quiet = false): Promise<void> {
     return new Promise((resolve, reject) => {
-      const url = buildSignalingUrl(signalingWs);
+      // signaling must ride the same mirror the session was created on
+      const url = buildSignalingUrl(signalingWs, this.api.getHost());
       const ws = new WebSocket(url);
       this.ws = ws;
 
@@ -337,7 +338,13 @@ export class CloudPlayer {
     } catch { /* default codec order */ }
 
     // input channel — the game stream consumes these packets
-    const dc = pc.createDataChannel("JYSDK", { id: 1, ordered: false, maxRetransmits: 0, priority: "high" });
+    const dc = pc.createDataChannel("JYSDK", {
+      id: 1,
+      ordered: false,
+      maxRetransmits: 0,
+      // `priority` is spec'd but missing from TS DOM types
+      ...(({ priority: "high" }) as RTCDataChannelInit),
+    });
     this.dc = dc;
     dc.onclose = () => {
       if (this.dc === dc && this.session && !this.ended) this.endScreen("session ended", "lost the input channel");
