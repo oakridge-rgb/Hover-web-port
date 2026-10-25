@@ -80,7 +80,7 @@ const GAMES_TTL_MS = 10 * 60 * 1000;
 
 const PROBE_DIRECT_MS = 6000;
 const PROBE_PROXY_MS = 12000;
-const ROTATE_THROTTLE_MS = 60 * 1000;
+const ROTATE_THROTTLE_MS = 45 * 1000;
 
 let lastMirrorStates: MirrorState[] = [];
 let lastRotateAt = 0;
@@ -142,13 +142,13 @@ function classify(res: Response): "ok" | "challenge" | "dead" {
   return "challenge";
 }
 
-async function probeDirect(host: string): Promise<MirrorState> {
+async function probeDirectOnce(host: string, timeoutMs: number): Promise<MirrorState> {
   const t0 = performance.now();
   try {
     const res = await fetch(`https://${host}/stratus/status`, {
       method: "GET",
       credentials: "include",
-      signal: AbortSignal.timeout?.(PROBE_DIRECT_MS),
+      signal: AbortSignal.timeout?.(timeoutMs),
     });
     const ms = Math.round(performance.now() - t0);
     const verdict = classify(res);
@@ -170,6 +170,17 @@ async function probeDirect(host: string): Promise<MirrorState> {
   } catch (e) {
     return { host, ok: false, challenge: false, ms: null, via: null, error: (e as Error)?.name === "TimeoutError" ? "timed out" : "unreachable" };
   }
+}
+
+/** The backend flaps per-request (one call hangs, the next succeeds seconds
+ *  later) — always give a mirror a second chance before declaring it dead. */
+async function probeDirect(host: string): Promise<MirrorState> {
+  const first = await probeDirectOnce(host, PROBE_DIRECT_MS);
+  if (first.ok) return first;
+  await new Promise((r) => setTimeout(r, 500));
+  const second = await probeDirectOnce(host, PROBE_DIRECT_MS);
+  if (second.ok) return second;
+  return first.ms !== null ? first : second; // prefer whichever actually reached the edge
 }
 
 async function probeProxy(host: string): Promise<MirrorState> {
@@ -275,10 +286,13 @@ export function buildSignalingUrl(signalingWs: string, hostOverride?: string): s
 
 type ApiResult<T> = T & { error?: string };
 
-const TIMEOUT_DIRECT_MS = 9000;
-const TIMEOUT_PROXY_MS = 25000;
+const TIMEOUT_DIRECT_MS = 6500;
+const TIMEOUT_PROXY_MS = 22000;
 
-async function api<T>(
+/** Transient failures are worth retrying — the backend flaps per-request. */
+const TRANSIENT_RE = /timed out|network error/i;
+
+async function apiOnce<T>(
   path: string,
   method: "GET" | "POST",
   body?: unknown,
@@ -295,7 +309,7 @@ async function api<T>(
     headers: body ? { "content-type": "application/json" } : undefined,
     body: body ? JSON.stringify(body) : undefined,
     credentials: "include",
-    // the proxy needs longer: its upstream call runs server-side for up to 20s
+    // the proxy needs longer: its upstream call runs server-side with its own retries
     signal: AbortSignal.timeout?.(mode === "proxy" ? TIMEOUT_PROXY_MS : TIMEOUT_DIRECT_MS),
   }).catch((e) => {
     throw new Error(e?.name === "TimeoutError" ? "backend timed out" : `network error (${e?.message || "blocked"})`);
@@ -303,6 +317,35 @@ async function api<T>(
   const data = (await res.json().catch(() => ({}))) as ApiResult<T>;
   if (!res.ok && !data.error) data.error = `HTTP ${res.status}`;
   return data;
+}
+
+/**
+ * One REST call, retried against transient hangs. The backend currently
+ * flaps per-request (one call blackholes, the very next one answers), so a
+ * single-shot fetch is a coin flip. JSON-level errors ("does not exist",
+ * "HTTP 403") are definitive and return immediately.
+ */
+async function api<T>(
+  path: string,
+  method: "GET" | "POST",
+  body?: unknown,
+  mode: StratusMode = "direct",
+  hostOverride?: string
+): Promise<ApiResult<T>> {
+  // POST retries once: a hung POST may still have landed server-side, so
+  // more than one replay risks duplicate sessions. GETs can try three times.
+  const maxTries = method === "GET" ? 3 : 2;
+  let lastMsg = "backend unreachable";
+  for (let attempt = 0; attempt < maxTries; attempt++) {
+    try {
+      return await apiOnce<T>(path, method, body, mode, hostOverride);
+    } catch (e) {
+      lastMsg = (e as Error)?.message || lastMsg;
+      if (!TRANSIENT_RE.test(lastMsg)) throw e;
+      if (attempt < maxTries - 1) await new Promise((r) => setTimeout(r, attempt === 0 ? 700 : 2000));
+    }
+  }
+  throw new Error(lastMsg);
 }
 
 type FallbackOpts = {

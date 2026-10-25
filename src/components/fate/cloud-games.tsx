@@ -87,6 +87,26 @@ export function CloudGames() {
     };
   }, [refresh]);
 
+  // auto-recovery: the stratus backend flaps in multi-minute windows, so when
+  // it looks dead keep re-probing in the background instead of giving up
+  useEffect(() => {
+    const down = status.state === "error" || (!!gamesError && !games.length);
+    if (!down || loading) return;
+    const id = window.setTimeout(() => {
+      (async () => {
+        if (isAutoMode()) {
+          const { results } = await autoSelectMirror().catch(() => ({ results: [] as MirrorState[] }));
+          setMirrors(results);
+          const h = getStratusHost();
+          setHost(h);
+          setHostDraft(h);
+        }
+        refresh();
+      })();
+    }, 20000);
+    return () => window.clearTimeout(id);
+  }, [status, gamesError, games.length, loading, refresh]);
+
   const invalidateCache = () => {
     try { localStorage.removeItem("fate-v6-cloud-games"); } catch { /* ignore */ }
   };
@@ -233,6 +253,9 @@ export function CloudGames() {
                 `${status.idle ?? "?"} idle instance${(status.idle ?? 0) === 1 ? "" : "s"} · ${status.mode === "proxy" ? "via proxy" : "direct"}`}
               {status.state === "error" && `unreachable — ${status.error}`}
               {status.state === "checking" && "checking backend…"}
+              {status.state === "error" && (
+                <span className="ml-1 text-amber-300/80">· auto-retrying</span>
+              )}
             </p>
           </div>
         </div>
@@ -324,8 +347,9 @@ export function CloudGames() {
           <div className="rounded-xl border border-dashed border-rose-500/30 p-6 text-center text-sm text-rose-300/80">
             {gamesError}
             <p className="mt-2 text-xs text-muted-foreground">
-              Mirrors die often — hit <b className="text-amber-300">Auto</b> to rotate to the fastest live one,
-              or pin a green dot above. The custom field accepts any mirror host.
+              The Stratus backend flaps in and out — this page retries every 20 s and will fill in
+              by itself when it answers. Hit <b className="text-amber-300">Auto</b> to rotate mirrors,
+              or pin a green dot above.
             </p>
           </div>
         ) : !filtered.length ? (

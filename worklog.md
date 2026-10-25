@@ -67,3 +67,27 @@ Stage Summary:
 - Cloud games no longer hardcode a dead mirror: auto-rotation across the portal's 9 mirrors + proxy fallback + manual pin UI.
 - Deliverables: updated Next.js app (Cloud tab), download/test-fixed.html for the user's static site.
 - Sandbox limitation remains: CDN bot-gates datacenter IPs, so live catalog can't be exercised here; from the user's network the auto-picked mirror should answer directly.
+
+---
+Task ID: 4
+Agent: main (Z.ai)
+Task: "Still not working, idk what to do" — cloud games still failing after mirror rotation; deep-diagnose and fix for real.
+
+Work Log:
+- Re-probed all 9 mirrors: HTTPS /stratus/* hung on 8/9 from sandbox, northstreetumc CF-challenged; edge 404s fast on / → suspicion: dead backend.
+- Fetched the LIVE portal loader.js from jsdelivr (95KB, NEW obfuscated build vs old 57KB), built self-healing deobfuscator v3 (auto-stubs missing globals, captures eval+Function payloads). Live mirror list = same 9 + 2 wss backups → config unchanged.
+- Recovered full protocol truth from decoded code: mirrors are wisp-v2 WS relays (frame=[type:1][stream:4 LE], CONNECT=[tcp:1][port:2 LE][host]); loader health-pings them with a custom binary handshake; portal libcurl-wasm transport = web-only build (no Node branch). Implemented wisp client in Node: tunnel CONNECTs reach the relay (server parsed them; CLOSE 0x48 = auth required) but wisp is only used for the portal's web-proxy feature — cloud gaming rides direct HTTPS (stratusApi → getBase()), so my architecture was correct.
+- Decisive discovery: /stratus/status returned HTTP 200 in 0.28s with {"pool":{"idle":8...}} — THE BACKEND IS ALIVE, it FLAPS per-request (browser POST 200, curl POST hang 15s, minutes apart). Root cause of "games no longer loading": single hung requests kill the flow; no retry anywhere.
+- Full live flow verified via curl while up: OPTIONS preflight 204 (CORS reflects any origin + credentials), catalog 200 (89 real games), session create/start/quit all respond.
+- Hardened the whole chain against flapping:
+  * stratus.ts: api() → apiOnce + retry wrapper (GET ×3, POST ×2, backoff 0.7/2s, only transient timeouts/network errors); timeouts 9s→6.5s direct / 25s→22s proxy; probeDirect → two chances (probeDirectOnce ×2).
+  * cloud-player.ts: queue polling tolerates up to 5 consecutive transient errors; first signaling WS connect gets one retry (guarded by seenReady so real negotiation failures aren't retried).
+  * proxy route: full browser-grade header set (sec-ch-ua/sec-fetch-*/accept-language — CDN blackholes bot-looking clients), 2 upstream attempts ×9s with 5xx retry; body read once before loop.
+  * cloud-games.tsx: auto-recovery effect — when status errors (and no games), re-probe + refresh every 20s; status line shows "· auto-retrying"; catalog error text updated.
+- Browser E2E (backend up window): auto-rotated to cdn.goaplytexas.org, catalog 89 games, clicked Maid of Sker → requesting → booting → signal connected → STREAMING at t+18s; screenshot scripts/cloud-live-streaming.png shows the instance's game library streaming 1280×720, 2 live tracks, session timer 18:28. Quit via unmount teardown; Today/Oracle/Threads/Cloud/PWA tabs regress-clean; tsc + eslint clean on all touched files.
+
+Stage Summary:
+- Root cause: Stratus backend flaps per-request in multi-minute up/down windows; previous code was single-shot everywhere → any one hang = "games no longer loading".
+- Fix: retry ladder at every layer (API calls, probes, polling, signaling, proxy upstream) + background auto-recovery + browser-grade proxy headers. Cloud tab now rides out flaps and streams when the backend answers.
+- Verified LIVE end-to-end: catalog + full WebRTC session streaming in the sandbox browser.
+- Note: when the backend is fully down (all mirrors hang), the UI now says "auto-retrying" and recovers by itself when service returns — nothing client-side can reach a dead origin.

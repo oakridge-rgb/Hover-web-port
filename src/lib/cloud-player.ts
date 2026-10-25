@@ -119,12 +119,19 @@ export class CloudPlayer {
 
       if (created.state === "queued") {
         this.setPhase("queued", `position #${created.queue_pos ?? "?"}`, false);
+        // transient poll failures are expected (the backend flaps per-request):
+        // ride them out unless they repeat back-to-back
+        let pollErrors = 0;
         for (;;) {
           if (!this.session || this.session.uuid !== created.uuid) return;
           await new Promise<void>((r) => this.timer(setTimeout(r, 2000)));
           if (!this.session || this.session.uuid !== created.uuid) return;
           const poll = await this.api.pollSession(created.uuid);
-          if (poll.error) throw new Error(poll.error);
+          if (poll.error) {
+            if (++pollErrors >= 5) throw new Error(poll.error);
+            continue;
+          }
+          pollErrors = 0;
           if (poll.state === "finished_queue") break;
           this.setPhase("queued", `position #${poll.queue_pos ?? "?"}`, false);
         }
@@ -138,7 +145,17 @@ export class CloudPlayer {
       this.session.iceServers = started.ice_servers;
       this.cb.onTimeLeft(started.max_seconds || 0);
 
-      await this.connectSignaling(started.signaling_ws, started.ice_servers);
+      // first signaling connection gets one retry — WS upgrades also flap
+      let seenReady = false;
+      const markReady = () => { seenReady = true; };
+      try {
+        await this.connectSignaling(started.signaling_ws, started.ice_servers, false, markReady);
+      } catch (sigErr) {
+        if (seenReady) throw sigErr;
+        await new Promise<void>((r) => this.timer(setTimeout(r, 2000)));
+        if (!this.session || this.ended) return;
+        await this.connectSignaling(started.signaling_ws, started.ice_servers);
+      }
 
       const ticker = this.timer(
         setInterval(() => {
@@ -182,7 +199,12 @@ export class CloudPlayer {
 
   // ---------------- internals ----------------
 
-  private connectSignaling(signalingWs: string, iceServers?: RTCIceServer[], quiet = false): Promise<void> {
+  private connectSignaling(
+    signalingWs: string,
+    iceServers?: RTCIceServer[],
+    quiet = false,
+    onReady?: () => void
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       // signaling must ride the same mirror the session was created on
       const url = buildSignalingUrl(signalingWs, this.api.getHost());
@@ -213,6 +235,7 @@ export class CloudPlayer {
         }
         switch (msg.type) {
           case "game_ready":
+            onReady?.();
             if (!this.pc) {
               this.setPhase("connecting", "negotiating webrtc", true);
               try {
