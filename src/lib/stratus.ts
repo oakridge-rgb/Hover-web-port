@@ -524,6 +524,121 @@ export function coverUrl(game: CloudGame): string | null {
   return game.cover.startsWith("/") ? `https://${host}${game.cover}` : `https://${host}/${game.cover}`;
 }
 
+// ---------------- force reload (the big reload button) ----------------
+
+type SweepWinner = { host: string; mode: StratusMode; games: CloudGame[] };
+
+/** One single-shot catalog GET against a specific mirror+lane. No retries —
+ *  the sweep fires 18 of these in parallel, which IS the retry ladder. */
+async function fetchGamesOnce(host: string, mode: StratusMode): Promise<SweepWinner | null> {
+  try {
+    const data = await apiOnce<{ games?: Array<{ name: string; key: string; cover?: string; image?: string }> }>(
+      "games",
+      "GET",
+      undefined,
+      mode,
+      host
+    );
+    if (data.error) return null;
+    const games: CloudGame[] = (data.games || []).map((g) => ({
+      name: g.name,
+      key: g.key,
+      cover: g.cover || g.image || null,
+    }));
+    return games.length ? { host, mode, games } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Resolve with the first non-null result, or null once everything settled. */
+function raceNonNull<T>(ps: Array<Promise<T | null>>): Promise<T | null> {
+  return new Promise((resolve) => {
+    let settled = 0;
+    let done = false;
+    for (const p of ps) {
+      p.then((v) => {
+        if (v !== null && !done) {
+          done = true;
+          resolve(v);
+        }
+      })
+        .catch(() => {})
+        .finally(() => {
+          settled += 1;
+          if (settled === ps.length && !done) {
+            done = true;
+            resolve(null);
+          }
+        });
+    }
+  });
+}
+
+export type ForceReloadResult = {
+  games: CloudGame[];
+  error?: string;
+  /** the host the games came from (or the current host on failure) */
+  host: string;
+  /** resolves later with fresh per-mirror probe states for the picker UI —
+   *  the catalog does NOT wait for it (the status probe can take ~25 s on
+   *  filtered networks, and games should hit the screen the moment the
+   *  sweep wins) */
+  mirrorsPromise: Promise<MirrorState[]>;
+};
+
+/**
+ * Behind the Cloud tab's "Reload games" button. Bypasses the cache TTL and
+ * the rotation throttle entirely: fires a catalog sweep at ALL mirrors on
+ * BOTH lanes (direct + same-origin proxy) — 18 parallel requests, first
+ * non-empty list wins — while a status probe runs alongside. The games are
+ * returned the instant the sweep wins; the probe feeds the mirror dots
+ * later via `mirrorsPromise`. The winning mirror is pinned (auto mode) so
+ * sessions ride a backend that just answered.
+ */
+export async function forceReloadCatalog(): Promise<ForceReloadResult> {
+  lastRotateAt = 0; // bypass the rotation throttle — this is a manual reload
+
+  // status probe runs alongside; it never gates the catalog. It is also the
+  // ONLY probe running — the sweep winner is the sole writer of the auto
+  // host pick, so a slow probe cannot clobber the mirror that just answered.
+  const mirrorsPromise = probeAllMirrors().catch(() => getMirrorStates());
+
+  const sweep = raceNonNull<SweepWinner>(
+    STRATUS_MIRRORS.flatMap((h) => [fetchGamesOnce(h, "direct"), fetchGamesOnce(h, "proxy")])
+  );
+
+  const winner = await sweep;
+
+  if (winner) {
+    // the sweep winner proved the catalog answers on this mirror — pin it
+    // (auto mode only; a manual pin is sacred)
+    if (isAutoMode()) {
+      try {
+        localStorage.setItem(LS_AUTO_KEY, winner.host);
+      } catch {
+        /* ignore */
+      }
+    }
+    try {
+      localStorage.setItem(LS_GAMES_KEY, JSON.stringify({ t: Date.now(), host: winner.host, games: winner.games }));
+    } catch {
+      /* ignore */
+    }
+    return { games: winner.games, host: getStratusHost(), mirrorsPromise };
+  }
+
+  // nothing answered anywhere — surface the saved catalog (if any) plus an
+  // honest error; the grid is never left blank when a cache exists
+  const fallback = readCachedGames();
+  return {
+    games: fallback.games,
+    error: "no mirror answered — tried all 9 on both direct and proxy lanes",
+    host: getStratusHost(),
+    mirrorsPromise,
+  };
+}
+
 export type StratusSessionApi = {
   createSession: (gameKey: string) => Promise<ApiResult<SessionInfo> & { mode: StratusMode }>;
   pollSession: (uuid: string) => Promise<ApiResult<SessionInfo> & { mode: StratusMode }>;

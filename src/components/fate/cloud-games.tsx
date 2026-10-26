@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import {
-  autoSelectMirror, coverUrl, fetchCloudGames, fetchStatus, getStratusHost, isAutoMode,
+  autoSelectMirror, coverUrl, fetchCloudGames, fetchStatus, forceReloadCatalog, getStratusHost, isAutoMode,
   probeAllMirrors, readCachedGames, setAutoMode, setStratusHost, STRATUS_MIRRORS,
   type CloudGame, type GamesSource, type MirrorState,
 } from "@/lib/stratus";
@@ -28,7 +28,9 @@ export function CloudGames() {
   const [gamesError, setGamesError] = useState<string | null>(null);
   const [source, setSource] = useState<GamesSource>("cache");
   const [loading, setLoading] = useState(true);
+  const [reloading, setReloading] = useState(false);
   const [filter, setFilter] = useState("");
+  const reloadGuard = useRef(false);
 
   // player state
   const playerRef = useRef<CloudPlayer | null>(null);
@@ -88,16 +90,19 @@ export function CloudGames() {
         setLoading(false);
       }
       (async () => {
-        // pick the healthiest mirror before probing status/catalog
+        // refresh rides its own fallback ladder (direct ∥ proxy raced, then
+        // rotation) — it does NOT wait for the mirror probe. On filtered
+        // networks the probe alone can take ~25 s, and the catalog must be
+        // allowed to land the moment any lane answers.
+        refresh();
         if (isAutoMode()) {
-          const { results } = await autoSelectMirror();
+          const { results } = await autoSelectMirror().catch(() => ({ results: [] as MirrorState[] }));
           setMirrors(results);
           setHost(getStratusHost());
           setHostDraft(getStratusHost());
         } else {
           probeAllMirrors().then(setMirrors).catch(() => {});
         }
-        refresh();
       })();
     }, 0);
     return () => {
@@ -125,6 +130,52 @@ export function CloudGames() {
     }, 20000);
     return () => window.clearTimeout(id);
   }, [status, gamesError, games.length, loading, refresh]);
+
+  /** The big reload button: ignore every cache and throttle, re-probe all
+   *  mirrors and sweep all 9 × (direct + proxy) lanes for the catalog. First
+   *  mirror that answers a list wins and gets pinned. */
+  const reloadNow = useCallback(async () => {
+    if (reloadGuard.current) return; // already sweeping — button is a no-op
+    reloadGuard.current = true;
+    setReloading(true);
+    setGamesError(null);
+    try {
+      const res = await forceReloadCatalog();
+      // mirror dots update whenever the parallel status probe lands —
+      // the catalog itself never waited for it
+      res.mirrorsPromise.then(setMirrors).catch(() => {});
+      setHost(res.host);
+      setHostDraft(res.host);
+      if (res.games.length) {
+        setGames(res.games);
+        setSource(res.error ? "cache" : "live");
+        if (!res.error) {
+          toast({ title: `${res.games.length} games loaded`, description: `catalog from ${res.host}` });
+        }
+      }
+      if (res.error) {
+        // nothing answered anywhere — show the honest error; if a saved
+        // catalog exists it is already on screen with the stale note
+        setGamesError(res.error);
+        toast({
+          title: "No mirror answered",
+          description: "All 9 mirrors failed on both lanes — the backend is down everywhere right now. It flaps back within minutes; try again shortly.",
+        });
+      }
+      // refresh the status card on whichever host we ended up on
+      fetchStatus()
+        .then((s) => {
+          if (s.error) setStatus({ state: "error", error: s.error, mode: s.mode });
+          else setStatus({ state: "ok", idle: s.status?.pool?.idle, mode: s.mode });
+        })
+        .catch(() => {});
+    } catch (e) {
+      setGamesError((e as Error)?.message || "reload failed");
+    } finally {
+      reloadGuard.current = false;
+      setReloading(false);
+    }
+  }, [toast]);
 
   const pickMirror = (h: string) => {
     setStratusHost(h);
@@ -262,18 +313,20 @@ export function CloudGames() {
               </span>
             </p>
             <p className="text-muted-foreground">
-              {status.state === "ok" &&
-                `${status.idle ?? "?"} idle instance${(status.idle ?? 0) === 1 ? "" : "s"} · ${status.mode === "proxy" ? "via proxy" : "direct"}`}
-              {status.state === "error" && `unreachable — ${status.error}`}
-              {status.state === "checking" && "checking backend…"}
-              {status.state === "error" && (
+              {reloading
+                ? "reloading catalog · sweeping all 9 mirrors on both lanes…"
+                : status.state === "ok" &&
+                  `${status.idle ?? "?"} idle instance${(status.idle ?? 0) === 1 ? "" : "s"} · ${status.mode === "proxy" ? "via proxy" : "direct"}`}
+              {status.state === "error" && !reloading && `unreachable — ${status.error}`}
+              {status.state === "checking" && !reloading && "checking backend…"}
+              {status.state === "error" && !reloading && (
                 <span className="ml-1 text-amber-300/80">· auto-retrying</span>
               )}
             </p>
           </div>
         </div>
         <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground" aria-label="Refresh" onClick={refresh}>
-          <RefreshCw className="h-4 w-4" aria-hidden />
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} aria-hidden />
         </Button>
       </div>
 
@@ -351,13 +404,27 @@ export function CloudGames() {
               {source === "live" ? "live" : "saved"}
             </span>
           </h3>
-          <Input
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filter games…"
-            aria-label="Filter cloud games"
-            className="h-8 w-40 border-border/70 bg-card/60 text-xs"
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Filter games…"
+              aria-label="Filter cloud games"
+              className="h-8 w-36 border-border/70 bg-card/60 text-xs"
+            />
+            {/* THE reload button — sweeps every mirror until games appear */}
+            <Button
+              size="sm"
+              onClick={reloadNow}
+              disabled={reloading}
+              data-testid="cloud-reload"
+              aria-label="Reload cloud games from the CDN"
+              className="h-8 shrink-0 border-amber-500/60 bg-amber-500/15 font-semibold text-amber-200 hover:bg-amber-500/25 disabled:opacity-70"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${reloading ? "animate-spin" : ""}`} aria-hidden />
+              {reloading ? "Loading…" : "Reload games"}
+            </Button>
+          </div>
         </div>
 
         {gamesError && games.length > 0 && (
@@ -366,11 +433,12 @@ export function CloudGames() {
             data-testid="cloud-stale-note"
           >
             Backend unreachable right now — showing your saved catalog ({games.length} games).
-            Launching a game retries the backend automatically; this page also re-probes every 20 s.
+            Hit <b className="text-amber-300">Reload games</b> to sweep every mirror again; this page
+            also re-probes by itself every 20 s.
           </p>
         )}
 
-        {loading && !games.length ? (
+        {(loading || reloading) && !games.length ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="aspect-video animate-pulse rounded-xl border border-border/50 bg-card/40" />
@@ -380,10 +448,18 @@ export function CloudGames() {
           <div className="rounded-xl border border-dashed border-rose-500/30 p-6 text-center text-sm text-rose-300/80">
             {gamesError}
             <p className="mt-2 text-xs text-muted-foreground">
-              The Stratus backend flaps in and out — this page retries every 20 s and will fill in
-              by itself when it answers. Hit <b className="text-amber-300">Auto</b> to rotate mirrors,
-              or pin a green dot above.
+              The Stratus backend flaps in and out — it usually comes back within minutes.
             </p>
+            <Button
+              size="sm"
+              onClick={reloadNow}
+              disabled={reloading}
+              data-testid="cloud-reload-retry"
+              className="mx-auto mt-3 h-9 border-amber-500/60 bg-amber-500/15 font-semibold text-amber-200 hover:bg-amber-500/25"
+            >
+              <RefreshCw className={`h-4 w-4 ${reloading ? "animate-spin" : ""}`} aria-hidden />
+              {reloading ? "Sweeping mirrors…" : "Reload games now"}
+            </Button>
           </div>
         ) : !filtered.length ? (
           <div className="rounded-xl border border-dashed border-border/60 p-6 text-center text-sm text-muted-foreground">
