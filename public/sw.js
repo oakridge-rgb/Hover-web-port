@@ -5,7 +5,7 @@
  *  - Immutable assets (icons/manifest/fonts/images): cache-first → network
  *  - Everything else: network passthrough
  */
-const VERSION = "fate-v6-v1.1.0";
+const VERSION = "fate-v6-v1.2.0";
 const SHELL_CACHE = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 

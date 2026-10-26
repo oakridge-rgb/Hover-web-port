@@ -5,15 +5,16 @@ import { CloudGames } from "@/components/fate/cloud-games";
 import { Oracle } from "@/components/fate/oracle";
 import { PwaBar } from "@/components/fate/pwa-bar";
 import { PwaLab } from "@/components/fate/pwa-lab";
+import { Racer } from "@/components/fate/racer";
 import { Threads } from "@/components/fate/threads";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePwa } from "@/hooks/use-pwa";
 import { useFateStore } from "@/lib/store";
 import { computeStreak, todayKey } from "@/lib/fate";
-import { Eye, Flame, Gamepad2, HardDrive, MoonStar, Scale, Sparkles } from "lucide-react";
+import { Eye, Flag, Flame, Gamepad2, HardDrive, MoonStar, Scale, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const VALID_TABS = new Set(["today", "oracle", "threads", "cloud", "lab"]);
+const VALID_TABS = new Set(["today", "oracle", "threads", "cloud", "racer", "lab"]);
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
@@ -98,7 +99,7 @@ export default function Home() {
         )}
 
         <Tabs value={tab} onValueChange={setTab} className="w-full">
-          <TabsList className="mx-auto mb-6 grid h-11 w-full max-w-md grid-cols-5 bg-card/60">
+          <TabsList className="mx-auto mb-6 grid h-11 w-full max-w-md grid-cols-6 bg-card/60">
             <TabsTrigger value="today" className="gap-1 data-[state=active]:bg-amber-500/15 data-[state=active]:text-amber-300">
               <MoonStar className="h-4 w-4" aria-hidden /><span className="hidden sm:inline">Today</span>
             </TabsTrigger>
@@ -110,6 +111,9 @@ export default function Home() {
             </TabsTrigger>
             <TabsTrigger value="cloud" className="gap-1 data-[state=active]:bg-amber-500/15 data-[state=active]:text-amber-300">
               <Gamepad2 className="h-4 w-4" aria-hidden /><span className="hidden sm:inline">Cloud</span>
+            </TabsTrigger>
+            <TabsTrigger value="racer" className="gap-1 data-[state=active]:bg-amber-500/15 data-[state=active]:text-amber-300">
+              <Flag className="h-4 w-4" aria-hidden /><span className="hidden sm:inline">Racer</span>
             </TabsTrigger>
             <TabsTrigger value="lab" className="gap-1 data-[state=active]:bg-amber-500/15 data-[state=active]:text-amber-300">
               <HardDrive className="h-4 w-4" aria-hidden /><span className="hidden sm:inline">PWA</span>
@@ -141,6 +145,10 @@ export default function Home() {
 
           <TabsContent value="cloud" className="mt-0">
             <CloudGames />
+          </TabsContent>
+
+          <TabsContent value="racer" className="mt-0">
+            <Racer />
           </TabsContent>
 
           <TabsContent value="lab" className="mt-0">

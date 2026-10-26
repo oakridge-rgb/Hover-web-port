@@ -147,6 +147,86 @@ function drawCar(
   }
 }
 
+type RaceHud = {
+  wpm: number;
+  acc: number;
+  nitro: number;
+  burst: boolean;
+  secs: number;
+};
+
+type RaceState = {
+  correctChars: number;
+  typedTotal: number;
+  typedCorrect: number;
+  startAt: number;
+  nitro: number;
+  burstUntil: number;
+  dashOffset: number;
+  playerProgress: number;
+  bonusProgress: number;
+  totalChars: number;
+  opponents: Opponent[];
+};
+
+type TickerOpts = {
+  state: RaceState;
+  /** when `v` flips to false the ticker stops re-queuing itself */
+  alive: { v: boolean };
+  onFrame: (now: number) => void;
+  onHud: (hud: RaceHud) => void;
+};
+
+/**
+ * Frame loop for an active race, built at module level on purpose: it mutates
+ * plain race state every frame and re-queues itself with rAF, which React
+ * Compiler's lint forbids inside hook callbacks. `alive.v = false` ends it.
+ */
+function makeTicker(opts: TickerOpts): (now: number) => void {
+  let last = 0;
+  let hudAt = 0;
+  function tick(now: number) {
+    if (!opts.alive.v) return;
+    const st = opts.state;
+    let dt = last ? (now - last) / 1000 : 0;
+    last = now;
+    dt = Math.min(Math.max(dt, 0), 0.06);
+
+    for (const o of st.opponents) {
+      if (o.finished) continue;
+      const base = (o.wpm * 5) / 60;
+      const noise = 0.8 + o.rng() * 0.4;
+      const gap = st.playerProgress - o.progress;
+      const rubber = gap > 0.28 ? 0.85 : gap < -0.5 ? 1.05 : 1;
+      o.progress += (base * noise * rubber * dt) / st.totalChars;
+      if (o.progress >= 1) {
+        o.progress = 1;
+        o.finished = true;
+      }
+    }
+
+    const bursting = now < st.burstUntil;
+    if (bursting) st.nitro = Math.max(0, ((st.burstUntil - now) / 2600) * 100);
+    st.dashOffset += (bursting ? 560 : 170) * dt;
+
+    opts.onFrame(now);
+
+    if (now - hudAt > 120) {
+      hudAt = now;
+      const mins = Math.max(0.008, (now - st.startAt) / 60000);
+      opts.onHud({
+        wpm: Math.round(st.correctChars / 5 / mins),
+        acc: st.typedTotal > 0 ? Math.round((100 * st.typedCorrect) / st.typedTotal) : 100,
+        nitro: Math.round(st.nitro),
+        burst: bursting,
+        secs: (now - st.startAt) / 1000,
+      });
+    }
+    requestAnimationFrame(tick);
+  }
+  return tick;
+}
+
 export function Racer() {
   const racerBest = useFateStore((s) => s.racerBest);
   const racerRaces = useFateStore((s) => s.racerRaces);
@@ -168,8 +248,7 @@ export function Racer() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const textRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef(0);
-  const lastTRef = useRef(0);
-  const hudAtRef = useRef(0);
+  const aliveRef = useRef({ v: false });
   const timersRef = useRef<number[]>([]);
   const flashRef = useRef(0);
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 });
@@ -205,7 +284,7 @@ export function Racer() {
       const lanes = 4;
       const laneH = h / lanes;
       const st = gameRef.current;
-      const burst = now < st.burstUntil && phase === "racing";
+      const burst = st.startAt > 0 && now < st.burstUntil;
 
       ctx.fillStyle = "#171310";
       ctx.fillRect(0, 0, w, h);
@@ -264,7 +343,7 @@ export function Racer() {
         now
       );
     },
-    [phase]
+    []
   );
 
   // Keep the canvas backing store matched to its CSS box (DPR aware).
@@ -298,6 +377,7 @@ export function Racer() {
   // Cancel every timer + frame on unmount.
   useEffect(() => {
     return () => {
+      aliveRef.current.v = false;
       clearTimers();
       cancelAnimationFrame(rafRef.current);
       window.clearTimeout(flashRef.current);
@@ -318,51 +398,10 @@ export function Racer() {
     setResults({ wpm, acc, secs, placement, pb });
     setPhase("done");
     st.playerProgress = 1;
+    aliveRef.current.v = false;
     cancelAnimationFrame(rafRef.current);
     window.setTimeout(() => drawScene(performance.now()), 0);
   }, [drawScene]);
-
-  const loop = useCallback(
-    (now: number) => {
-      const st = gameRef.current;
-      let dt = (now - lastTRef.current) / 1000;
-      lastTRef.current = now;
-      dt = Math.min(Math.max(dt, 0), 0.06);
-
-      for (const o of st.opponents) {
-        if (o.finished) continue;
-        const base = (o.wpm * 5) / 60;
-        const noise = 0.8 + o.rng() * 0.4;
-        const gap = st.playerProgress - o.progress;
-        const rubber = gap > 0.28 ? 0.85 : gap < -0.5 ? 1.05 : 1;
-        o.progress += (base * noise * rubber * dt) / st.totalChars;
-        if (o.progress >= 1) {
-          o.progress = 1;
-          o.finished = true;
-        }
-      }
-
-      const bursting = now < st.burstUntil;
-      if (bursting) st.nitro = Math.max(0, ((st.burstUntil - now) / 2600) * 100);
-      st.dashOffset += (bursting ? 560 : 170) * dt;
-
-      drawScene(now);
-
-      if (now - hudAtRef.current > 120) {
-        hudAtRef.current = now;
-        const mins = Math.max(0.008, (now - st.startAt) / 60000);
-        setHud({
-          wpm: Math.round(st.correctChars / 5 / mins),
-          acc: st.typedTotal > 0 ? Math.round((100 * st.typedCorrect) / st.typedTotal) : 100,
-          nitro: Math.round(st.nitro),
-          burst: bursting,
-          secs: (now - st.startAt) / 1000,
-        });
-      }
-      rafRef.current = requestAnimationFrame(loop);
-    },
-    [drawScene]
-  );
 
   const startRace = useCallback(
     (diff: Difficulty) => {
@@ -401,18 +440,19 @@ export function Racer() {
           timersRef.current.push(window.setTimeout(() => setGoFlash(false), 600));
           setPhase("racing");
           st.startAt = performance.now();
-          lastTRef.current = performance.now();
-          hudAtRef.current = 0;
-          rafRef.current = requestAnimationFrame(loop);
+          aliveRef.current = { v: true };
+          const ticker = makeTicker({ state: st, alive: aliveRef.current, onFrame: drawScene, onHud: setHud });
+          rafRef.current = requestAnimationFrame(ticker);
           inputRef.current?.focus();
         }, 2100)
       );
       window.setTimeout(() => drawScene(performance.now()), 0);
     },
-    [clearTimers, drawScene, loop]
+    [clearTimers, drawScene]
   );
 
   const quitRace = useCallback(() => {
+    aliveRef.current.v = false;
     clearTimers();
     cancelAnimationFrame(rafRef.current);
     setPhase("idle");

@@ -230,11 +230,12 @@ export async function probeAllMirrors(): Promise<MirrorState[]> {
 }
 
 function pickBest(results: MirrorState[]): string | null {
+  // Only a mirror that actually answers is worth pinning. Bot-checked
+  // mirrors are excluded on purpose: a Cloudflare challenge page means
+  // every API call from JS will 403 — pinning one used to blank the whole
+  // catalog until the next rotation.
   const ok = results.filter((r) => r.ok && r.ms !== null).sort((a, b) => (a.ms as number) - (b.ms as number));
-  if (ok.length) return ok[0].host;
-  const challenged = results.filter((r) => r.challenge && r.ms !== null).sort((a, b) => (a.ms as number) - (b.ms as number));
-  if (challenged.length) return challenged[0].host;
-  return null;
+  return ok.length ? ok[0].host : null;
 }
 
 /**
@@ -255,7 +256,9 @@ export async function autoSelectMirror(force = false): Promise<{ picked: string 
       if (picked !== prev) {
         try {
           localStorage.setItem(LS_AUTO_KEY, picked);
-          localStorage.removeItem(LS_GAMES_KEY);
+          // The games cache is deliberately NOT cleared on rotation: the
+          // catalog on screen must survive mirror switches. The host stamp
+          // only controls freshness — any host's list beats a blank grid.
         } catch {
           /* ignore */
         }
@@ -356,8 +359,41 @@ type FallbackOpts = {
 };
 
 /**
+ * Resolve with the first attempt that returns a clean result (no error field),
+ * or null once every attempt has settled without one. Losers keep running in
+ * the background but nothing waits for them.
+ */
+function firstGood<T>(
+  attempts: Array<Promise<{ data: ApiResult<T>; mode: StratusMode }>>
+): Promise<{ data: ApiResult<T>; mode: StratusMode } | null> {
+  return new Promise((resolve) => {
+    let settled = 0;
+    let done = false;
+    for (const p of attempts) {
+      p.then((r) => {
+        if (!r.data.error && !done) {
+          done = true;
+          resolve(r);
+        }
+      })
+        .catch(() => {})
+        .finally(() => {
+          settled += 1;
+          if (settled === attempts.length && !done) {
+            done = true;
+            resolve(null);
+          }
+        });
+    }
+  });
+}
+
+/**
  * REST call with layered fallback:
- *   direct → (auto mode: rotate mirror, retry direct) → same-origin proxy.
+ *   GET  → direct ∥ proxy raced in parallel (first clean answer wins), then
+ *          one mirror rotation + a second race.
+ *   POST → sequential direct → rotate → proxy (a raced POST could create
+ *          duplicate sessions on the backend).
  * Never throws.
  */
 async function apiWithFallback<T>(
@@ -378,6 +414,24 @@ async function apiWithFallback<T>(
         return { data: { error: (e2 as Error)?.message || "backend unreachable" } as ApiResult<T>, mode: other };
       }
     }
+  }
+
+  const tryRace = () =>
+    firstGood<T>([
+      api<T>(path, "GET", body, "direct", opts.host).then((data) => ({ data, mode: "direct" as StratusMode })),
+      api<T>(path, "GET", body, "proxy", opts.host).then((data) => ({ data, mode: "proxy" as StratusMode })),
+    ]);
+
+  if (method === "GET") {
+    const won = await tryRace();
+    if (won) return won;
+    // both lanes lost — the mirror may have died, rotate once and race again
+    if (isAutoMode()) {
+      await autoSelectMirror();
+      const won2 = await tryRace();
+      if (won2) return won2;
+    }
+    return { data: { error: "backend unreachable (all lanes)" } as ApiResult<T>, mode: "direct" };
   }
 
   try {
@@ -405,37 +459,62 @@ export async function fetchStatus(): Promise<{ status?: StratusStatus; error?: s
   return { status: data.error ? undefined : data, error: data.error, mode };
 }
 
-/** Catalog with localStorage cache (10 min, host-stamped). */
-export async function fetchCloudGames(): Promise<{ games: CloudGame[]; error?: string; mode: StratusMode }> {
+export type GamesSource = "live" | "cache";
+
+/**
+ * The saved catalog, whatever its age or host stamp. Reading it is cheap and
+ * synchronous-safe (localStorage only) — the UI renders this instantly so the
+ * games grid is never blank while the network is being probed.
+ */
+export function readCachedGames(): { games: CloudGame[]; fresh: boolean } {
   try {
     const raw = localStorage.getItem(LS_GAMES_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as { t: number; host?: string; games: CloudGame[] };
-      const fresh = Array.isArray(parsed.games) && Date.now() - parsed.t < GAMES_TTL_MS;
-      // a cache stamped by another mirror is useless: covers + session affinity are per-host
-      if (fresh && (!parsed.host || parsed.host === getStratusHost())) {
-        return { games: parsed.games, mode: "direct" };
-      }
-    }
+    if (!raw) return { games: [], fresh: false };
+    const parsed = JSON.parse(raw) as { t: number; host?: string; games: CloudGame[] };
+    if (!Array.isArray(parsed.games)) return { games: [], fresh: false };
+    return {
+      games: parsed.games,
+      fresh: Date.now() - parsed.t < GAMES_TTL_MS,
+    };
   } catch {
-    /* cache miss */
+    return { games: [], fresh: false };
+  }
+}
+
+/**
+ * Live catalog fetch. A fresh (≤10 min) cache short-circuits the network.
+ * On network failure the caller keeps whatever is already on screen — the
+ * cache is never invalidated by a failed request or a mirror rotation.
+ */
+export async function fetchCloudGames(): Promise<{
+  games: CloudGame[];
+  error?: string;
+  mode: StratusMode;
+  source: GamesSource;
+}> {
+  const cached = readCachedGames();
+  if (cached.fresh && cached.games.length) {
+    return { games: cached.games, mode: "direct", source: "cache" };
   }
 
   const { data, mode } = await apiWithFallback<{ games?: Array<{ name: string; key: string; cover?: string; image?: string }> }>("games", "GET");
-  if (data.error) return { games: [], error: data.error, mode };
+  if (data.error) return { games: [], error: data.error, mode, source: "cache" };
 
   const games: CloudGame[] = (data.games || []).map((g) => ({
     name: g.name,
     key: g.key,
     cover: g.cover || g.image || null,
   }));
+  if (!games.length) {
+    return { games: [], error: "empty catalog from backend", mode, source: "cache" };
+  }
 
   try {
     localStorage.setItem(LS_GAMES_KEY, JSON.stringify({ t: Date.now(), host: getStratusHost(), games }));
   } catch {
     /* ignore */
   }
-  return { games, mode };
+  return { games, mode, source: "live" };
 }
 
 export function coverUrl(game: CloudGame): string | null {

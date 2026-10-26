@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import {
   autoSelectMirror, coverUrl, fetchCloudGames, fetchStatus, getStratusHost, isAutoMode,
-  probeAllMirrors, setAutoMode, setStratusHost, STRATUS_MIRRORS, type CloudGame, type MirrorState,
+  probeAllMirrors, readCachedGames, setAutoMode, setStratusHost, STRATUS_MIRRORS,
+  type CloudGame, type GamesSource, type MirrorState,
 } from "@/lib/stratus";
 import { CloudPlayer, type CloudPhase } from "@/lib/cloud-player";
 import {
@@ -25,6 +26,7 @@ export function CloudGames() {
   const [mirrors, setMirrors] = useState<MirrorState[]>([]);
   const [games, setGames] = useState<CloudGame[]>([]);
   const [gamesError, setGamesError] = useState<string | null>(null);
+  const [source, setSource] = useState<GamesSource>("cache");
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
 
@@ -44,9 +46,8 @@ export function CloudGames() {
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    setGamesError(null);
     try {
-      // status + catalog probe in parallel — worst case ≈ direct timeout + proxy timeout
+      // status + catalog raced in parallel (each also races direct ∥ proxy inside)
       const [s, g] = await Promise.all([fetchStatus(), fetchCloudGames()]);
       // rotation may have switched mirrors while these were in flight
       const active = getStratusHost();
@@ -54,8 +55,17 @@ export function CloudGames() {
       setHostDraft(active);
       if (s.error) setStatus({ state: "error", error: s.error, mode: s.mode });
       else setStatus({ state: "ok", idle: s.status?.pool?.idle, mode: s.mode });
-      if (g.error) setGamesError(g.error);
-      setGames(g.games);
+      // The grid must never go blank: only a successful live fetch overwrites
+      // what is on screen. A failed fetch keeps the cached catalog visible.
+      if (g.error) {
+        setGamesError(g.error);
+      } else {
+        setGamesError(null);
+        if (g.games.length) {
+          setGames(g.games);
+          setSource(g.source);
+        }
+      }
     } catch (e) {
       setStatus({ state: "error", error: (e as Error)?.message || "probe failed" });
     } finally {
@@ -68,6 +78,15 @@ export function CloudGames() {
       setHost(getStratusHost());
       setHostDraft(getStratusHost());
       setAuto(isAutoMode());
+      // Render whatever we already have on this device BEFORE any network
+      // probing, so the catalog shows up in well under a second even when
+      // every mirror is flapping or down.
+      const cached = readCachedGames();
+      if (cached.games.length) {
+        setGames(cached.games);
+        setSource("cache");
+        setLoading(false);
+      }
       (async () => {
         // pick the healthiest mirror before probing status/catalog
         if (isAutoMode()) {
@@ -107,16 +126,12 @@ export function CloudGames() {
     return () => window.clearTimeout(id);
   }, [status, gamesError, games.length, loading, refresh]);
 
-  const invalidateCache = () => {
-    try { localStorage.removeItem("fate-v6-cloud-games"); } catch { /* ignore */ }
-  };
-
   const pickMirror = (h: string) => {
     setStratusHost(h);
     setAuto(false);
     setHost(h);
     setHostDraft(h);
-    invalidateCache();
+    // cached games stay on screen on purpose — the catalog outlives mirrors
     playerRef.current?.quit();
     setPlayerOpen(false);
     refresh();
@@ -126,7 +141,6 @@ export function CloudGames() {
   const goAuto = async () => {
     setAutoMode();
     setAuto(true);
-    invalidateCache();
     playerRef.current?.quit();
     setPlayerOpen(false);
     const { picked, results } = await autoSelectMirror(true);
@@ -145,7 +159,6 @@ export function CloudGames() {
     setStratusHost(hostDraft);
     setAuto(false);
     setHost(getStratusHost());
-    invalidateCache();
     playerRef.current?.quit();
     setPlayerOpen(false);
     refresh();
@@ -327,6 +340,16 @@ export function CloudGames() {
         <div className="mb-2 flex items-center justify-between gap-3">
           <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             <Gamepad2 className="h-3.5 w-3.5" aria-hidden /> Catalog ({filtered.length})
+            <span
+              data-testid="cloud-source"
+              className={`rounded-full border px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide ${
+                source === "live"
+                  ? "border-emerald-500/40 text-emerald-300"
+                  : "border-amber-500/40 text-amber-300"
+              }`}
+            >
+              {source === "live" ? "live" : "saved"}
+            </span>
           </h3>
           <Input
             value={filter}
@@ -337,7 +360,17 @@ export function CloudGames() {
           />
         </div>
 
-        {loading ? (
+        {gamesError && games.length > 0 && (
+          <p
+            className="mb-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-200"
+            data-testid="cloud-stale-note"
+          >
+            Backend unreachable right now — showing your saved catalog ({games.length} games).
+            Launching a game retries the backend automatically; this page also re-probes every 20 s.
+          </p>
+        )}
+
+        {loading && !games.length ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="aspect-video animate-pulse rounded-xl border border-border/50 bg-card/40" />

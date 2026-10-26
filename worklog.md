@@ -91,3 +91,24 @@ Stage Summary:
 - Fix: retry ladder at every layer (API calls, probes, polling, signaling, proxy upstream) + background auto-recovery + browser-grade proxy headers. Cloud tab now rides out flaps and streams when the backend answers.
 - Verified LIVE end-to-end: catalog + full WebRTC session streaming in the sandbox browser.
 - Note: when the backend is fully down (all mirrors hang), the UI now says "auto-retrying" and recovers by itself when service returns — nothing client-side can reach a dead origin.
+
+---
+Task ID: 5
+Agent: main (Z.ai)
+Task: "add nitro type to my website but it's blocked" (→ built KeyDrift typing racer) + "games don't show on my phone either, I think it's on our end, pls fix" (→ cloud catalog visibility overhaul).
+
+Work Log:
+- Diagnosed Nitro Type embed: curl confirmed nitrotype.com sends `x-frame-options: SAMEORIGIN` (live headers); no official embed exists → direct embedding impossible by design; school filter blocks the domain itself. Decision: build an original in-site alternative instead of a circumvention proxy.
+- Built KeyDrift (src/components/fate/racer.tsx): canvas 4-lane typing racer — 3 AI rivals (Cruise/Sport/Nitro leagues, mulberry32 noise + rubber-banding), word-by-word commit model with per-char accuracy, nitro meter (9/correct word, burst at 100 with speed lines + bonus progress), scrolling road dashes, checkered finish, DPR-aware canvas, countdown/GO/results flow, "About the real Nitro Type" card with external link.
+- Store: added racerBest/racerRaces/racerWins + recordRace() to the local-first zustand store (localStorage, survives offline; clearAll resets it too).
+- Wired "racer" tab into page.tsx (6 tabs, deep link ?tab=racer); bumped sw.js to v1.2.0.
+- Cloud "games don't show" root-cause analysis: probed all 9 mirrors (8 hang, 1 CF-challenge — backend in a down window), live loader has no new hosts (obfuscated), no Stratus catalog available offline anywhere (repo/jsDelivr/decoded code checked) → the real client-side bug chain: (a) autoSelectMirror DELETED the localStorage games cache on every mirror rotation, (b) fetchCloudGames rejected any-host caches and blanked the grid on fetch failure, (c) pickBest could PIN a bot-checked mirror that 403s every call, (d) sequential direct→proxy fallback took ~90s worst case with a blank skeleton.
+- Fixes: stratus.ts — cache never deleted on rotation; readCachedGames() (any host, any age); fetchCloudGames returns source "live"|"cache" and never blanks; pickBest only pins mirrors that actually answer; apiWithFallback GET path now RACES direct ∥ proxy (firstGood, first clean answer wins) before rotate+re-race; POST stays sequential (no duplicate sessions). cloud-games.tsx — instant cached render on mount (before probing), grid never cleared on error, "live"/"saved" source badge, amber stale-catalog note, skeleton only when truly empty.
+- Lint: fixed react-hooks/immutability + self-reference errors by moving the frame loop to module-level makeTicker() (alive-flag teardown) — tsc + eslint clean on all touched files.
+- Browser E2E (agent-browser): injected stale catalog → Cloud tab renders 3 games instantly with "saved" badge + amber note + honest "unreachable · auto-retrying" status (screenshots verify-10/11); racer golden path — countdown → typed all 30 words → results card (4th place, PB badge, WPM/acc/time) → store persisted (racerBest 23 WPM, races 1) → garage shows best → race-again → quit (verify-12); iPhone 14 viewport shots (verify-13/14); Today tab regress-clean; dev.log clean; zero console errors.
+
+Stage Summary:
+- Cloud tab can no longer show a blank grid: saved catalog renders instantly and outlives mirror rotations and backend outages; live fetch races direct∥proxy; bot-checked mirrors are never pinned.
+- KeyDrift typing racer shipped as an unblockable, offline Nitro Type alternative with local records.
+- Files: src/lib/stratus.ts, src/components/fate/cloud-games.tsx, src/components/fate/racer.tsx, src/lib/store.ts, src/app/page.tsx, public/sw.js (v1.2.0).
+- Screenshots: scripts/verify-10..14-*.png.
