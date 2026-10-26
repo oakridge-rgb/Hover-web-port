@@ -33,10 +33,20 @@ export type OracleEntry = {
   createdAt: number;
 };
 
+export type RacerBest = {
+  wpm: number;
+  accuracy: number;
+  at: number;
+};
+
 type FateState = {
   rolls: Record<string, Roll>;
   decisions: Decision[];
   oracle: OracleEntry[];
+  racerBest: RacerBest | null;
+  racerRaces: number;
+  racerWins: number;
+  recordRace: (wpm: number, accuracy: number, won: boolean) => void;
   rollToday: (date: string, cardId: string, aspect: string) => void;
   setJournal: (date: string, journal: string) => void;
   addDecision: (text: string, weight: Decision["weight"]) => void;
@@ -55,6 +65,19 @@ export const useFateStore = create<FateState>()(
       rolls: {},
       decisions: [],
       oracle: [],
+      racerBest: null,
+      racerRaces: 0,
+      racerWins: 0,
+
+      recordRace: (wpm, accuracy, won) =>
+        set((s) => ({
+          racerRaces: s.racerRaces + 1,
+          racerWins: s.racerWins + (won ? 1 : 0),
+          racerBest:
+            !s.racerBest || wpm > s.racerBest.wpm
+              ? { wpm, accuracy, at: Date.now() }
+              : s.racerBest,
+        })),
 
       rollToday: (date, cardId, aspect) =>
         set((s) =>
@@ -94,7 +117,8 @@ export const useFateStore = create<FateState>()(
           ),
         })),
 
-      clearAll: () => set({ rolls: {}, decisions: [], oracle: [] }),
+      clearAll: () =>
+        set({ rolls: {}, decisions: [], oracle: [], racerBest: null, racerRaces: 0, racerWins: 0 }),
     }),
     {
       name: "fate-v6-store",
