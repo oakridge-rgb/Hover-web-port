@@ -27,6 +27,14 @@ Here are all the generated files.
 Deploy: rename to `test.html`, replace the old file on the site, then
 **Ctrl+Shift+R** to hard-refresh.
 
+v3.1 notes (same day, after the user ran the self-test):
+  - the self-test now finishes in ~30 s (probes fire in parallel, was ~2.5 min row-by-row)
+  - a FATE_SEED_CATALOG slot exists: if a live catalog capture ever succeeds at
+    build time, the games grid stays populated even while the backend is down
+    (shown as "saved - backend down"). Currently null — no capture was possible
+    during this outage (origin down 40+ min from every vantage point; pcesc's
+    408 was an allorigins artifact, 5x retest gave 522).
+
 Older files kept for reference: `fate-portal-v2.html` (v2 stack, same code
 without the v3 additions), `test-fixed.html` (Task-3 era, outdated).
 

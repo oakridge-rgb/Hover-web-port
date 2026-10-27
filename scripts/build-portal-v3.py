@@ -20,6 +20,29 @@ DST = "/home/z/my-project/download/test-v3-cloud-reload.html"
 BUILD = "2026-10-27"
 
 REPLACEMENTS = [
+    # 0a. seed-catalog slot (populated at build time when a live capture exists)
+    ("const FATE_GAMES_TTL = 10 * 60 * 1000;",
+     "const FATE_GAMES_TTL = 10 * 60 * 1000;\n"
+     "/* v3: baked-in last-known catalog (populated at build time when a live\n"
+     "   capture is available). Shown as \"(saved - backend down)\" when every\n"
+     "   mirror and every proxy lane fails, so the grid never goes blank. */\n"
+     "const FATE_SEED_CATALOG = null;",
+     "seed-catalog slot added"),
+
+    # 0b. seed fallback in the fetch chain (before the final 'none' return)
+    ("""  window.FATE_LAST_SOURCE = 'none';
+  return [];
+}""",
+     """  if(FATE_SEED_CATALOG && Array.isArray(FATE_SEED_CATALOG) && FATE_SEED_CATALOG.length){
+    console.warn('[FATE PORTAL v3] sweep failed everywhere - showing built-in seed catalog (' + FATE_SEED_CATALOG.length + ' games)');
+    window.FATE_LAST_SOURCE = 'seed';
+    return _mapCloudGames(FATE_SEED_CATALOG);
+  }
+  window.FATE_LAST_SOURCE = 'none';
+  return [];
+}""",
+     "seed fallback wired into fetch chain"),
+
     # 1. sweep -> 27-lane version (direct + 2 public proxy lanes per mirror)
     ("""/* sweep: fire /stratus/games at EVERY mirror in parallel, first non-empty
    catalog wins, winner pinned as the stratus base */
@@ -182,8 +205,9 @@ async function runMirrorSelfTest(){
   panel.style.display = 'block';
   rows.innerHTML = '';
   verdict.textContent = '';
-  phase.textContent = '· probing 9 mirrors on 2 lanes…';
+  phase.textContent = '· probing 9 mirrors on 3 lanes (parallel)…';
   const results = [];
+  const cellMap = [];
   for(const h of FATE_STRATUS_MIRRORS){
     const tr = document.createElement('tr');
     tr.innerHTML = '<td style="padding:.3rem .5rem;border-top:1px solid rgba(148,163,184,.12);font-family:monospace;">' + h + '</td>'
@@ -191,13 +215,22 @@ async function runMirrorSelfTest(){
                  + '<td style="padding:.3rem .5rem;border-top:1px solid rgba(148,163,184,.12);color:#64748b;">…</td>'
                  + '<td style="padding:.3rem .5rem;border-top:1px solid rgba(148,163,184,.12);color:#64748b;">…</td>';
     rows.appendChild(tr);
-    const cells = tr.getElementsByTagName('td');
-    /* direct + both public proxies in parallel; status endpoint is cheap */
-    const p1 = _stProbe(h, null, 7000).then(r => { cells[1].innerHTML = r; return r; }).catch(() => '');
-    const p2 = _stProbe(h, 'codetabs', 16000).then(r => { cells[2].innerHTML = r; return r; }).catch(() => '');
-    const p3 = _stProbe(h, 'allorigins', 12000).then(r => { cells[3].innerHTML = r; return r; }).catch(() => '');
-    results.push(Promise.all([p1, p2, p3]).then(arr => ({ host: h, arr })));
+    cellMap.push({ host: h, cells: tr.getElementsByTagName('td') });
   }
+  /* fire every mirror's 3 probes concurrently (staggered ~0.6 s per mirror so
+     the public proxies' rate limits stay happy) — full table in ~25 s instead
+     of the old row-by-row ~2.5 min */
+  cellMap.forEach((row, i) => {
+    results.push(new Promise((resolve) => {
+      setTimeout(() => {
+        const cells = row.cells;
+        const p1 = _stProbe(row.host, null, 8000).then(r => { cells[1].innerHTML = r; return r; }).catch(() => '');
+        const p2 = _stProbe(row.host, 'codetabs', 16000).then(r => { cells[2].innerHTML = r; return r; }).catch(() => '');
+        const p3 = _stProbe(row.host, 'allorigins', 12000).then(r => { cells[3].innerHTML = r; return r; }).catch(() => '');
+        Promise.all([p1, p2, p3]).then(arr => resolve({ host: row.host, arr }));
+      }, i * 600);
+    }));
+  });
   const done = await Promise.all(results);
   phase.textContent = '· done';
   const directUp = done.filter(r => /backend UP/.test(r.arr[0])).length;

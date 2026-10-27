@@ -174,3 +174,23 @@ Stage Summary:
 - Deliverable: download/test-v3-cloud-reload.html — full v2 stack + 27-lane sweep + mirror self-test + persistent retry + build stamps. Deploy as test.html + hard refresh.
 - README.md in download/ rewritten with deploy instructions and the outage diagnosis.
 - Key files: scripts/build-portal-v3.py (idempotent rebuild), scripts/runner-live-loader.js (new-obfuscation loader decoder), scripts/hunt-catalog.js (up-window hunter, reusable), src/ untouched this round.
+
+---
+Task ID: 9
+Agent: main (Z.ai)
+Task: User ran the v3 "Check mirrors" self-test from their network and posted the table — all 9 mirrors timeout on every lane (one allorigins 408 anomaly on pcesc). Chase it, seed the catalog if possible, upgrade the self-test.
+
+Work Log:
+- Read the user's table: direct lane all timeout, codetabs all timeout, allorigins timeout except pcesc -> HTTP 408 @ 10.2 s. Verdict line fired correctly ("origin down for everyone").
+- Hunted the real 89-game catalog for a baked-in seed: agent-browser profiles are ephemeral (no Local Storage dirs survive between sessions; disk grep for fate-v6-cloud-games / fate_stratus_games_v2 found nothing) -> catalog lost. Wayback CDX unreachable from sandbox.
+- pcesc 408 chase: 5x allorigins burst -> all HTTP 522 (origin TCP unreachable). The 408 was allorigins' own internal timeout artifact, not a semi-alive mirror.
+- hunt-catalog.js v2 (unbuffered file log, 3 lanes x 9 mirrors, anomaly tracking): learned this tool session kills detached children (setsid included) — hunts must run in chunked foreground Bash calls. Two full foreground rounds + one games-endpoint round: every mirror/lane -> 522/500/408/403, zero 200s. Origin continuously down 40+ min, the longest window observed (Task 4's up-window was ~3 h earlier).
+- Shipped v3.1 in download/test-v3-cloud-reload.html (123.6 KB):
+  * FATE_SEED_CATALOG slot + fetch-chain fallback: when sweep fails AND no saved cache, a build-time baked catalog renders with source 'seed' and "(saved - backend down)" status — grid never goes blank. Slot is null for now (no live capture available); build-portal-v3.py populates it the moment a catalog capture exists.
+  * Parallelized self-test: all 9 mirrors x 3 lanes fire concurrently (staggered 600 ms/mirror for public-proxy rate limits) — full table in ~30 s instead of ~2.5 min row-by-row.
+- E2E (agent-browser, static server, real dead origin — no mocks): seed-test build with a 1-game seed rendered the card after the sweep failed (console warning honest, source='seed', count chip updated); parallel self-test completed in 30 s with all 27 cells filled + correct verdict. Screenshots: scripts/verify-v31-seed-fallback.png. Removed the seed-test build from download/ afterwards.
+
+Stage Summary:
+- pcesc 408 = artifact; all 9 mirrors share one dead origin, down > 40 min across all vantage points.
+- v3.1 deliverable: download/test-v3-cloud-reload.html — 27-lane sweep, ~30 s parallel self-test, dormant seed slot, persistent retry. Deploy as test.html + hard refresh.
+- If the backend ever answers a future session, scripts/hunt-catalog.js + build-portal-v3.py's seed slot capture and bake the catalog in one command each.
