@@ -675,7 +675,7 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
 <!-- ===== END FATE V7 TIKTOK ===== --></main>
 
 <footer class="footer">
-  <p>FATE V5 — Made with <span style="color:#ef4444;">❤</span> &nbsp;·&nbsp; <span style="color:#22d3ee;font-weight:600;">cloud build v8 — jet proxy apps + tiktok feed + wisp lane tunnel + smart player</span></p>
+  <p>FATE V5 — Made with <span style="color:#ef4444;">❤</span> &nbsp;·&nbsp; <span style="color:#22d3ee;font-weight:600;">cloud build v8.1 — jet proxy (local-first assets) + tiktok feed + wisp lane tunnel</span></p>
 </footer>
 <script>
   /* ===== CLOUDFLARE PROXY ROUTING ===== */
@@ -3348,10 +3348,10 @@ if(typeof fateLoadTransport === 'function') fateLoadTransport().catch(() => {});
 
 </script>
 <script>
-/* ===== FATE PORTAL v8 JET LANE ENGINE ===== */
-console.log('%c[FATE PORTAL v8] jet proxy engine loaded', 'color:#38bdf8;font-weight:bold;');
+/* ===== FATE PORTAL v8.1 JET LANE ENGINE (local-first assets) ===== */
+console.log('%c[FATE PORTAL v8.1] jet proxy engine loaded (local-first assets)', 'color:#38bdf8;font-weight:bold;');
 
-/* ---- jet asset edges (core/api/utils/wasm all served from one base) ---- */
+/* ---- jet asset edges (CDN fallback; local files win when hosted next to test.html) ---- */
 const FATE_JET_EDGES = [
   'https://cdn.jsdelivr.net/gh/TongSherbet/storage@main/',
   'https://fastly.jsdelivr.net/gh/TongSherbet/storage@main/',
@@ -3370,7 +3370,15 @@ const FATE_JET_APPS = [
   { label: 'Snapchat', url: 'https://web.snapchat.com/', color: '#fffc00',
     icon: '<path d="M12 2c3 0 5 2.2 5 5.2 0 1.1-.1 2.1-.2 3 .5.2 1.1 0 1.6-.2.6-.2 1.2-.1 1.4.4.2.6-.3 1-1 1.4-.6.3-1.5.7-1.6 1.3-.1.5.3 1.2 1 2 .8 1 2 2.1 3.5 2.5.4.1.6.5.4.9-.1.3-.5.6-1.2.8-.5.1-1 .2-1.2.5-.1.2-.1.5-.2.8-.1.3-.3.5-.7.4-.5-.1-1.1-.2-1.8-.1-.7.1-1.3.4-2 .8-.9.6-1.9 1.3-3.2 1.3s-2.3-.7-3.2-1.3c-.7-.4-1.3-.7-2-.8-.7-.1-1.3 0-1.8.1-.4.1-.6-.1-.7-.4-.1-.3-.1-.6-.2-.8-.2-.3-.7-.4-1.2-.5-.7-.2-1.1-.5-1.2-.8-.2-.4 0-.8.4-.9C4.5 18 5.7 16.9 6.5 15.9c.7-.8 1.1-1.5 1-2-.1-.6-1-1-1.6-1.3-.7-.4-1.2-.8-1-1.4.2-.5.8-.6 1.4-.4.5.2 1.1.4 1.6.2-.1-.9-.2-1.9-.2-3C7 4.2 9 2 12 2z"/>' },
   { label: 'Movies', url: 'https://aether.ist/', color: '#a78bfa',
-    icon: '<path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>' }
+    icon: '<path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>' },
+  { label: 'Instagram', url: 'https://instagram.com/', color: '#e1306c',
+    icon: '<path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zm5.8-4.3a1.2 1.2 0 1 1-1.2 1.2 1.2 1.2 0 0 1 1.2-1.2z"/>' },
+  { label: 'Discord', url: 'https://discord.com/app', color: '#5865f2',
+    icon: '<path d="M19.6 5.9A16.3 16.3 0 0 0 15.9 4.7l-.5 1a15 15 0 0 0-6.8 0l-.5-1A16.3 16.3 0 0 0 4.4 5.9 17.6 17.6 0 0 0 1.5 17a16.6 16.6 0 0 0 5 2.6l.9-1.5a10.8 10.8 0 0 1-1.7-.8l.4-.3a11.8 11.8 0 0 0 11.8 0l.4.3a10.8 10.8 0 0 1-1.7.8l.9 1.5a16.6 16.6 0 0 0 5-2.6 17.6 17.6 0 0 0-2.9-11.1zM8.7 14.7c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/>' },
+  { label: 'Twitch', url: 'https://twitch.tv/', color: '#9146ff',
+    icon: '<path d="M4 2L2 6v14h5v3h3l3-3h4l5-5V2H4zm16 11l-3 3h-5l-3 3v-3H5V4h15v9zM15 7h2v5h-2V7zm-5 0h2v5h-2V7z"/>' },
+  { label: 'Kick', url: 'https://kick.com/', color: '#53fc18',
+    icon: '<path d="M3 3h6v4h2V5h2V3h2V2h6v7h-2v2h2v2h2v2h-2v2h-2v2h2v2h-6v-1h-2v-2h-2v-2H9v4H3V3zm6 8H7v2h2v-2z"/>' }
 ];
 
 let FATE_JET = null;
@@ -3379,6 +3387,9 @@ let FATE_JET_STATE = 'idle'; /* idle | booting | ready | sw-failed | assets-fail
 let FATE_JET_ERR = '';
 let FATE_JET_PENDING = null;
 let FATE_JET_BOOTING = null;
+let FATE_HAS_UTILS = false;
+let FATE_BROWSE_OPEN = false;
+const FATE_ASSET_SRC = {}; /* file -> 'local' | 'local/sj' | 'mirror n' */
 
 /* ---- device-fingerprint codec (verbatim port of the official portal's) ---- */
 function fateJetFingerprint(){
@@ -3406,6 +3417,47 @@ const FATE_JET_CODEC = {
   }
 };
 
+/* ---- asset resolution: local flat -> local /sj/ -> CDN mirror ladder ---- */
+function fateJetCandidates(file){
+  const list = [new URL(file, location.href).href];
+  try { list.push(new URL('sj/' + file, location.href).href); } catch(e){}
+  for (const b of FATE_JET_EDGES) list.push(b + 'sj/' + file);
+  return list;
+}
+function fateJetLabel(i){ return i === 0 ? 'local' : i === 1 ? 'local/sj' : 'mirror ' + (i - 1); }
+async function fateJetProbe(url){
+  try {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), 5000);
+    const r = await fetch(url, { cache: 'no-store', signal: ac.signal });
+    clearTimeout(t);
+    if (!r.ok) return false;
+    const ct = (r.headers.get('content-type') || '').toLowerCase();
+    if (ct.includes('text/html')) return false; /* soft-404 guard */
+    if (r.body && r.body.getReader){ try { const rd = r.body.getReader(); await rd.read(); await rd.cancel(); } catch(e){} }
+    return true;
+  } catch(e){ return false; }
+}
+async function fateJetLoadJs(file){
+  const cands = fateJetCandidates(file);
+  const probes = await Promise.all(cands.map(u => fateJetProbe(u)));
+  const order = cands.map((u, i) => [u, probes[i], i]).sort((a, b) => (b[1] - a[1]) || (a[2] - b[2])).map(x => x[0]);
+  for (const u of order){
+    try { await fateLoadScript(u); FATE_ASSET_SRC[file] = fateJetLabel(cands.indexOf(u)); return u; }
+    catch(e){ /* next candidate */ }
+  }
+  throw new Error('could not load ' + file + ' from any source');
+}
+async function fateJetResolveUrl(file){
+  const cands = fateJetCandidates(file);
+  const probes = await Promise.all(cands.map(u => fateJetProbe(u)));
+  for (let i = 0; i < cands.length; i++){
+    if (probes[i]){ FATE_ASSET_SRC[file] = fateJetLabel(i); return cands[i]; }
+  }
+  FATE_ASSET_SRC[file] = 'unprobed';
+  return cands[0]; /* last resort guess (no probe success anywhere) */
+}
+
 /* ---- boot helpers ---- */
 function fateLoadScript(url){
   return new Promise((res, rej) => {
@@ -3420,12 +3472,21 @@ async function fateJetSwStart(){
   if (!('serviceWorker' in navigator)) throw new Error('service workers unsupported');
   if (location.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(location.hostname)) throw new Error('https required');
   const swUrl = new URL('fate-sw.js', location.href).href;
-  let reg = await navigator.serviceWorker.getRegistration();
-  if (!reg) reg = await navigator.serviceWorker.register(swUrl, { scope: './' });
-  const swRef = reg.active || reg.waiting || reg.installing;
-  if (!swRef) throw new Error('sw registration empty');
+  let reg;
+  try { reg = await navigator.serviceWorker.register(swUrl, { scope: './', updateViaCache: 'none' }); }
+  catch(e){ throw new Error('sw register failed: ' + (e.message || e)); }
+  try { if (reg.update) reg.update(); } catch(e){}
+  if (!reg.active){
+    await Promise.race([
+      new Promise(res => {
+        if (reg.installing) reg.installing.addEventListener('statechange', function w(){ if (this.state === 'activated') res(); });
+        reg.addEventListener('updatefound', () => { const w = reg.installing; w && w.addEventListener('statechange', () => { if (w.state === 'activated') res(); }); });
+      }),
+      new Promise((res, rej) => setTimeout(() => rej(new Error('sw activate timeout')), 12000))
+    ]).catch(e => { throw new Error('sw not active: ' + (e.message || e)); });
+  }
   if (!navigator.serviceWorker.controller){
-    try { swRef.postMessage({ type: 'FATE:claim' }); } catch(e){}
+    try { (reg.active || reg.waiting || reg.installing).postMessage({ type: 'FATE:claim' }); } catch(e){}
     await Promise.race([
       new Promise(r => navigator.serviceWorker.addEventListener('controllerchange', r, { once: true })),
       new Promise(r => setTimeout(r, 6000))
@@ -3440,6 +3501,35 @@ async function fateJetSwStart(){
   return navigator.serviceWorker.controller;
 }
 
+function fateJetMakePlugins(){
+  const plugs = [];
+  if (!FATE_HAS_UTILS || !window.$jetUtils) return plugs;
+  try {
+    plugs.push(new $jetUtils.EventHandlerPlugin());
+    plugs.push(new $jetUtils.LinkHandlerPlugin(href => { try { if (href) fateBrowseOpen(href); } catch(e){} }));
+    plugs.push(new $jetUtils.UrlWatcherPlugin(href => {
+      try {
+        if (!FATE_BROWSE_OPEN || !href) return;
+        const a = document.getElementById('fateBrowseAddr');
+        if (a) a.value = href;
+      } catch(e){}
+    }));
+    plugs.push(new $jetUtils.HttpCachePlugin());
+  } catch(e){ console.warn('[FATE v8.1] utils plugins unavailable:', e); }
+  return plugs;
+}
+
+/* memoized transport getter — avoids duplicate concurrent wisp sweeps (page auto-warm + boot) */
+async function fateGetTransport(){
+  if (window.FATE_TRANSPORT) return window.FATE_TRANSPORT;
+  if (fateGetTransport._p) return fateGetTransport._p;
+  fateGetTransport._p = (async () => {
+    try { return await fateLoadTransport(); }
+    finally { delete fateGetTransport._p; }
+  })();
+  return fateGetTransport._p;
+}
+
 async function fateJetBoot(){
   if (FATE_JET_STATE === 'ready') return FATE_JET;
   if (FATE_JET_BOOTING) return FATE_JET_BOOTING;
@@ -3452,45 +3542,47 @@ async function fateJetBoot(){
       FATE_JET_STATE = 'sw-failed'; FATE_JET_ERR = String(e.message || e);
       FATE_JET_BOOTING = null; fateJetPaintStatus(); return null;
     }
-    let base = null;
+    let coreUrl = null;
     try {
-      for (const b of FATE_JET_EDGES){
-        try {
-          if (typeof window.$jet === 'undefined') await fateLoadScript(b + 'sj/jet.core.js');
-          await fateLoadScript(b + 'sj/jet.api.js');
-          await fateLoadScript(b + 'sj/jet.utils.js');
-          base = b; break;
-        } catch(e){ /* next edge (core may already be loaded from this one) */ }
+      coreUrl = await fateJetLoadJs('jet.core.js');   /* defines $jet (must load first) */
+      const apiP = fateJetLoadJs('jet.api.js');       /* defines $jetController (needs $jet) */
+      /* utils MUST load after api: it destructures globalThis.$jetController at eval time */
+      const utilsP = apiP.then(() => fateJetLoadJs('jet.utils.js')).catch(() => {}); /* optional */
+      await apiP;
+      if (typeof $jetController === 'undefined') throw new Error('jet.api.js did not define $jetController');
+      const [injectUrl, wasmUrl] = await Promise.all([
+        fateJetResolveUrl('jet.inject.js'),
+        fateJetResolveUrl('jet.wasm')
+      ]);
+      try { await utilsP; } catch(e){}
+      FATE_HAS_UTILS = typeof window.$jetUtils !== 'undefined';
+      const transport = typeof fateLoadTransport === 'function' ? await fateGetTransport() : null;
+      if (!transport){
+        FATE_JET_STATE = 'transport-failed'; FATE_JET_ERR = 'wisp tunnel transport unavailable (no alive lane)';
+        FATE_JET_BOOTING = null; fateJetPaintStatus(); return null;
       }
-    } catch(e){}
-    if (!base || typeof $jetController === 'undefined'){
-      FATE_JET_STATE = 'assets-failed'; FATE_JET_ERR = 'could not load jet core/api/utils from any mirror';
-      FATE_JET_BOOTING = null; fateJetPaintStatus(); return null;
-    }
-    const transport = typeof fateLoadTransport === 'function' ? await fateLoadTransport() : null;
-    if (!transport){
-      FATE_JET_STATE = 'transport-failed'; FATE_JET_ERR = 'wisp tunnel transport unavailable (no alive lane)';
-      FATE_JET_BOOTING = null; fateJetPaintStatus(); return null;
-    }
-    try {
       const prefix = new URL('./~/', location.href).pathname;
       FATE_JET = new $jetController.Controller({
         serviceworker: navigator.serviceWorker.controller,
         transport: transport,
         jetConfig: { maskedfiles: ['jet.inject.js', 'jet.wasm.js'], flags: { syncxhr: false, disableComputedWrap: false, rewriterLogs: false, captureErrors: false, cleanErrors: false, scramitize: false, sourcemaps: false, destructureRewrites: true, allowInvalidJs: true, debugTrampolines: false, debugSourceURL: false, allowFailedIntercepts: true, encapsulateWorkers: true } },
-        config: { jetPath: base + 'sj/jet.core.js', wasmPath: base + 'sj/jet.wasm', injectPath: base + 'sj/jet.inject.js', virtualWasmPath: 'jet.wasm.js', codec: FATE_JET_CODEC, prefix: prefix }
+        config: { jetPath: coreUrl, wasmPath: wasmUrl, injectPath: injectUrl, virtualWasmPath: 'jet.wasm.js', codec: FATE_JET_CODEC, prefix: prefix }
       });
       await FATE_JET.ready;
       FATE_JET_STATE = 'ready';
       fateJetEnsureUI();
-      try { FATE_FRAME = FATE_JET.createFrame(document.getElementById('fateBrowseFrame'), {}); }
-      catch(e){ console.warn('[FATE v8] createFrame failed:', e); }
-      console.log('%c[FATE v8] jet proxy READY - prefix ' + FATE_JET.prefix, 'color:#38bdf8;font-weight:bold;');
+      try { FATE_FRAME = FATE_JET.createFrame(document.getElementById('fateBrowseFrame'), { plugins: fateJetMakePlugins() }); }
+      catch(e){ console.warn('[FATE v8.1] createFrame failed:', e); }
+      console.log('%c[FATE v8.1] jet proxy READY - prefix ' + FATE_JET.prefix + ' - assets: ' + JSON.stringify(FATE_ASSET_SRC), 'color:#38bdf8;font-weight:bold;');
       fateJetPaintStatus();
       if (FATE_JET_PENDING){ const u = FATE_JET_PENDING; FATE_JET_PENDING = null; fateBrowseOpen(u); }
       return FATE_JET;
     } catch(e){
-      FATE_JET_STATE = 'controller-failed'; FATE_JET_ERR = String(e.message || e);
+      if (String(e.message || e).includes('wisp tunnel')){
+        FATE_JET_STATE = 'transport-failed';
+      } else {
+        FATE_JET_STATE = 'controller-failed'; FATE_JET_ERR = String(e.message || e);
+      }
       FATE_JET_BOOTING = null; fateJetPaintStatus(); return null;
     }
   })();
@@ -3530,7 +3622,7 @@ function fateJetEnsureUI(){
   .fate-app:hover{border-color:rgba(245,158,11,.55);background:rgba(245,158,11,.08);transform:translateY(-2px);}
   .fate-app .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(0,0,0,.5);}
   .fate-app span{font-size:.68rem;font-weight:700;color:#e2e8f0;}
-  .fate-status{margin-top:.9rem;font-size:.72rem;color:#94a3b8;line-height:1.5;background:rgba(0,0,0,.4);border:1px solid rgba(148,163,184,.2);border-radius:10px;padding:.55rem .7rem;}
+  .fate-status{margin-top:.9rem;font-size:.72rem;color:#94a3b8;line-height:1.5;background:rgba(0,0,0,.4);border:1px solid rgba(148,163,184,.2);border-radius:10px;padding:.55rem .7rem;word-break:break-all;}
   .fate-close{position:absolute;top:.7rem;right:.9rem;background:none;border:none;color:#94a3b8;font-size:1.2rem;cursor:pointer;}
   #fateBrowseView{position:fixed;inset:0;z-index:60;display:none;flex-direction:column;background:#050505;}
   #fateBrowseView.open{display:flex;}
@@ -3548,7 +3640,7 @@ function fateJetEnsureUI(){
   modal.innerHTML = `<div class="fate-box" style="position:relative;">
     <button class="fate-close" onclick="fateToggleApps(false)">\u00d7</button>
     <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="#38bdf8"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg> FATE Apps</h3>
-    <div class="sub">Real sites through the wisp tunnel \u2014 same lane as cloud games</div>
+    <div class="sub">Real sites through the wisp tunnel \u2014 jet files load local-first, mirror fallback</div>
     <div class="fate-apps" id="fateAppsGrid"></div>
     <div class="fate-status" id="fateJetStatus">idle</div>
   </div>`;
@@ -3575,7 +3667,7 @@ function fateJetEnsureUI(){
       <button onclick="fateBrowseClose()" title="Close">\u00d7</button>
     </div>
     <iframe id="fateBrowseFrame" referrerpolicy="no-referrer"></iframe>
-    <div class="fate-hint">Back / reload ride the proxied frame. ↗ opens the site directly (no proxy). Keep this tab open — it powers the tunnel.</div>`;
+    <div class="fate-hint">Back / reload ride the proxied frame. \u21b7 opens the site directly (no proxy). Keep this tab open \u2014 it powers the tunnel.</div>`;
   document.body.appendChild(view);
   const frame = view.querySelector('#fateBrowseFrame');
   frame.addEventListener('load', () => {
@@ -3600,12 +3692,17 @@ function fateJetPaintStatus(){
     booting: ['booting proxy (service worker + jet + wisp tunnel)\u2026', '#fbbf24'],
     ready: ['proxy READY \u2014 apps open through your wisp tunnel lane', '#4ade80'],
     'sw-failed': ['service worker unavailable \u2014 deploy fate-sw.js next to test.html (same folder, https) and reload. ' + FATE_JET_ERR, '#f87171'],
-    'assets-failed': ['jet assets unreachable from every mirror \u2014 try again later. ' + FATE_JET_ERR, '#f87171'],
+    'assets-failed': ['jet files unreachable \u2014 upload jet.core.js / jet.api.js / jet.inject.js / jet.wasm next to test.html (see README), or retry for mirror fallback. ' + FATE_JET_ERR, '#f87171'],
     'transport-failed': ['wisp tunnel down \u2014 no alive lane right now. Cloud view may recover it. ' + FATE_JET_ERR, '#f87171'],
     'controller-failed': ['jet controller failed \u2014 reload the page once. ' + FATE_JET_ERR, '#f87171']
   };
   const [txt, col] = map[FATE_JET_STATE] || [FATE_JET_STATE, '#94a3b8'];
-  el.innerHTML = '<b style="color:' + col + ';">jet: ' + txt + '</b>' +
+  let assets = '';
+  const keys = Object.keys(FATE_ASSET_SRC);
+  if (keys.length) assets = '<br><span style="color:#64748b;">assets:</span> ' +
+    keys.map(k => k + ': <b style="color:#67e8f9;">' + FATE_ASSET_SRC[k] + '</b>').join(' \u00b7 ') +
+    ' \u00b7 utils: <b style="color:' + (FATE_HAS_UTILS ? '#4ade80' : '#94a3b8') + ';">' + (FATE_HAS_UTILS ? 'on' : 'off') + '</b>';
+  el.innerHTML = '<b style="color:' + col + ';">jet: ' + txt + '</b>' + assets +
     (FATE_JET_STATE !== 'ready' ? ' \u00b7 <a href="#" onclick="fateJetBoot();return false;" style="color:#67e8f9;">retry</a>' : '');
 }
 
@@ -3620,11 +3717,12 @@ function fateBrowseOpen(url){
     return;
   }
   if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  FATE_BROWSE_OPEN = true;
   const view = document.getElementById('fateBrowseView');
   const frame = document.getElementById('fateBrowseFrame');
   document.getElementById('fateBrowseAddr').value = url;
   view.classList.add('open');
-  if (FATE_FRAME) FATE_FRAME.go(url);
+  if (FATE_FRAME){ try { FATE_FRAME.go(url); } catch(e){ frame.src = fateSJEncode(url) || url; } }
   else frame.src = fateSJEncode(url) || url;
   fateBrowseStack = fateBrowseStack.slice(0, fateBrowseIdx + 1);
   fateBrowseStack.push(url); fateBrowseIdx = fateBrowseStack.length - 1;
@@ -3653,12 +3751,13 @@ function fateBrowsePopout(){
   if (cur) window.open(cur, '_blank');
 }
 function fateBrowseClose(){
+  FATE_BROWSE_OPEN = false;
   const view = document.getElementById('fateBrowseView');
   const frame = document.getElementById('fateBrowseFrame');
   view.classList.remove('open');
   try { frame.contentWindow.location.replace('about:blank'); } catch(e){ frame.src = 'about:blank'; }
 }
-/* ===== END FATE PORTAL v8 JET LANE ENGINE ===== */
+/* ===== END FATE PORTAL v8.1 JET LANE ENGINE ===== */
 
 </script>
 </body>

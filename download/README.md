@@ -1,49 +1,82 @@
 # Fate Portal builds
 
-## Which file should I deploy? (2026-10-27, v8)
+## Which file should I deploy? (2026-10-28, v8.1 — local-first jet assets)
 
-**Deploy BOTH files, in the SAME folder:**
+**Deploy these 7 files, ALL in the SAME folder (flat, no subfolder):**
 
-1. **`test-v8-jet-lane.html`** → rename to `test.html` (replaces the old one)
-2. **`fate-sw.js`** → put it right next to `test.html` (do not rename)
+| file | rename to | required? | what it is |
+|------|-----------|-----------|------------|
+| `test-v8-jet-lane.html` | `test.html` | REQUIRED | the portal (v7 + jet proxy) |
+| `fate-sw.js` | (keep name) | REQUIRED | service worker — jet.sw.js is INSIDE it now, nothing to download |
+| `jet.core.js` | (keep name) | REQUIRED* | jet rewriting engine (227 KB) |
+| `jet.wasm` | (keep name) | REQUIRED* | curl-impersonate TLS engine (585 KB) |
+| `jet.inject.js` | (keep name) | REQUIRED* | jet page injector |
+| `jet.api.js` | (keep name) | REQUIRED* | jet controller |
+| `jet.utils.js` | (keep name) | optional | link/URL/cache polish (auto-skipped if missing) |
 
-Then hard-refresh (iPad: hold refresh → "Reload Without Content Blocker",
-or clear the tab, then reload twice).
+\* If you skip them, the portal still boots — it falls back to jsDelivr
+mirrors automatically. But **hosting them locally is the whole point of
+v8.1**: nothing depends on jsDelivr anymore, which is what was making
+the proxy unreliable before. A `sj/` subfolder layout also works
+(`sj/jet.core.js` etc.) — the loader probes both.
 
-v8 = everything from v7 (2.5k arcade games + 163 cloud games + wisp lane
-engine + smart player + FATE TikTok feed) **plus the full jet proxy** —
-the same stack the reference site uses — for browsing the real
-**TikTok / YouTube / Snapchat / Movies** inside the portal.
+Then hard-refresh (iPad: hold refresh -> "Reload Without Content Blocker",
+or clear the tab, then reload twice). The Apps modal status line shows
+where every file came from: `jet.core.js: local` = perfect.
 
-### v8 additions — jet proxy apps (the real sites)
+### What changed in v8.1 (was "not working the best")
 
-1. **Apps button** in the quick-actions row (or press **A**) → FATE Apps
-   modal with 4 tiles: TikTok, YouTube, Snapchat (web), Movies (aether.ist).
+1. **Local-first jet assets**: every jet file (core/api/inject/utils/wasm)
+   is probed local flat -> local `/sj/` -> 7 CDN mirrors, per file, in
+   parallel, soft-404-guarded. jsDelivr is now only a fallback.
+2. **Self-contained service worker**: `fate-sw.js` has jet.sw.js inlined —
+   no `importScripts`, no mirror race, nothing external. Also fixes the
+   warming-retry page for subfolder deploys and stops intercepting
+   non-proxy requests.
+3. **Hardened SW boot**: `register(..., {updateViaCache: 'none'})` + forced
+   update + activate wait + claim + one soft reload — survives stale
+   Safari-cached service workers and foreign SWs at the same scope.
+4. **jet.utils plugins actually used now** (they were dead weight in v8):
+   link clicks stay in-portal, the address bar follows SPA navigations
+   live (YouTube routes), responses are cached for faster reloads.
+   utils now loads strictly after jet.api (race bug fixed).
+5. **No duplicate wisp sweeps**: the boot reuses the page's transport
+   warm-up instead of starting a second lane sweep.
+6. **8 app tiles** mirroring the reference site's SHORTCUTS: TikTok,
+   YouTube, Snapchat, Movies (aether.ist), Instagram, Discord, Twitch, Kick.
+
+### v8.1 additions — jet proxy apps (the real sites)
+
+1. **Apps button** in the quick-actions row (or press **A**) -> FATE Apps
+   modal with the tiles above.
 2. **First tile click boots the proxy** (one-time per page load):
-   registers `fate-sw.js`, loads jet core/api/utils from jsDelivr mirrors,
-   binds the curl-transport to your fastest wisp lane, creates the browse
-   frame. Status line in the modal shows each step; green = ready.
+   registers `fate-sw.js`, loads the jet files (local first), binds the
+   curl-transport to your fastest wisp lane, creates the browse frame.
+   Status line in the modal shows each step + asset sources; green = ready.
 3. **In-portal browser**: full-screen view with address bar, back, reload,
-   open-direct, close. Address bar shows the REAL url (auto-decoded).
-   Everything rides the wisp tunnel — same lane as cloud games.
+   open-direct, close. Address bar shows the REAL url (auto-decoded,
+   live-updates on SPA navigation). Everything rides the wisp tunnel —
+   same lane as cloud games.
 4. **"Open full TikTok"** button in the TikTok view header — the real
-   tiktok.com/foryou through the proxy (fixes the tikwm-on-iPad problem:
-   this path does not use tikwm at all).
-5. **How it works**: `fate-sw.js` bootstraps the real jet service worker
-   (MercuryWorkshop jet 2.0.67-alpha.2, verified byte-identical to the
-   reference site's stack). The page creates a named JetFrame; requests
-   under `/~/<session>/<frame>/...` are routed through the page's
-   controller over libcurl-wasm on the wisp tunnel (browser-fingerprinted
-   TLS). If a request arrives before the controller is up, the SW answers
-   "proxy warming up" and auto-retries — just like the reference.
-6. **If you deploy only test.html** (no fate-sw.js): everything else
-   still works, and the Apps modal tells you exactly what's missing.
-   The proxied apps need HTTPS (or localhost) for the service worker.
+   tiktok.com/foryou through the proxy (no tikwm involved at all —
+   that was the iPad problem).
+5. **How it works**: the same-origin `fate-sw.js` routes
+   `/~/<session>/<frame>/...` to the page's jet controller, which runs
+   libcurl-wasm over your wisp lane (browser-fingerprinted TLS). If a
+   request arrives before the controller is up, the SW answers
+   "proxy warming up" and auto-retries — same contract as the reference.
+6. **If you deploy only test.html**: everything else still works and the
+   Apps modal tells you exactly what's missing. The proxied apps need
+   HTTPS (or localhost) for the service worker.
 
-Build-time E2E evidence: jet READY in-page; proxied example.com renders;
-proxied tiktok.com/foryou loads the full SPA (title "TikTok - Make Your
-Day", 431 KB DOM, 65/67 resources HTTP 200 through the tunnel); proxied
-youtube.com renders the home UI; 163 cloud games intact afterwards.
+Build-time E2E evidence (v8.1, sandbox browser): jet READY with
+`assets: jet.core.js: local - jet.api.js: local - jet.inject.js: local -
+jet.utils.js: local - jet.wasm: local - utils: on`; proxied example.com
+renders; proxied tiktok.com/foryou loads the real SPA (title
+"TikTok - Make Your Day"); proxied youtube.com renders the home UI and
+the address bar decodes/live-tracks real routes; repeat run with every
+local jet file removed still boots READY from mirrors (fallback proven);
+2413 arcade + 163 cloud games intact.
 (DC sandbox note: TikTok/YouTube gate some feed data from datacenter
 exits — from your home network through the same wisp servers the feeds
 populate like on the reference site.)

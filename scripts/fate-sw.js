@@ -1,62 +1,59 @@
-/* fate-sw.js — FATE V8 jet proxy service worker (companion file)
- * Deploy NEXT TO test.html (same folder). Bootstraps the real jet.sw.js
- * (MercuryWorkshop jet 2.0.67-alpha.2) from jsDelivr mirrors, then routes
- * the /~/ prefix through the page's jet controller over the wisp tunnel.
+/* fate-sw.js v2 - FATE jet proxy service worker (SELF-CONTAINED)
+ * Deploy NEXT TO test.html (same folder). jet.sw.js (MercuryWorkshop jet
+ * 2.0.67-alpha.2) is INLINED below at build time - no CDN importScripts,
+ * no mirror ladder, nothing external. Routing contract:
+ *   shouldRoute(e) -> $jetController.route(e) for /~/<controller-id>/... paths
+ *   no live controller -> ping clients ($controller$swrevive) + 503 retry page
  */
-'use strict';
+var $jetController;
+/*__JET_SW_INLINE__*/
 
-var FATE_JET_SW_SOURCES = [
-  'https://cdn.jsdelivr.net/gh/TongSherbet/storage@main/sj/jet.sw.js',
-  'https://fastly.jsdelivr.net/gh/TongSherbet/storage@main/sj/jet.sw.js',
-  'https://gcore.jsdelivr.net/gh/TongSherbet/storage@main/sj/jet.sw.js',
-  'https://testingcf.jsdelivr.net/gh/TongSherbet/storage@main/sj/jet.sw.js',
-  'https://quantil.jsdelivr.net/gh/TongSherbet/storage@main/sj/jet.sw.js',
-  'https://cdn.statically.io/gh/TongSherbet/storage/main/sj/jet.sw.js',
-  'https://raw.githack.com/TongSherbet/storage/main/sj/jet.sw.js'
-];
-
-var fateJetLoaded = false;
-for (var _i = 0; _i < FATE_JET_SW_SOURCES.length; _i++) {
-  try { importScripts(FATE_JET_SW_SOURCES[_i]); fateJetLoaded = true; break; }
-  catch (e) { /* try next mirror */ }
-}
-if (!fateJetLoaded) console.error('[fate-sw] could not importScripts jet.sw.js from any mirror');
-
-self.addEventListener('install', function () { self.skipWaiting(); });
-self.addEventListener('activate', function (event) { event.waitUntil(self.clients.claim()); });
-self.addEventListener('message', function (e) {
+/* ---- FATE wiring ---- */
+self.addEventListener('message', (e) => {
   if (e.data && e.data.type === 'FATE:claim') { self.clients.claim(); }
 });
 
-self.addEventListener('fetch', function (event) {
-  event.respondWith((async function () {
-    var url = new URL(event.request.url);
-    /* health probe used by the page */
-    if (url.pathname.endsWith('/__/sw_alive')) {
-      return new Response('true', { headers: { 'Content-Type': 'text/plain' } });
-    }
-    if (fateJetLoaded && typeof $jetController !== 'undefined') {
+function fateWarming(){
+  return new Response(
+    '<!DOCTYPE html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="1"></head>' +
+    '<body style="font:16px system-ui;display:grid;place-items:center;height:100vh;background:#0c0a09;color:#fcd34d">' +
+    'proxy warming up, please wait...</body></html>',
+    { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } }
+  );
+}
+
+self.addEventListener('fetch', (event) => {
+  let url;
+  try { url = new URL(event.request.url); } catch (e) { return; }
+
+  /* health probe used by the page */
+  if (url.pathname.endsWith('/__/sw_alive')) {
+    event.respondWith(new Response('true', { headers: { 'Content-Type': 'text/plain' } }));
+    return;
+  }
+
+  /* jet-routed proxied requests */
+  let routed = false;
+  try {
+    routed = !!(self.$jetController && $jetController.shouldRoute && $jetController.shouldRoute(event));
+  } catch (e) { routed = false; }
+  if (routed) {
+    event.respondWith((async () => {
+      try { return await $jetController.route(event); }
+      catch (err) { console.error('[fate-sw] route error:', err); return fateWarming(); }
+    })());
+    return;
+  }
+
+  /* /~/... with no live controller -> ping pages, auto-retry (subfolder-safe) */
+  if (url.pathname.includes('/~/')) {
+    event.respondWith((async () => {
       try {
-        if ($jetController.shouldRoute(event)) {
-          return await $jetController.route(event);
-        }
-      } catch (err) {
-        console.error('[fate-sw] route error:', err);
-      }
-    }
-    /* /~/<id>/... with no live controller -> ping pages, auto-retry */
-    if (url.pathname.split('/')[1] === '~') {
-      try {
-        var cs = await self.clients.matchAll({ includeUncontrolled: true });
-        for (var j = 0; j < cs.length; j++) cs[j].postMessage({ $controller$swrevive: {} });
+        const cs = await self.clients.matchAll({ includeUncontrolled: true });
+        for (const c of cs) { try { c.postMessage({ $controller$swrevive: {} }); } catch (e) {} }
       } catch (e) {}
-      return new Response(
-        '<!DOCTYPE html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="1"></head>' +
-        '<body style="font:16px system-ui;display:grid;place-items:center;height:100vh;background:#0c0a09;color:#fcd34d">' +
-        'proxy warming up, please wait...</body></html>',
-        { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } }
-      );
-    }
-    return fetch(event.request);
-  })());
+      return fateWarming();
+    })());
+  }
+  /* everything else: untouched (no interception) */
 });

@@ -299,3 +299,23 @@ Stage Summary:
 - The portal now runs the REAL jet proxy stack (same as the reference site) over the user's working wisp lane: real TikTok / YouTube / Snapchat / Movies browse in-portal through a FATE-styled browser view; fixes the iPad tikwm problem entirely (no tikwm involved).
 - Deliverables: download/test-v8-jet-lane.html (deploy as test.html) + download/fate-sw.js (same folder). Without fate-sw.js everything else still works and the Apps modal says exactly what's missing.
 - Key files: scripts/build-portal-v8.py, scripts/jet-engine.js, scripts/fate-sw.js, upload/sj/ (verified jet stack).
+
+---
+Task ID: 15
+Agent: main (Z.ai)
+Task: "Not working the best, do we need all of these files, maybe they can assist us" (5 jet files attached) — diagnose v8 and make the proxy reliable.
+
+Work Log:
+- Diagnosed v8's weak link: ALL jet assets (core/api/inject/utils/wasm) + the SW's jet.sw.js came from jsDelivr mirrors only; on the user's restrictive network that makes the proxy flaky/dead. User re-uploaded the 5 jet files (md5-verified byte-identical to upload/sj/ and TongSherbet/storage@main) and offered to host them.
+- Answered the file question: all 5 are needed (core = rewriter, api = controller, inject = in-page injector, sw = router (now baked into fate-sw.js), utils = optional UX plugins) + jet.wasm (TLS fingerprinting).
+- Rewrote scripts/jet-engine.js (v8.1): local-first per-file asset ladder (flat -> /sj/ -> 7 CDN mirrors, parallel probes with soft-404 content-type guard, 5s aborts); jetPath = the URL core actually loaded from; hardened SW start (register with updateViaCache:'none', forced update, activate wait, claim, one soft reload); utils chained STRICTLY after api (race bug: utils destructures globalThis.$jetController at eval time — parallel load crashed it, found in Pass B E2E); memoized fateGetTransport (no duplicate concurrent wisp sweeps); apps grid now mirrors reference SHORTCUTS (8 tiles incl. Movies=aether.ist, Instagram, Discord, Twitch, Kick); live UrlWatcher address bar + LinkHandler in-portal navigation + HttpCache via $jetUtils plugins; FATE_BROWSE_OPEN guard; per-asset source labels in the status box.
+- Rewrote scripts/fate-sw.js (v2): jet.sw.js INLINED at build time (self-contained, no importScripts), selective respondWith (only sw_alive + jet-routed + warming), subfolder-safe warming check (pathname.includes('/~/')), route errors fall back to the retry page.
+- Built scripts/build-portal-v81.py -> download/test-v8-jet-lane.html (192.9 KB, same 5 anchored patches, stamp v8.1) + download/fate-sw.js (6.6 KB) + copied 5 flat assets to download/ for upload.
+- E2E harness lessons: python http.server orphans squat on :8902 (pkill first); the FATE gate redirects unauthenticated loads to index.html decoy (seed fate_v6_auth on the dir-listing page BEFORE opening the portal); top-level let/const bindings are not window props (poll bare identifiers).
+- E2E results (agent-browser, :8902, authed): Pass A (assets hosted): READY, sw+transport true, lane wss://api.personalloanonline.net/ws/, assets ALL "local", utils: on; proxied example.com renders ("Example Domain" at /~/9w1m4qty/7fifhi4c/...); proxied tiktok.com/foryou -> title "TikTok - Make Your Day"; proxied youtube.com -> ytd-app UI present; address bar decodes real URLs (https://www.tiktok.com/foryou, https://www.youtube.com/) and live-tracks routes. Pass B (all 5 assets hidden): READY from mirror 1 with utils on (chain fix proven), proxied example.com renders. 2413 arcade + 163 cloud games intact in both passes. node syntax clean (4 blocks + fate-sw.js). Screenshots: verify-v81-apps.png, verify-v81-example.png, verify-v81-tiktok.png, verify-v81-youtube.png, verify-v81-tiktok2.png (browse chrome + decoded address bar), verify-v81-youtube2.png (YouTube grid in portal), verify-v81-mirror.png (fallback pass).
+- README.md rewritten for v8.1: 7-file deploy table (required vs optional), what changed, evidence.
+
+Stage Summary:
+- v8.1 makes the jet proxy independent of jsDelivr: the user hosts the exact jet files they uploaded next to test.html; CDN mirrors remain an automatic fallback (proven by Pass B). SW is self-contained; utils plugins are finally live; the utils-after-api race is fixed.
+- Deliverables: download/test-v8-jet-lane.html (deploy as test.html) + download/fate-sw.js + jet.core.js + jet.api.js + jet.inject.js + jet.utils.js + jet.wasm — all 7 in the SAME folder.
+- Key files: scripts/jet-engine.js, scripts/fate-sw.js, scripts/build-portal-v81.py, scripts/e2e-v81.sh, scripts/e2e-v81-shots.sh.
