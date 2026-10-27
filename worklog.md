@@ -213,3 +213,26 @@ Stage Summary:
 - "New CDNs" confirmed and shipped: a fully-live GitHub-via-jsDelivr game network (~2.4k unique games) now powers the portal's grid independent of the dead Stratus origin; cloud section keeps the complete v3 stack and self-heals when the origin returns.
 - Deliverable: download/test-v4-arcade-network.html — deploy as test.html + hard refresh; verify via footer chip "cloud build v4" and header "2413 games".
 - Key files: scripts/build-portal-v4.py, scripts/decode-uploads-v2.js, scripts/check-inline-js.js, scripts/out/main-v2-payload-1-eval.js (decoded portal source of truth).
+
+---
+Task ID: 11
+Agent: main (Z.ai)
+Task: "it's a black screen but opening in a new tab shows the games txt code" (618-fix.html) — diagnose why gnm game 618 (FNF vs Bob v2.0) won't play; make it play.
+
+Work Log:
+- Fetched https://cdn.jsdelivr.net/gh/freebuisness/html/618-fix.html (2 KB launcher for OpenFL/Lime game, base=gh/FirePlayz132/Fnf_Bob.s_onslaught, loads BOB.js 5.8 MB, renders into a #000 div via lime.embed).
+- ROOT CAUSE 1 (the "code"): jsDelivr serves that file with content-type text/plain — and probing further found the SAME for every GitHub-hosted game html in ALL four sources (ckv 843 + ugs 1150 + seraph 501 + gnm 848 ~= 2400 games). Direct nav/new tab = raw source displayed; plain iframe src = same. Task 10's "no error" launch check was a false positive (load event fires for text/plain too).
+- ROOT CAUSE 2 (iPad "black screen"): iPad had a pre-MIME-change cached copy (cache-control 7d) so it rendered the real page — which boots to FNF's flashing-lights warning: a pure-black screen waiting for ENTER/ESCAPE keyboard input an iPad doesn't have; plus OpenFL pages calling getElementById("viewport") without defining it throw a TypeError on dpr>2 phones.
+- Proved the fix path with a harness (scripts/harness-618.html): fetch the source (jsDelivr sends ACAO:*), inject <base>/<meta viewport> guards, re-serve as text/html Blob into the sandboxed iframe -> game boots (canvas 1280x720, warning screen renders, FPS counter alive). Synthetic KeyboardEvent (keydown/keyup on the game Document) dismissed the warning -> title-state asset loading started (menu sounds downloaded, all 200s). Long black phases after dismissal = the mod's own asset loading (multi-hundred-MB FNF mod), not a bug.
+- Built scripts/build-portal-v5.py -> download/test-v5-smart-player.html (135 KB, 13 anchored patches on v4):
+  * launchGame() smart lane: isGhFamilyUrl -> fetchPlayable() (edge chain cdn/gcore/testingcf/fastly/originfastly, 20 s AbortController timeout, HTML-structure validation) -> buildPlayableHtml() -> Blob(text/html) -> iframe.src; non-GH URLs and fetch failures keep the legacy direct-src path
+  * buildPlayableHtml(): <base> injection when missing (respects the game's own), viewport-null guard (regex-gated meta injection)
+  * On-screen KEYS bar (#keysBar + keysBtn): ESC/ENTER/SPACE/arrows/WASD/R, pointerdown=keydown / pointerup|cancel|leave=keyup, synthetic KeyboardEvents into gameFrame.contentDocument; auto-opens on touch devices; blob URL revoked on close/relaunch
+  * openGameInNewTab(): synchronous about:blank window.open (keeps user gesture) then blob URL; loader hint about long black loads; CDN picker note updated; stamps v4->v5 (head comment, 3 console markers, footer chip)
+- Bug found in E2E and fixed: first build's "must START with an html tag" validation rejected UGS files (they begin "<Module>\n\n<!-- Ultimate Game Stash file-->" with <html> at offset 190) -> relaxed to "contains html structure within first 4 KB"; ckv then launched via blob (canvas up, title menu rendered).
+- E2E (agent-browser, :8898, V6 gate authed 1prbs6n): [FATE PORTAL v5] markers + footer chip v5; FNF vs Bob launched -> blob src, canvas, warning screen -> keysBar ESC tap dismissed it (verify-v5-fnf-portal.png, verify-v5-keys-esc.png); 10 Minutes till Dawn full title menu (verify-v5-ckv-live.png); blob revoke on close; zero page errors; node --check clean on all 5 script blocks.
+
+Stage Summary:
+- Diagnosis: "code in new tab" = jsDelivr text/plain MIME on ALL ~2400 GitHub-hosted games; iPad black = cached HTML copy hitting FNF's keyboard-gated black warning screen (+ viewport TypeError risk).
+- Deliverable: download/test-v5-smart-player.html — deploy as test.html + hard refresh. Smart player makes the whole arcade network playable and adds touch keys for keyboard games on tablets.
+- Key files: scripts/build-portal-v5.py, scripts/harness-618.html, evidence verify-v5-*.png, download/README.md rewritten for v5.

@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>618-fix harness</title>
+<style>
+  body{margin:0;background:#111;color:#9fe8ff;font-family:monospace}
+  #bar{padding:8px 12px;font-size:13px;white-space:pre-wrap}
+  iframe{width:100%;height:calc(100vh - 40px);border:0;background:#000}
+</style>
+</head>
+<body>
+<div id="bar">starting…</div>
+<iframe id="f" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads"></iframe>
+<script>
+const GAME_URL = 'https://cdn.jsdelivr.net/gh/freebuisness/html/618-fix.html';
+const bar = document.getElementById('bar');
+const log = (m) => { bar.textContent += '\n' + m; console.log('[HARNESS]', m); };
+
+function buildPlayableHtml(rawHtml, gameUrl){
+  let html = rawHtml;
+  const needsVp = /getElementById\s*\(\s*["']viewport["']\s*\)/.test(html) && !/<meta[^>]+id=["']?viewport/i.test(html);
+  const hasBase = /<base\s/i.test(html);
+  const dir = gameUrl.replace(/[^/]*$/, '');
+  const inject =
+    (needsVp ? '<meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">' : '') +
+    (!hasBase ? '<base href="' + dir + '">' : '');
+  if(inject){
+    if(/<head[^>]*>/i.test(html)) html = html.replace(/<head[^>]*>/i, m => m + inject);
+    else html = inject + html;
+  }
+  log('needsVp=' + needsVp + ' hasBase=' + hasBase + ' injected=' + !!inject);
+  return html;
+}
+
+(async () => {
+  try{
+    log('fetching ' + GAME_URL);
+    const res = await fetch(GAME_URL, {cache:'no-store'});
+    log('HTTP ' + res.status + ' ct=' + res.headers.get('content-type') + ' len=' + res.headers.get('content-length'));
+    const raw = await res.text();
+    log('body ' + raw.length + ' chars, starts: ' + JSON.stringify(raw.slice(0,60)));
+    const fixed = buildPlayableHtml(raw, GAME_URL);
+    const blob = new Blob([fixed], {type:'text/html'});
+    const url = URL.createObjectURL(blob);
+    log('blob ready, loading iframe…');
+    document.getElementById('f').src = url;
+    window.__HSTATE = 'blob-loaded';
+    setTimeout(() => {
+      try{
+        const d = document.getElementById('f').contentDocument;
+        const canv = d ? d.querySelectorAll('canvas').length : -1;
+        log('after 25s: doc=' + (d ? 'accessible' : 'null') + ' canvases=' + canv +
+            ' bodyChildren=' + (d && d.body ? d.body.children.length : '?'));
+        if(d && d.body) log('bodyHTML snippet: ' + d.body.innerHTML.replace(/\s+/g,' ').slice(0, 300));
+        window.__HSTATE = 'checked canvases=' + canv;
+      }catch(e){ log('inspect err: ' + e.message); }
+    }, 25000);
+  }catch(e){
+    log('FETCH FAILED: ' + e.message);
+    window.__HSTATE = 'fetch-failed: ' + e.message;
+  }
+})();
+</script>
+</body>
+</html>
