@@ -1,103 +1,107 @@
 # Fate Portal builds
 
-## Which file should I deploy? (2026-10-27)
+## Which file should I deploy? (2026-10-27, v6)
 
-**`test-v5-smart-player.html`** — this is the one. It is the user's portal
-(`upload/test.html`) carrying the FULL v3 cloud stack, the v4 arcade network
-(~2,400 games), **plus the v5 smart player** that actually makes those
-2,400 games playable.
+**`test-v6-wisp-lane.html`** — this is the one. Deploy it as `test.html`
+(replace the old file) and hard-refresh (iPad: hold refresh → "Reload Without
+Content Blocker" or clear the tab, then reload twice).
 
-### v5 additions — smart player (the "shows code / black screen" fix)
+It carries everything from v5 (2,413 arcade games + smart blob player) and
+adds the **v6 wisp lane cloud engine**. Cloud games are BACK: the Stratus
+backend returned online (partially re-provisioned) and the portal now hunts
+it through four independent paths.
 
-**Root cause found:** jsDelivr serves EVERY GitHub-hosted `.html` as
-`content-type: text/plain` — that is why opening a game in a new tab showed
-the raw "games txt code" instead of the game. It affects all four game
-sources (ckv, ugs, seraph, gn-math), not just game 618. (Your iPad only
-looked different because it had an older HTML copy cached from before the
-MIME change; the game page it rendered then sits on black screens waiting
-for ENTER/ESCAPE — a keyboard it doesn't have.)
+### v6 additions — wisp lane cloud engine
 
-The v5 fix, all verified live in the sandbox on real games:
+1. **Real wisp (WLSP) lane sweep** — the portal now runs the same binary
+   handshake the official portal uses (frame `[type][id][payload]`, control
+   stream 0, echo probe) against all 11 known servers (9 `cdn.*` mirrors +
+   `wss://athollcottage.com/connection/` + `wss://api.personalloanonline.net/ws/`).
+   Live result during the build E2E: **9 of 11 lanes answered** (only
+   northstreetumc was down). Fastest alive lane is pinned and cached
+   (localStorage `fate_wisp_lane_v6`, 10-min TTL).
+2. **curl-transport over the tunnel** — the portal dynamically imports the
+   real transport module (`curl/index.mjs`, libcurl-wasm, 2.1 MB) racing
+   14 asset-base mirrors of `TongSherbet/storage@main` (jsDelivr edges ×4,
+   statically, githack ×2, raw.githubusercontent, staticdeliver, etc.),
+   then binds it to the winning wisp lane. Verified live: transport READY
+   in-page within seconds.
+3. **Stratus API through 4 lanes** — the catalog sweep now races direct +
+   codetabs + allorigins + **wisp-tunnel** lanes. `stratusApi()` prefers the
+   tunnel when the transport is up and falls back to the direct ladder.
+   `stratusFetch` now supports POST + JSON body (the v5 version silently
+   downgraded session creates to GET — fixed).
+4. **Session flow fixes against the CURRENT backend**:
+   - `POST /stratus/session {game_key, relay, client_key}` works (real
+     uuids returned, real instances boot — verified live).
+   - Signaling now uses the **absolute `signaling_ws` URL the start response
+     returns** (`wss://host/signal/<uuid>`) instead of the obsolete
+     `/stratus/signal/<uuid>` path. Legacy id-only values still build the
+     old path as fallback.
+   - Signaling WebSocket rides the wisp tunnel when possible with a
+     **transparent 6 s native-WebSocket fallback** (matches the official
+     client, which connects natively).
+   - Real ICE/TURN from the backend is honored (`stun:stun.l.google.com`,
+     `turn:154.85.66.15` flash/flash1234).
+5. **Wisp panel UI** (inside the cloud view's self-test box): per-server
+   RTT chips, active lane, transport state, resolved bases, and a **"set
+   base" input** — if you ever learn a backend host (e.g. from a working
+   portal), type it there and the whole cloud stack points at it instantly.
 
-1. **Fetch → blob lane**: the player fetches the game source itself
-   (jsDelivr sends `access-control-allow-origin: *`), patches it, and
-   re-serves it as a real `text/html` blob inside the sandboxed iframe.
-   The MIME problem is bypassed completely — FNF Bob's Onslaught and
-   10 Minutes till Dawn both boot and render in the player.
-2. **Auto `<base>` injection** so games with relative asset paths still
-   load; the game's own `<base>` is respected when present.
-3. **Viewport landmine guard**: some OpenFL pages call
-   `getElementById("viewport")` without defining it → TypeError that can
-   kill boot on high-DPI phones; the patch injects the missing meta.
-4. **On-screen KEYS bar** (the key icon in the player header): ESC, ENTER,
-   SPACE, arrows, WASD, R — hold-to-press, dispatching real KeyboardEvents
-   into the game. Auto-opens on touch devices (iPad!). Verified: tapping
-   ESC in the bar dismisses FNF's flashing-lights warning screen.
-5. **New-tab button fixed the same way** — opens the blob page, not the
-   raw text/plain URL.
-6. **Edge-fallback fetch chain** (cdn → gcore → testingcf → fastly →
-   originfastly jsDelivr), 20 s timeout per lane, honest fallback to the
-   old direct-src behavior if every lane fails.
-7. **Loader hint** so nobody mistakes a big game's one-minute black
-   loading screen for a broken portal.
+### Live E2E evidence (build-time, sandbox browser)
 
-Note: UGS single-file games start with a `<Module>` preamble before the
-real HTML — the lane accepts that (validated, not "starts-with-tag").
+- `[FATE v6] wisp transport READY - lane wss://api.personalloanonline.net/ws/`
+- sweep winner `cdn.kcchallengevbc.com` → **163 cloud games** rendered in the
+  cloud grid (backend pool healthy: 8–9 idle instances, 12 egress exits)
+- real session created + booted: `{"uuid":"ac1fd1a3-…","state":"active"}`,
+  `time_left` countdown, TURN ICE delivered
+- screenshots: `scripts/verify-v6-cloud-live.png`, `scripts/verify-v6-wisp-panel.png`
 
-### v4 arcade network (unchanged, ~2,400 games)
+### Known limits
 
-| Source | Index | Games repo | Loaded |
-|--------|-------|-----------|--------|
-| ckv | `gh/%54ongSherbet/storage@main/ckv.json` | `gmshelf/ckv` | 843 |
-| ugs | `gh/%54ongSherbet/storage@main/ugs.json` | `bubbls/ugs-singlefile` | 1,150 |
-| seraph | `gh/gmshelf/seraph/seraph.json` | `gmshelf/seraph` | 223 |
-| gn-math | `gh/freebuisness/assets/zones.json` | `freebuisness/html` + covers | 197 |
+- The backend's signaling WS refuses connections from **datacenter IPs**
+  (verified: WS upgrade error from the sandbox, while your residential
+  network should pass). If YOUR network still blocks the mirrors, signaling
+  may fail — the wisp panel will show it; the 6 s fallback keeps native
+  attempts honest.
+- HTTP-over-tunnel to Cloudflare-fronted mirrors currently hangs server-side
+  (CF drops the tunnel box's HTTP). The tunnel still shines for anything not
+  CF-fronted and for the self-healing lane sweep.
 
-- Multi-edge fallback per source; local catalogs keep dedupe priority
-- CDN picker still lets you switch lanes per game (picker note updated)
+### Backend intel (for future rounds)
 
-### Cloud section — unchanged from v3
+- Wisp servers double as Stratus mirrors; the 2 wss backups
+  (`athollcottage.com/connection/`, `api.personalloanonline.net/ws/`,
+  bare box 92.38.177.45) are wisp-only today (no /stratus route on :443).
+- The official portal network: `opium.best` (Cloudflare) → relay pages
+  (`im-single` repo: `relays.js`) → decoy pages (APStudy etc.) boot
+  `loader.js` from 16 asset-base mirrors of `TongSherbet/storage@main`.
+- Cloud catalog shape: `{games:[{name,key,cover}], total}`; session shape:
+  `{uuid,state,game_key}` → `/start` → `{signaling_ws, ice_servers,
+  max_seconds, relay}`; input = WebRTC DataChannel **"JYSDK"** (12-byte
+  mouse frames `[1,11,flags,8,x1e4,y1e4,dx,dy,btns,wheel]`, variable
+  keyboard frames) — all already ported in the portal's cloud player.
 
-- 27-lane sweep (9 mirrors x direct + codetabs + allorigins), Reload
-  games button, Check mirrors self-test (~30 s parallel), persistent
-  auto-retry (~5 h), seed-catalog slot
-- Stratus mirrors UNCHANGED (same 9 `cdn.*` + 2 wss backups per the fresh
-  loader decode); the origin still flaps — cloud games merge in when it
-  answers
+## v5 (previous, still good)
 
-### Verify your deployment
+**`test-v5-smart-player.html`** — v3 cloud stack + v4 arcade network
+(~2,400 games) + the v5 smart player (blob re-serving to beat the
+text/plain MIME bug, auto `<base>`, viewport guard, on-screen keys bar,
+open-in-new-tab with blob URLs).
 
-- view-source near `</head>`: `FATE PORTAL BUILD v5 (2026-10-27)`
-- console: `[FATE PORTAL v5] smart player ready - fetch+blob lane…` and
-  `[FATE PORTAL v5] arcade network + cloud stack build 2026-10-27`
-- footer chip: `cloud build v5 — smart player + touch keys + arcade network + 27-lane sweep`
-- launching a GitHub game logs `[FATE PORTAL v5] smart lane: <url>` and the
-  player URL starts with `blob:` — that's the fix working
+## v3/v4
 
-Deploy: rename to `test.html`, replace the old file on the site, then
-**Ctrl+Shift+R** to hard-refresh (your iPad may need the tab fully closed
-and reopened to drop the old cached game page).
+- `test-v4-arcade-network.html` — 27-lane cloud sweep + 2,413-game arcade
+  network (ckv/ugs/seraph/gnm via jsDelivr).
+- `test-v3-cloud-reload.html` — 27-lane sweep + parallel mirror self-test +
+  seed slot + persistent retry.
 
-### E2E verified from the sandbox (2026-10-27)
+## Build scripts
 
-- FNF vs Bob v2.0 (gnm): boots to the flashing-lights warning, ESC from
-  the on-screen keys bar dismisses it, game loop keeps running (FPS)
-- 10 Minutes till Dawn (ckv): full title menu rendered in the player
-- Blob revoke on close/relaunch; zero page errors; all 5 script blocks
-  pass `node --check`
-
-Older files kept for reference: `test-v4-arcade-network.html` (v4 — games
-listed but text/plain-broken in the player), `test-v3-cloud-reload.html`
-(v3 stack only), `fate-portal-v2.html` (v2), `test-fixed.html` (Task-3 era).
-
-## Note on the CDN itself (2026-10-27 diagnosis)
-
-The Stratus cloud-gaming backend flaps in and out (verified across four
-independent vantage points: direct, same-origin proxy, codetabs, allorigins
-— and Cloudflare returned 522/502 "origin unreachable" from the public
-proxies too). When the origin is down, NO client can load the catalog; the
-portal keeps retrying and fills in by itself when the backend returns.
-Use **Check mirrors** in the Cloud section to see the live per-mirror state
-from your own network. The fresh `c.vipersfutbol.com/script.js` subdomain
-found in the new build is only an ad-injection channel (skipped on purpose),
-not a game backend.
+- `scripts/build-portal-v6.py` — v5 → v6 (12 anchored patches; rebuilds
+  `test-v6-wisp-lane.html` from `test-v5-smart-player.html`).
+- `scripts/wisp-probe.mjs` — Node wisp liveness prober (11 servers).
+- `scripts/wisp-one.mjs` / `wisp-sweep.mjs` — HTTP-over-wisp tests.
+- `scripts/wisp-tcp.mjs` — raw TCP-over-wisp experiments.
+- `scripts/out/main-v2-payload-1-eval.js` — decoded official client
+  (source of truth for the Stratus protocol + JYSDK input).

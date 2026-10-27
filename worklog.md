@@ -236,3 +236,25 @@ Stage Summary:
 - Diagnosis: "code in new tab" = jsDelivr text/plain MIME on ALL ~2400 GitHub-hosted games; iPad black = cached HTML copy hitting FNF's keyboard-gated black warning screen (+ viewport TypeError risk).
 - Deliverable: download/test-v5-smart-player.html — deploy as test.html + hard refresh. Smart player makes the whole arcade network playable and adds touch keys for keyboard games on tablets.
 - Key files: scripts/build-portal-v5.py, scripts/harness-618.html, evidence verify-v5-*.png, download/README.md rewritten for v5.
+
+---
+Task ID: 12
+Agent: main (Z.ai)
+Task: "we still need cloud games, pls help" — mine the jet files + all intel to bring cloud games back; ship a v6 portal.
+
+Work Log:
+- Decoded upload/jet.* (controller 0.0.14, jet 2.0.67-alpha): jet is transport-agnostic; the backend URL is injected by the site bootstrap, not stored in jet.
+- Decoded scripts/out/loader-v2-payload-1-eval.js fully: found the WLSP (wisp) server list (9 cdn.* + 2 wss backups) AND the complete binary handshake (testWlspDomain). getBase() = wisp host => the wisp servers double as the stratus API base.
+- scripts/wisp-probe.mjs (exact handshake port in Node): 2/11 alive — wss://api.personalloanonline.net/ws/ (196ms) + wss://athollcottage.com/connection/ (227ms); 9 cdn.* dead on wisp too.
+- Downloaded the REAL transport from jsDelivr TongSherbet/storage@main/curl/index.mjs (2.1MB libcurl-wasm ESM). Ran it in Node with browser shims: full HTTP-over-wisp e2e works (example.com 200 via tunnel).
+- Stratus 404 hunt: /stratus/* on both wss hosts = 404 (wisp-only), on mirrors = dead-origin, opium.best = Cloudflare-challenged (Turnstile unpassable from DC). TLS SANs of 92.38.177.45 (the bare wss box) = only api.personalloanonline.net; ports 80/443 only.
+- Broke the deployment topology via TongSherbet/im-single repo (relays.js): 5 live relay deployments (opmXXXX.* decoy domains + amplifyapp). The alive amplifyapp relay page decodes to a 16-mirror asset-base race that boots loader.js from TongSherbet/storage@main — confirming all deployments share the repo build we already decoded.
+- Extracted the COMPLETE official cloud client from main-v2 payload: /stratus/games shape {games:[{name,key,cover}]}, session POST {game_key,relay,client_key}, queued poll, /start -> {signaling_ws, ice_servers, max_seconds}, signal WS messages (game_ready/rtc_answer/rtc_candidate/ping/time_left/game_cap/game_ended), WebRTC peer (recvonly audio+video, H264/AV1 codec prefs), JYSDK datachannel input (12-byte mouse frames, variable keyboard frames, gamepad mapping), relay keepalives, reconnect ladder.
+- Built scripts/build-portal-v6.py -> download/test-v6-wisp-lane.html (149.5KB, 13 anchored patches on v5): wisp lane sweep (exact handshake, browser), 14-base asset race + dynamic import of curl-transport, stratusFetchWisp (tunnel lane), sweep wisp lane + stratusApi wisp-first, FateWispWebSocket (tunnel WS with 6s transparent native fallback), absolute signaling_ws support (backend moved /stratus/signal -> /signal), stratusFetch POST+body fix (v5 silently GETted session creates), wisp panel UI (per-server RTTs, lane, bases, "set base" input), fateBootCloud auto re-hunt, stamps v6.
+- E2E (agent-browser, :8901, auth gate hash 1prbs6n): wisp sweep 9/11 lanes alive in-browser; transport READY via cdn.jsdelivr; sweep winner cdn.kcchallengevbc.com -> 163 CLOUD GAMES rendered; stratus status pool healthy (8-9 idle, 12 egress exits); REAL session created + booted (uuid ac1fd1a3-..., state active, time_left countdown, TURN ICE flash/flash1234 delivered); signaling WS refused only from datacenter IP (CF/origin rule) — native path matches official client. node --check clean. Screenshots: scripts/verify-v6-cloud-live.png, verify-v6-wisp-panel.png. Probe sessions quit (200).
+- Fixed during E2E: stratusFetchWisp body-variable shadowing (SyntaxError risk), premature wrapper onerror before native fallback, POST support in stratusFetch + wisp lane, builder kept authoritative + synced.
+
+Stage Summary:
+- Cloud games are BACK: the Stratus operator re-provisioned the backend (163-game catalog live, pool healthy, sessions booting). The portal now reaches it through 4 lanes (direct/codetabs/allorigins/wisp-tunnel) and the wisp lane infra (sweep + transport + tunnel WS fallback) is fully in place for blocked networks.
+- Deliverable: download/test-v6-wisp-lane.html — deploy as test.html + hard refresh. Cloud view shows "163 cloud games" and the wisp panel shows live lane RTTs; "set base" input ready for any new backend host.
+- Key files: scripts/build-portal-v6.py, scripts/wisp-probe.mjs, scripts/out/cloud-client-extract.js, scripts/curl-transport.mjs, download/README.md (v6 section + backend intel).
