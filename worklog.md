@@ -319,3 +319,27 @@ Stage Summary:
 - v8.1 makes the jet proxy independent of jsDelivr: the user hosts the exact jet files they uploaded next to test.html; CDN mirrors remain an automatic fallback (proven by Pass B). SW is self-contained; utils plugins are finally live; the utils-after-api race is fixed.
 - Deliverables: download/test-v8-jet-lane.html (deploy as test.html) + download/fate-sw.js + jet.core.js + jet.api.js + jet.inject.js + jet.utils.js + jet.wasm — all 7 in the SAME folder.
 - Key files: scripts/jet-engine.js, scripts/fate-sw.js, scripts/build-portal-v81.py, scripts/e2e-v81.sh, scripts/e2e-v81-shots.sh.
+
+---
+Task ID: 16
+Agent: main (Z.ai)
+Task: "It just keeps booting and never starts" — root-cause the v8.1 jet boot hang, answer the file-set question, ship v8.2.
+
+Work Log:
+- Root-causing: jet.api.js Controller.ready = Promise.all([readyResolve (SW RPC), loadJetWasm fetch, IndexedDB]) — v8.1 awaited it with NO timeout and NO port retry; fate-sw.js served a 503 warming page with meta-refresh every 1s (infinite loop); no SW unregister/reset recovery existed (stale SWs from earlier deploys poisoned every boot); reg.update()+register churn on every boot created fetch-interception race windows.
+- Decoded the reference loader's production boot recipe and ported it verbatim-adapted: swAlive probe, swReset (unregister all + reload, session-guarded), swSoftReload (single), jet handshake retry loop (wrap readyResolve; re-post FRESH MessageChannel via setupMessagePort up to 5x4s; on final failure swReset; then guardServiceWorkerRevive=false), SW health watcher (20s interval + focus/visibility; controllerchange -> fresh port), pagehide pending-RPC cleanup (token-tracking wrapper), transport init retry while "wasm not loaded", staged boot messages.
+- Discovered + fixed the empirical interception race: pages claimed mid-flight (or churned by re-register/update) bypass SW fetch interception intermittently (12x404 probes), while pages loaded WITH an active SW are 100% reliable from birth (28/28 probes). Fix: fast path (controller already ours -> no register/update at all), probe non-fatal (handshake is postMessage-based and always reliable; frame loads self-heal via the capped warming page), reload ladder only for the no-controller case.
+- fate-sw.js v3: warming auto-refresh CAPPED at 4 (sessionStorage counter), then a stuck-screen with Retry button + keep-portal-foreground instructions (iPad tab freezing).
+- Auto-resume: fateBootResume/fateJetPending in sessionStorage — recovery reloads are transparent (the tapped app reopens by itself); flags cleared on READY; bounded at max 2 auto-reloads (soft + reset), then a visible tap-to-retry error.
+- Boot progress pill (top of page): sw -> files (per-file) -> tunnel -> controller -> ready, "still working..." hint at 8s, red tap-to-retry on failure; progress-based watchdog (75s of NO stage change = fail — the old fixed 75s timer false-fired on legitimately slow boots).
+- Local-first fast path for assets: when files are hosted locally, the 7-CDN-mirror probe fan-out is skipped entirely (boot ~2s instead of 20-60s); mirror ladder remains the fallback.
+- Apps grid = exact reference SHORTCUTS (10 tiles): Snapchat fixed to www.snapchat.com/web, + Geforce Now + Geometry Dash; Movies = aether.ist.
+- File-set audit (answers "do we need all of these files"): REQUIRED = test.html + fate-sw.js + jet.core.js + jet.api.js + jet.inject.js + jet.wasm; OPTIONAL = jet.utils.js. download/v8.2-deploy/ contains EXACTLY those 7; everything else in download/ is legacy.
+- Mined tv.html for a later task: it is a FATE V6 Live TV/IPTV page (iptv-org + Free-TV playlists, hls.js + artplayer, somestuffserver.koyeb.app m3u8list API, Movies category) — native TV/movies lane material.
+- E2E (agent-browser, :8902, deploy folder served): first-visit single tap -> transparent recovery reloads -> READY (~2s warm) -> real example.com through the tunnel (address bar decodes); proxied TikTok /foryou -> title "TikTok - Make Your Day"; Pass B (fate-sw.js missing) -> clean "sw register failed" error in seconds, NO reload loop (page stays put); regressions intact (2413 arcade + 163 cloud + v7 feed). node syntax clean (4 blocks + SW). Screenshots: verify-v82-boot.png, verify-v82-example.png, verify-v82-final.png, verify-v82-tiktok.png.
+- E2E harness lessons: nohup servers die between tool calls -> scripts/serve-daemon.py (double-fork); Chromium resolves localhost to ::1 -> use 127.0.0.1; agent-browser wait --fn cannot see top-level let bindings -> poll bare identifiers or hook functions.
+
+Stage Summary:
+- v8.2 fixes "keeps booting and never starts" with the reference site's own self-healing recipe: handshake retry with fresh ports, SW reset ladder, capped warming retries, auto-resume after recovery reloads, progress pill, no-churn fast path, progress-based watchdog.
+- Deliverables: download/v8.2-deploy/ = EXACTLY 7 files to upload (test.html, fate-sw.js, jet.core.js, jet.api.js, jet.inject.js, jet.utils.js, jet.wasm); download/test-v8-jet-lane.html + download/fate-sw.js updated; README.md rewritten (file table + iPad foreground note).
+- Key files: scripts/jet-engine.js (v8.2 engine), scripts/fate-sw.js (v3 template), scripts/build-portal-v82.py, scripts/serve-daemon.py, scripts/sw-eval-test.js.
