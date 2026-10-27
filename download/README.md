@@ -1,17 +1,47 @@
 # Fate Portal builds
 
-## Which file should I deploy? (2026-10-27, v6)
+## Which file should I deploy? (2026-10-27, v7)
 
-**`test-v6-wisp-lane.html`** — this is the one. Deploy it as `test.html`
+**`test-v7-tiktok-feed.html`** — this is the one. Deploy it as `test.html`
 (replace the old file) and hard-refresh (iPad: hold refresh → "Reload Without
 Content Blocker" or clear the tab, then reload twice).
 
-It carries everything from v5 (2,413 arcade games + smart blob player) and
-adds the **v6 wisp lane cloud engine**. Cloud games are BACK: the Stratus
-backend returned online (partially re-provisioned) and the portal now hunts
-it through four independent paths.
+It carries everything from v6 (2.5k arcade games + 163 cloud games + wisp
+lane engine + smart blob player) and adds the **FATE TikTok page**.
 
-### v6 additions — wisp lane cloud engine
+### v7 additions — FATE TikTok
+
+A full TikTok page inside the portal, in FATE V6 style (dark glass + gold):
+
+1. **TikTok toggle** in the stats bar (cyan music note) — or press **T**.
+   The games grid / cloud view / TikTok are mutually exclusive views and
+   videos always stop when you leave the page.
+2. **Vertical snap feed** (TikTok-style): autoplay on the card in view,
+   pause off-screen, tap to pause/play, speaker icon unmutes, gradient
+   progress bar, infinite scroll for more.
+3. **Per-video overlay**: @author, caption, music title (cyan), duration +
+   region + "no watermark", and the real counts rail — likes, comments,
+   shares, plays (829.9K / 7K / 243.1K / 10.2M on the E2E test card).
+4. **Region picker**: US (default) / UK / DE / FR / JP / BR — persisted.
+5. **Search** box riding the same lanes; if TikTok's search endpoint is
+   bot-gated on your network the For You feed still works (honest error +
+   Clear button).
+6. **4 data lanes with auto-retry**: direct → allorigins → codetabs →
+   **wisp tunnel** (your v6 curl-transport over the fastest wisp lane —
+   same exit as the cloud games). The winning lane is remembered
+   (`fate_tiktok_lane_v7`). tikwm truncates responses under load sometimes,
+   so the lane ladder auto-retries once before showing an error.
+7. **Blob fallback for blocked CDNs**: if your network blocks the TikTok
+   video CDN, the video is fetched through the lanes and re-served as a
+   blob URL automatically.
+
+How it works: the feed comes from the public **tikwm** API (`ACAO:*`, no
+key), which returns no-watermark mp4s + covers + music + author + counts.
+Verified live in E2E: 8-card feed via the direct lane, autoplay + pause
+switching on scroll, unmute, tap-pause, region reloads, cloud view
+regression (163 cloud games intact), close-stops-playback.
+
+### v6 (previous) — wisp lane cloud engine
 
 1. **Real wisp (WLSP) lane sweep** — the portal now runs the same binary
    handshake the official portal uses (frame `[type][id][payload]`, control
@@ -98,7 +128,10 @@ open-in-new-tab with blob URLs).
 
 ## Build scripts
 
-- `scripts/build-portal-v6.py` — v5 → v6 (12 anchored patches; rebuilds
+- `scripts/build-portal-v7.py` — v6 → v7 (8 anchored patches; inlines
+  `scripts/tt-engine.js`; rebuilds `test-v7-tiktok-feed.html` from
+  `test-v6-wisp-lane.html`).
+- `scripts/build-portal-v6.py` — v5 → v6 (13 anchored patches; rebuilds
   `test-v6-wisp-lane.html` from `test-v5-smart-player.html`).
 - `scripts/wisp-probe.mjs` — Node wisp liveness prober (11 servers).
 - `scripts/wisp-one.mjs` / `wisp-sweep.mjs` — HTTP-over-wisp tests.
