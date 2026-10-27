@@ -194,3 +194,22 @@ Stage Summary:
 - pcesc 408 = artifact; all 9 mirrors share one dead origin, down > 40 min across all vantage points.
 - v3.1 deliverable: download/test-v3-cloud-reload.html — 27-lane sweep, ~30 s parallel self-test, dormant seed slot, persistent retry. Deploy as test.html + hard refresh.
 - If the backend ever answers a future session, scripts/hunt-catalog.js + build-portal-v3.py's seed slot capture and bake the catalog in one command each.
+
+---
+Task ID: 10
+Agent: main (Z.ai)
+Task: "There might be new cdns" — user uploaded a fresh opium-portal dump (ckv.json, loader.js 79,571 B, main.html 130 KB, main.js 736 KB + older site files). Hunt new CDNs, wire anything live into the portal.
+
+Work Log:
+- Decoded both obfuscated files with scripts/decode-uploads-v2.js (VM sandbox, instrumented eval): loader.js -> 15.8 KB payload, main.js -> 147 KB plaintext payload (scripts/out/*-payload-1-eval.js) exposing the full portal logic (_repoUrl, _fetchGmshelfGames, _fetchNewGames, GMSHELF/OPMSOURCES/GNM registries).
+- Findings: (a) Stratus mirror list UNCHANGED (same 9 cdn.* + 2 wss backups — no new cloud backends); (b) NEW static-game distribution = GitHub repos via jsDelivr: ckv index gh/%54ongSherbet/storage@main/ckv.json (games gmshelf/ckv, covers covers/*), ugs index same repo ugs.json (games bubbls/ugs-singlefile), seraph index gh/gmshelf/seraph/seraph.json, gn-math index gh/freebuisness/assets/zones.json ({HTML_URL}/{COVER_URL} placeholders); (c) _repoUrl() resolves repos relative to window.assetsBase (edge-swap mechanism); (d) two hot-patch eval channels: TongSherbet/congenialBassoon ubiquitousOctoEnigma.js (= adcash ad-monetization, skipped on purpose) and c.vipersfutbol.com/script.js (unreachable from datacenter IP, also ad-related); v.clearfieldswimming.com/OPMGTA5.liolicnuts.ro = GTA-V blocker-evasion landing pages, not CDNs.
+- Live probes: all 4 catalog indexes HTTP 200 (byte-identical to user's uploads for ckv/ugs), all 3 alternate jsDelivr edges (fastly/gcore/testingcf) 200, sample game files + covers 200 (gmshelf/ckv subwaysurfers2.html, 1v1lol2.html, bubbls/ugs-singlefile, gmshelf/seraph, freebuisness/html+covers). Catalog sizes: ckv 847, ugs 1511, seraph 501, zones 849 usable.
+- Built scripts/build-portal-v4.py -> download/test-v4-arcade-network.html (126.6 KB) on top of the v3 file: CDN_SOURCES extended with ckv/ugs/seraph/gnm (per-source transform to the portal's {name,url,img} shape; seraph/gnm ride resolveSourceUrl base+replacements), init() fetch loop upgraded for multi-edge fallback (src.urls; winning edge stored as src._gh and reused for that source's game+cover URLs) + transform hook; build stamps bumped to v4 (head comment, console marker, footer chip); v3 cloud stack untouched.
+- Fixed one bug found in E2E: seraph transform filtered entries on /placeholder/i img test (all 501 dropped) -> filter only blanks the img; seraph then contributed 223 uniques.
+- E2E via agent-browser (static server :8899, V6 gate authed hash 1prbs6n): [FATE PORTAL v4] marker, per-source logs (ckv 847/ugs 1511/seraph 501/gnm 848 fetched), 2,413 unique games after dedupe (ckv 843 + ugs 1150 + seraph 223 + gnm 197), header chip "2413 games", search + covers render from gh repos, CDN picker works on new games, Subway Surfers + 1v1.lol launched from gh/gmshelf/ckv inside the player (loader hidden, frameOpacity 1, no error), cloud view intact + honest (origin still down). node --check on all inline blocks: clean. Screenshots: scripts/verify-v4-{home,grid,grid2,grid-full,playing,game-live,cloud}.png.
+- download/README.md rewritten for v4 (deploy + verification + source table).
+
+Stage Summary:
+- "New CDNs" confirmed and shipped: a fully-live GitHub-via-jsDelivr game network (~2.4k unique games) now powers the portal's grid independent of the dead Stratus origin; cloud section keeps the complete v3 stack and self-heals when the origin returns.
+- Deliverable: download/test-v4-arcade-network.html — deploy as test.html + hard refresh; verify via footer chip "cloud build v4" and header "2413 games".
+- Key files: scripts/build-portal-v4.py, scripts/decode-uploads-v2.js, scripts/check-inline-js.js, scripts/out/main-v2-payload-1-eval.js (decoded portal source of truth).
