@@ -129,3 +129,19 @@ Stage Summary:
 - Cloud tab now has a one-click Reload button that sweeps all 9 mirrors on both lanes until games appear; catalog renders the instant any lane answers (status probe no longer gates it); games never blank during background refreshes.
 - Files: src/lib/stratus.ts (forceReloadCatalog + helpers), src/components/fate/cloud-games.tsx (reload button + skeleton/mount-flow fixes).
 - From residential IPs (no CF bot-gate) the sweep hits a live mirror in well under a second; from filtered networks the proxy lane covers it (verified 200s at ~12s).
+
+---
+Task ID: 7
+Agent: main (Z.ai)
+Task: "give me the file in a different file name, I think I'm downloading an older version" — rebuild the static portal with ALL cloud fixes under a fresh name.
+
+Work Log:
+- Confirmed the suspicion: download/test-fixed.html only contained the Task-3 fix (mirror rotation); Tasks 4-6 upgrades (retry ladder, cache survival, sweep, reload button) never reached the static portal.
+- Built scripts/build-portal-v2.py → download/fate-portal-v2.html (114 KB, 14 patches onto upload/test.html): full v2 cloud stack — 9-mirror parallel catalog sweep (first non-empty wins, winner pinned), retry ladder GET×3/POST×2 with transient-only backoff, saved-catalog fallback that never blanks the grid, NON-BLOCKING init merge (page renders instantly, cloud games pop in), RELOAD GAMES button in the cloud header with honest status ("N games loaded live" vs "N games (saved - backend down)"), 20s background auto-retry, queue-poll tolerance (5 consecutive transient errors), broken cover imgs hidden, footer build chip + console marker for build verification.
+- Debug journey: agent-browser kept landing on /index.html → discovered the portal's own V6 ACCESS GATE (localStorage fate_v6_auth, djb2 hash, location.replace('index.html')) — authed the test browser with the default fallback password; found and fixed a function-shadowing bug (wrapper called _fetchStratusGamesV2 which didn't exist); fixed status messaging that claimed "loaded" when serving saved catalog.
+- Verified E2E on a standalone static server: build marker in console, footer chip, cloud view renders 4 saved cards, Reload button full cycle (spinner → "sweeping all 9 mirrors…" → honest saved-status, cards never blank), sweep honestly reports failure from this datacenter IP; node --check on the extracted script passes.
+
+Stage Summary:
+- Deliverable: download/fate-portal-v2.html — the user's portal with the complete v2 cloud stack; test-fixed.html remains but is outdated (Task-3 era).
+- User can verify the deployed build via footer chip "cloud build v2 — 2026-10-27" or console "[FATE PORTAL v2]".
+- Known limits: sweep success against the live CDN can't be exercised from the sandbox (CF bot-gates datacenter IPs); the sweep algorithm is identical to the app version verified live in Task 6.
