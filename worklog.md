@@ -145,3 +145,32 @@ Stage Summary:
 - Deliverable: download/fate-portal-v2.html — the user's portal with the complete v2 cloud stack; test-fixed.html remains but is outdated (Task-3 era).
 - User can verify the deployed build via footer chip "cloud build v2 — 2026-10-27" or console "[FATE PORTAL v2]".
 - Known limits: sweep success against the live CDN can't be exercised from the sandbox (CF bot-gates datacenter IPs); the sweep algorithm is identical to the app version verified live in Task 6.
+
+---
+Task ID: 8
+Agent: main (Z.ai)
+Task: "cloud games couldn't find anything in all 9 mirrors, we are fucked" — diagnose the total catalog failure and ship a fix.
+
+Work Log:
+- Delivery-integrity check first: the promised test-v3-cloud-reload.html NEVER EXISTED on disk (previous session died mid-delivery); user had been testing Task-3-era test-fixed.html or fate-portal-v2.html. Fate-portal-v2.html (114 KB) confirmed to carry the full v2 stack.
+- Live diagnosis from 4 independent vantage points: (1) direct curl to all 9 mirrors -> 8 blackhole/timeout, northstreetumc CF-challenge 403; (2) same-origin proxy lane -> 502 "backend timed out" on 3 mirrors; (3) api.allorigins.win -> HTTP 522 (Cloudflare: origin TCP unreachable) and 500 passthroughs; (4) codetabs proxy -> 522 passthrough. Conclusion: the Stratus ORIGIN itself is in a hard-down window for everyone, not a user-network or client-code problem. It flaps (was fully up with 89 games in Task 4).
+- Fetched the LIVE loader.js from jsdelivr (79,571 bytes — NEW build vs Task 4's 95 KB) and beat its new obfuscation (pure numeric-array string building, zero plain strings, no Function-constructor eval) with a VM runner that instruments WebSocket/fetch and dumps defined globals. Decoded result: mirror list UNCHANGED (same 9 cdn.* + 2 wss backups), wlspServer picker unchanged, cloud gaming still rides direct HTTPS. No new backend exists upstream — nothing to repoint at.
+- Searched for a saved 89-game catalog to seed the grid (upload/*.json are the static mini-games library, not Stratus; no dumps on disk) -> none found; ran a background multi-round hunt for an up-window to grab one -> backend stayed down the whole time, no seed.
+- Built scripts/build-portal-v3.py -> download/test-v3-cloud-reload.html (122.6 KB) on top of the v2 stack:
+  * 27-lane sweep: 9 mirrors x (direct + codetabs + allorigins) parallel, first non-empty catalog wins and pins (public lanes add vantage points for flap windows + bypass local network blocks)
+  * "Check mirrors" self-test button + panel: probes all 9 mirrors on direct + both public proxies, per-mirror cells (backend UP / CF bot-gate / origin dead (HTTP 5xx) / timeout / blocked / bot-checked) + verdict line that distinguishes "your network blocks the CDN" vs "the origin is down for everyone"
+  * persistent auto-retry (~5 h at 25 s, was 20 tries) with "cloud games are back (N)" status ping + vibration when a retry lands after a dry spell
+  * build stamps: head comment FATE PORTAL BUILD v3 (2026-10-27), console [FATE PORTAL v3] marker, footer chip v3
+  * corsproxy.io lane was DROPPED after the live test caught it demanding an API key now; codetabs (verified 522-passthrough = mechanically alive) took its place
+- E2E verified with agent-browser (static server :8899, V6 gate authed with fallback password fate2026):
+  * v3 console marker + footer chip render; Reload games + Check mirrors buttons both present
+  * self-test ran live from the sandbox: honest per-mirror table (direct blocked/timeout, corsproxy API-key error caught -> led to the codetabs swap), verdict correctly stated "origin down for everyone, page keeps retrying"
+  * success path: page-level fetch stub serving a 3-game catalog on the codetabs lane -> sweep winner cdn.northstreetumc.org pinned, fate_stratus_games_v2 cache stamped (3), source=live, status "3 games loaded live", grid rendered 3 CLOUD cards, empty state hidden (screenshot scripts/verify-v3-live-catalog.png; also verify-v3-cloud-view.png, verify-v3-selftest-mid.png)
+  * node --check on the extracted full script: clean
+- Final re-probe before delivery: origin still down (proxy 502 backend-timeout, allorigins 502) — the file ships in exactly the state the user's outage demands: honest self-test + 27-lane sweep + ~5 h self-healing retry.
+
+Stage Summary:
+- Diagnosis: "all 9 mirrors found nothing" = Stratus origin hard-down window (522 from third-party proxies proves nobody can reach it), NOT a regression in the user's file — compounded by the user never actually receiving the promised v3 rename (file never existed).
+- Deliverable: download/test-v3-cloud-reload.html — full v2 stack + 27-lane sweep + mirror self-test + persistent retry + build stamps. Deploy as test.html + hard refresh.
+- README.md in download/ rewritten with deploy instructions and the outage diagnosis.
+- Key files: scripts/build-portal-v3.py (idempotent rebuild), scripts/runner-live-loader.js (new-obfuscation loader decoder), scripts/hunt-catalog.js (up-window hunter, reusable), src/ untouched this round.
