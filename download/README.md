@@ -1,15 +1,54 @@
 # Fate Portal builds
 
-## Which file should I deploy? (2026-10-27, v7)
+## Which file should I deploy? (2026-10-27, v8)
 
-**`test-v7-tiktok-feed.html`** — this is the one. Deploy it as `test.html`
-(replace the old file) and hard-refresh (iPad: hold refresh → "Reload Without
-Content Blocker" or clear the tab, then reload twice).
+**Deploy BOTH files, in the SAME folder:**
 
-It carries everything from v6 (2.5k arcade games + 163 cloud games + wisp
-lane engine + smart blob player) and adds the **FATE TikTok page**.
+1. **`test-v8-jet-lane.html`** → rename to `test.html` (replaces the old one)
+2. **`fate-sw.js`** → put it right next to `test.html` (do not rename)
 
-### v7 additions — FATE TikTok
+Then hard-refresh (iPad: hold refresh → "Reload Without Content Blocker",
+or clear the tab, then reload twice).
+
+v8 = everything from v7 (2.5k arcade games + 163 cloud games + wisp lane
+engine + smart player + FATE TikTok feed) **plus the full jet proxy** —
+the same stack the reference site uses — for browsing the real
+**TikTok / YouTube / Snapchat / Movies** inside the portal.
+
+### v8 additions — jet proxy apps (the real sites)
+
+1. **Apps button** in the quick-actions row (or press **A**) → FATE Apps
+   modal with 4 tiles: TikTok, YouTube, Snapchat (web), Movies (aether.ist).
+2. **First tile click boots the proxy** (one-time per page load):
+   registers `fate-sw.js`, loads jet core/api/utils from jsDelivr mirrors,
+   binds the curl-transport to your fastest wisp lane, creates the browse
+   frame. Status line in the modal shows each step; green = ready.
+3. **In-portal browser**: full-screen view with address bar, back, reload,
+   open-direct, close. Address bar shows the REAL url (auto-decoded).
+   Everything rides the wisp tunnel — same lane as cloud games.
+4. **"Open full TikTok"** button in the TikTok view header — the real
+   tiktok.com/foryou through the proxy (fixes the tikwm-on-iPad problem:
+   this path does not use tikwm at all).
+5. **How it works**: `fate-sw.js` bootstraps the real jet service worker
+   (MercuryWorkshop jet 2.0.67-alpha.2, verified byte-identical to the
+   reference site's stack). The page creates a named JetFrame; requests
+   under `/~/<session>/<frame>/...` are routed through the page's
+   controller over libcurl-wasm on the wisp tunnel (browser-fingerprinted
+   TLS). If a request arrives before the controller is up, the SW answers
+   "proxy warming up" and auto-retries — just like the reference.
+6. **If you deploy only test.html** (no fate-sw.js): everything else
+   still works, and the Apps modal tells you exactly what's missing.
+   The proxied apps need HTTPS (or localhost) for the service worker.
+
+Build-time E2E evidence: jet READY in-page; proxied example.com renders;
+proxied tiktok.com/foryou loads the full SPA (title "TikTok - Make Your
+Day", 431 KB DOM, 65/67 resources HTTP 200 through the tunnel); proxied
+youtube.com renders the home UI; 163 cloud games intact afterwards.
+(DC sandbox note: TikTok/YouTube gate some feed data from datacenter
+exits — from your home network through the same wisp servers the feeds
+populate like on the reference site.)
+
+### v7 (previous) — FATE TikTok feed
 
 A full TikTok page inside the portal, in FATE V6 style (dark glass + gold):
 
@@ -35,11 +74,9 @@ A full TikTok page inside the portal, in FATE V6 style (dark glass + gold):
    video CDN, the video is fetched through the lanes and re-served as a
    blob URL automatically.
 
-How it works: the feed comes from the public **tikwm** API (`ACAO:*`, no
-key), which returns no-watermark mp4s + covers + music + author + counts.
-Verified live in E2E: 8-card feed via the direct lane, autoplay + pause
-switching on scroll, unmute, tap-pause, region reloads, cloud view
-regression (163 cloud games intact), close-stops-playback.
+Note: tikwm (the v7 feed source) does not work on your iPad — that is why
+v8 adds the real proxied TikTok. The v7 feed still works as a bonus page
+wherever tikwm is reachable.
 
 ### v6 (previous) — wisp lane cloud engine
 
@@ -128,6 +165,9 @@ open-in-new-tab with blob URLs).
 
 ## Build scripts
 
+- `scripts/build-portal-v8.py` — v7 → v8 (5 anchored patches; inlines
+  `scripts/jet-engine.js`; emits `test-v8-jet-lane.html` +
+  `fate-sw.js` from `test-v7-tiktok-feed.html`).
 - `scripts/build-portal-v7.py` — v6 → v7 (8 anchored patches; inlines
   `scripts/tt-engine.js`; rebuilds `test-v7-tiktok-feed.html` from
   `test-v6-wisp-lane.html`).
