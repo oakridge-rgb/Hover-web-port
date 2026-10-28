@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0c0a09" />
+<title>FATE Arcade</title>
+<link rel="shortcut icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='800' text-anchor='middle' fill='%23050505'%3EF%3C/text%3E%3C/svg%3E" type="image/x-icon" />
+<script src="pass.js"></script>
+<script>
+/* ===== V6 ACCESS GATE (same auth as the portal — opens straight through if you're logged in) ===== */
+(function(){
+  var AUTH_KEY='fate_v6_auth';
+  function passes(){
+    if(typeof FATE_PASS==='undefined')return['fate2026'];
+    return Array.isArray(FATE_PASS)?FATE_PASS.map(String):[String(FATE_PASS)];
+  }
+  function hash(s){
+    var h=5381;
+    for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;
+    return h.toString(36);
+  }
+  function isAuthed(){
+    try{
+      var v=localStorage.getItem(AUTH_KEY);
+      return !!v&&passes().map(hash).indexOf(v)>-1;
+    }catch(e){return false}
+  }
+  if(!isAuthed()){
+    location.replace('index.html');
+  }
+})();
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="fate-games-cat.js" defer></script>
+<style>
+:root{--primary:#f59e0b;--secondary:#ef4444;--accent:#10b981;--bg-deep:#050505;--glass:rgba(0,0,0,0.55);--glass-border:rgba(255,255,255,0.1);--text:#f8fafc;--text-muted:#cbd5e1}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;min-height:100vh;overflow-x:hidden;padding-top:calc(60px + env(safe-area-inset-top,0px));-webkit-tap-highlight-color:transparent}
+.bg-image{position:fixed;inset:0;z-index:0;background:url("/img/background.png") center center/cover no-repeat}
+.bg-overlay{position:fixed;inset:0;z-index:1;background:rgba(5,5,5,0.55);backdrop-filter:blur(4px)}
+/* ---- top nav ---- */
+.nav-glass{position:fixed;top:0;left:0;right:0;z-index:50;height:calc(60px + env(safe-area-inset-top,0px));padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:rgba(5,5,5,0.6);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--glass-border)}
+.nav-inner{height:100%;max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.nav-brand{display:flex;align-items:center;gap:11px;min-width:0}
+.nav-logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(245,158,11,0.4);flex-shrink:0}
+.nav-logo span{font-weight:800;font-size:16px;color:white;font-family:"Space Grotesk",sans-serif}
+.nav-title{font-family:"Space Grotesk",sans-serif;font-size:1.05rem;font-weight:700;background:linear-gradient(135deg,#fff,#fcd34d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap}
+.nav-links{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}
+.nav-link{padding:8px 14px;border-radius:11px;font-weight:500;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:7px;transition:all .3s cubic-bezier(.4,0,.2,1);background:none;border:none;cursor:pointer;font-family:inherit;font-size:.82rem;white-space:nowrap}
+.nav-link:hover{background:rgba(245,158,11,0.1);color:#fff}
+.fm-chip{padding:7px 12px;border-radius:11px;font-size:.68rem;font-weight:700;border:1px solid rgba(148,163,184,.25);white-space:nowrap;background:rgba(0,0,0,0.4);color:#94a3b8}
+.panic-btn{padding:8px 14px;border-radius:11px;background:linear-gradient(135deg,#dc2626,#991b1b);color:white;font-weight:700;font-size:.78rem;border:none;cursor:pointer;display:flex;align-items:center;gap:7px;box-shadow:0 4px 18px rgba(220,38,38,0.4);transition:all .3s ease;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.panic-btn:hover{transform:scale(1.05);box-shadow:0 8px 28px rgba(220,38,38,0.6)}
+/* ---- hero ---- */
+.main{position:relative;z-index:4;max-width:1200px;margin:0 auto;padding:26px 20px 60px}
+.page-header{text-align:center;margin-bottom:1.4rem}
+.page-header h1{font-family:"Space Grotesk",sans-serif;font-size:clamp(2rem,7vw,3.2rem);font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#fff 0%,#fcd34d 50%,#f59e0b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.page-header p{color:var(--text-muted);margin-top:.4rem;font-size:.92rem}
+.page-header p b{color:#fcd34d}
+.search-wrap{max-width:640px;margin:0 auto 1.1rem;position:relative}
+.search-input{width:100%;padding:15px 44px 15px 22px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;color:var(--text);font-size:1rem;outline:none;transition:all .3s ease;font-family:inherit}
+.search-input:focus{border-color:rgba(245,158,11,0.4);box-shadow:0 0 0 3px rgba(245,158,11,0.1),0 10px 40px rgba(245,158,11,0.1)}
+.search-input::placeholder{color:#64748b}
+.search-icon{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:#64748b;pointer-events:none;font-size:1rem}
+/* ---- toolbar ---- */
+.toolbar{display:flex;gap:.55rem;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:1rem}
+.tb-chip{padding:9px 16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .25s ease;font-family:inherit;display:flex;align-items:center;gap:7px}
+.tb-chip:hover{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#fff}
+.tb-chip.active{background:linear-gradient(135deg,var(--primary),var(--secondary));border-color:transparent;color:white;box-shadow:0 4px 15px rgba(245,158,11,0.3)}
+.tb-select{padding:9px 13px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;outline:none}
+.tb-select:focus{border-color:rgba(245,158,11,0.4)}
+/* ---- pills ---- */
+.pills{display:flex;gap:.5rem;overflow-x:auto;padding:.5rem 2px;margin-bottom:.55rem;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch}
+.pills::-webkit-scrollbar{display:none}
+.pill{padding:8px 16px;border-radius:30px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);font-size:.8rem;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .3s ease;font-family:inherit}
+.pill:hover{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#fff}
+.pill.active{background:linear-gradient(135deg,var(--primary),var(--secondary));border-color:transparent;color:white;box-shadow:0 4px 15px rgba(245,158,11,0.3)}
+.pill small{opacity:.65;font-weight:700;margin-left:4px}
+.kinds{display:flex;gap:.45rem;overflow-x:auto;padding:.15rem 2px .5rem;margin-bottom:.9rem;scrollbar-width:none}
+.kinds::-webkit-scrollbar{display:none}
+.kind{padding:6px 13px;border-radius:20px;font-size:.72rem;font-weight:700;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);cursor:pointer;white-space:nowrap;font-family:inherit;text-transform:uppercase;letter-spacing:.5px}
+.kind.active{background:rgba(16,185,129,0.18);border-color:rgba(16,185,129,0.5);color:#6ee7b7}
+/* ---- count + grid ---- */
+.count-line{text-align:center;color:var(--text-muted);font-size:.8rem;margin-bottom:1rem}
+.count-line b{color:#fcd34d}
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:1rem}
+@media(min-width:640px){.game-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}}
+@media(min-width:1024px){.game-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
+.game-card{position:relative;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:18px;overflow:hidden;transition:all .35s cubic-bezier(.4,0,.2,1)}
+.game-card:hover{transform:translateY(-6px) scale(1.02);border-color:rgba(245,158,11,0.35);box-shadow:0 18px 36px rgba(0,0,0,0.45),0 0 34px rgba(245,158,11,0.1)}
+.launch{display:block;width:100%;background:none;border:none;padding:0;cursor:pointer;text-align:left;font-family:inherit;color:inherit}
+.img-wrap{position:relative;aspect-ratio:1;overflow:hidden;background:linear-gradient(135deg,#15131f,#0a0912)}
+.game-img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.4,0,.2,1);display:block}
+.game-card:hover .game-img{transform:scale(1.08)}
+.img-fallback{position:absolute;inset:0;display:grid;place-items:center;font:800 2rem "Space Grotesk",sans-serif;color:rgba(245,158,11,0.5);background:linear-gradient(135deg,#15131f,#0a0912)}
+.src-badge{position:absolute;top:8px;left:8px;padding:3px 9px;border-radius:20px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;background:rgba(5,5,5,0.72);border:1px solid rgba(255,255,255,0.12);color:#fcd34d;backdrop-filter:blur(8px);max-width:calc(100% - 52px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.play-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,5,5,0.85) 0%,transparent 55%);opacity:0;transition:opacity .3s ease;display:flex;align-items:flex-end;justify-content:center;padding-bottom:.8rem}
+.game-card:hover .play-overlay{opacity:1}
+.play-btn{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:white;font-size:1rem;box-shadow:0 8px 25px rgba(245,158,11,0.4)}
+.fav-btn{position:absolute;top:7px;right:7px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s ease;z-index:3;backdrop-filter:blur(10px);font-size:.85rem}
+.fav-btn:hover{background:rgba(239,68,68,0.25);border-color:rgba(239,68,68,0.4);color:#ef4444;transform:scale(1.12)}
+.fav-btn.active{background:rgba(239,68,68,0.3);border-color:rgba(239,68,68,0.5);color:#ef4444}
+.game-info{padding:10px 12px;background:rgba(0,0,0,0.3)}
+.game-name{font-weight:600;font-size:.82rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.game-src{font-size:.64rem;text-align:center;color:#64748b;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ---- load more / empty ---- */
+.load-more-wrap{text-align:center;padding:2.2rem 1rem;display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
+.load-more-btn,.auto-btn{padding:13px 28px;border-radius:30px;background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(239,68,68,0.2));border:1px solid rgba(245,158,11,0.3);color:var(--text);font-weight:600;cursor:pointer;transition:all .3s ease;font-family:inherit;font-size:.85rem}
+.load-more-btn:hover,.auto-btn:hover{background:linear-gradient(135deg,rgba(245,158,11,0.3),rgba(239,68,68,0.3));transform:translateY(-2px)}
+.auto-btn[aria-pressed="true"]{background:linear-gradient(135deg,rgba(16,185,129,0.25),rgba(5,150,105,0.25));border-color:rgba(16,185,129,0.5);color:#6ee7b7}
+.empty{text-align:center;padding:4rem 2rem;color:var(--text-muted)}
+.empty b{display:block;font-size:1.1rem;color:#fcd34d;margin-bottom:.5rem;font-family:"Space Grotesk",sans-serif}
+/* ---- player overlay ---- */
+.hidden{display:none!important}
+#fatePlayer{position:fixed;inset:0;z-index:9998;display:flex;flex-direction:column;background:#050505}
+.fp-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(12,10,9,0.96);border-bottom:1px solid rgba(245,158,11,0.3);padding-top:calc(10px + env(safe-area-inset-top,0px));flex-shrink:0}
+.fp-btn{min-width:40px;height:40px;padding:0 12px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s ease;font-size:.95rem;font-family:inherit;white-space:nowrap}
+.fp-btn:hover{background:rgba(245,158,11,0.18);border-color:rgba(245,158,11,0.45);color:#fcd34d}
+.fp-btn.hot{background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.4);color:#fcd34d;font-weight:800}
+.fp-btn:disabled{opacity:.4;cursor:wait}
+.fp-title{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.fp-name{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fp-status{font-size:.66rem;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fp-status.err{color:#f87171}
+.fp-status.ok{color:#4ade80}
+.fp-wrap{flex:1;position:relative;background:#000;min-height:0}
+.fp-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;background:#000}
+.fp-spin{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(5,5,5,0.96)}
+.fp-spin.hide{display:none}
+.fp-ring{width:44px;height:44px;border:3px solid rgba(245,158,11,0.2);border-top-color:#f59e0b;border-radius:50%;animation:fspin 1s linear infinite}
+@keyframes fspin{to{transform:rotate(360deg)}}
+.fp-spin b{font-family:"Space Grotesk",sans-serif;color:#fcd34d;font-size:.95rem}
+.fp-spin span{color:#94a3b8;font-size:.75rem;max-width:420px;text-align:center;line-height:1.5}
+.fp-err{position:absolute;inset:0;z-index:6;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(5,5,5,0.97);padding:2rem;text-align:center}
+.fp-err.show{display:flex}
+.fp-err b{color:#f87171;font-family:"Space Grotesk",sans-serif;font-size:1.05rem}
+.fp-err p{color:#94a3b8;font-size:.8rem;max-width:460px;line-height:1.55}
+.fp-err .row{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;margin-top:.4rem}
+.fp-err button{padding:11px 20px;border-radius:12px;border:1px solid rgba(245,158,11,0.4);background:rgba(245,158,11,0.12);color:#fcd34d;font-weight:700;font-size:.82rem;cursor:pointer;font-family:inherit}
+.fp-err button:hover{background:rgba(245,158,11,0.25)}
+@media(max-width:640px){
+  .fp-btn span.blabel{display:none}
+  .fp-btn{padding:0 10px}
+  .main{padding:20px 14px 50px}
+}
+</style>
+</head>
+<body>
+<div class="bg-image"></div>
+<div class="bg-overlay"></div>
+
+<nav class="nav-glass"><div class="nav-inner">
+  <div class="nav-brand">
+    <div class="nav-logo"><span>F</span></div>
+    <div class="nav-title">FATE Arcade</div>
+  </div>
+  <div class="nav-links">
+    <span class="fm-chip" id="fateGxJetChip">tunnel: idle</span>
+    <a class="nav-link" href="browser.html" title="FATE Browser">Browser</a>
+    <a class="nav-link" href="movies.html" title="Dedicated FATE movies page">Movies</a>
+    <a class="nav-link" href="test.html" title="Back to the FATE portal">Portal</a>
+    <button class="panic-btn" onclick="location.replace('index.html')" title="Emergency exit"><span>Panic</span></button>
+  </div>
+</div></nav>
+
+<main class="main">
+  <div class="page-header">
+    <h1>FATE Arcade</h1>
+    <p id="fateHeroSub">Loading the vault…</p>
+  </div>
+
+  <div class="search-wrap">
+    <input id="fateSearch" class="search-input" type="search" placeholder="Search 35,000+ games…" autocomplete="off" spellcheck="false" />
+    <span class="search-icon">⌕</span>
+  </div>
+
+  <div class="toolbar">
+    <button class="tb-chip active" data-view="all" id="fateViewAll">All games</button>
+    <button class="tb-chip" data-view="favorites" id="fateViewFav">♥ Favorites</button>
+    <button class="tb-chip" data-view="recent" id="fateViewRecent">⟲ Recent</button>
+    <button class="tb-chip" id="fateRandom">⚄ Random</button>
+    <select class="tb-select" id="fateSort" title="Sort">
+      <option value="az">A → Z</option>
+      <option value="za">Z → A</option>
+      <option value="source">By library</option>
+    </select>
+  </div>
+
+  <div class="pills" id="fateSources"></div>
+  <div class="kinds" id="fateKinds"></div>
+
+  <div class="count-line" id="fateCount">waking up…</div>
+  <div class="game-grid" id="fateGrid"></div>
+  <div class="empty hidden" id="fateEmpty"></div>
+  <div class="load-more-wrap">
+    <button class="load-more-btn hidden" id="fateMore">Load more</button>
+    <button class="auto-btn" id="fateAuto" aria-pressed="true" title="Keep loading as you scroll">Auto-load: on</button>
+  </div>
+</main>
+
+<!-- ===== PLAYER OVERLAY ===== -->
+<div id="fatePlayer" class="hidden">
+  <div class="fp-bar">
+    <button class="fp-btn" id="fatePBack" title="Back to library">←</button>
+    <div class="fp-title">
+      <div class="fp-name" id="fatePName">—</div>
+      <div class="fp-status" id="fatePStatus">idle</div>
+    </div>
+    <button class="fp-btn hot" id="fatePTunnel" title="Retry through the FATE wisp tunnel (jet)">⚡<span class="blabel">Tunnel</span></button>
+    <button class="fp-btn" id="fatePReload" title="Reload">⟳</button>
+    <button class="fp-btn" id="fatePNewtab" title="Open in a new tab">↗</button>
+    <button class="fp-btn" id="fatePFull" title="Fullscreen">⛶</button>
+  </div>
+  <div class="fp-wrap" id="fatePWrap">
+    <iframe id="fateFrameDirect" title="FATE game" allow="fullscreen; autoplay; gamepad; clipboard-write" allowfullscreen referrerpolicy="no-referrer"></iframe>
+    <iframe id="fateFrameJet" title="FATE game (tunnel)" class="hidden" allow="fullscreen; autoplay; gamepad; clipboard-write" allowfullscreen referrerpolicy="no-referrer"></iframe>
+    <div class="fp-spin" id="fatePSpin"><div class="fp-ring"></div><b id="fatePSpinTitle">Loading…</b><span id="fatePSpinSub">fetching the game through the fastest route</span></div>
+    <div class="fp-err" id="fatePErr">
+      <b id="fatePErrTitle">This game would not load</b>
+      <p id="fatePErrMsg"></p>
+      <div class="row">
+        <button id="fatePErrRetry">⟳ Retry</button>
+        <button id="fatePErrTunnel">⚡ Try the tunnel</button>
+        <button id="fatePErrNewtab">↗ New tab</button>
+        <button id="fatePErrClose">← Back to library</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== FATE ARCADE WISP LANE HOST (shared fate_wisp_lane_v6 cache with the portal) ===== */
+function _lsGet(k){ try{ return JSON.parse(localStorage.getItem(k) || 'null'); }catch(e){ return null; } }
+function _lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+const FATE_WISP_SERVERS = [
+  'cdn.northstreetumc.org','cdn.vipersfutbol.com','cdn.pcesc.org','cdn.kcchallengevbc.com',
+  'cdn.slcbmooc.org','cdn.topstargym.net','cdn.goaplytexas.org','cdn.clearfieldswimming.com',
+  'cdn.richardacademy.cfd','wss://athollcottage.com/connection/','wss://api.personalloanonline.net/ws/'
+];
+const FATE_ASSET_BASES = [
+  'https://cdn.jsdelivr.net/gh/%54ongSherbet/storage@main/',
+  'https://quantil.jsdelivr.net/gh/%54ongSherbet/storage@main/',
+  'https://fastly.jsdelivr.net/gh/%54ongSherbet/storage@main/',
+  'https://testingcf.jsdelivr.net/gh/%54ongSherbet/storage@main/',
+  'https://gcore.jsdelivr.net/gh/%54ongSherbet/storage@main/',
+  'https://originfastly.jsdelivr.net/gh/%54ongSherbet/storage@main/',
+  'https://cdn.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://fastly.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://gcore.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://cdn.statically.io/gh/TongSherbet/storage/main/',
+  'https://rawcdn.githack.com/TongSherbet/storage/main/',
+  'https://raw.githack.com/TongSherbet/storage/main/',
+  'https://raw.githubusercontent.com/TongSherbet/storage/main/',
+  'https://cdn.staticdeliver.com/gh/TongSherbet/storage@main/'
+];
+const FATE_WISP_LANE_KEY = 'fate_wisp_lane_v6';
+window.FATE_WISP_RESULTS = [];
+
+function fateWispUrl(s){ return s.includes('://') ? s : ('wss://' + s + '/'); }
+
+/* exact port of the working portal's testWlspDomain() — binary wisp handshake */
+function fateTestWlsp(server, timeoutMs){
+  return new Promise(resolve => {
+    let ws;
+    try{ ws = new WebSocket(fateWispUrl(server)); }catch(e){ return resolve(null); }
+    ws.binaryType = 'arraybuffer';
+    const id = (Math.floor(4294967294 * Math.random()) + 1) >>> 0;
+    let gotEcho = false, t0 = 0;
+    const finish = v => {
+      clearTimeout(timer);
+      try{ ws.onmessage = ws.onerror = ws.onclose = null; ws.close(); }catch(e){}
+      resolve(v);
+    };
+    const timer = setTimeout(() => finish(null), timeoutMs || 4500);
+    ws.onerror = () => finish(null);
+    ws.onclose = () => { if(!gotEcho) finish(null); };
+    ws.onmessage = evt => {
+      const d = evt.data;
+      if(!(d instanceof ArrayBuffer) || d.byteLength < 5) return finish(null);
+      const dv = new DataView(d);
+      const type = dv.getUint8(0), sid = dv.getUint32(1, true);
+      if(gotEcho){ if(sid === id) finish(Math.round(performance.now() - t0)); return; }
+      if(sid === 0){
+        if(type === 5) ws.send(new Uint8Array([5,0,0,0,0,2,1]));
+        else if(type === 3){
+          const host = '127.0.0.1';
+          const hb = new TextEncoder().encode(host);
+          const frame = new Uint8Array([1,0,0,0,0,1,69,0,...hb]);
+          new DataView(frame.buffer).setUint32(1, id, true);
+          gotEcho = true; t0 = performance.now();
+          try{ ws.send(frame); }catch(e){ return finish(null); }
+        }
+      }
+    };
+  });
+}
+
+async function fateWispSweep(){
+  const cached = _lsGet(FATE_WISP_LANE_KEY);
+  if(cached && cached.url && Date.now() - cached.t < 10 * 60 * 1000){
+    window.wlspServer = cached.url; /* trust briefly; still re-verify below */
+  }
+  const probes = FATE_WISP_SERVERS.map(async s => ({ server: s, rtt: await fateTestWlsp(s, 4500) }));
+  window.FATE_WISP_RESULTS = await Promise.all(probes);
+  const alive = window.FATE_WISP_RESULTS.filter(r => r.rtt !== null).sort((a, b) => a.rtt - b.rtt);
+  if(alive.length){
+    window.wlspServer = fateWispUrl(alive[0].server);
+    window.WlspPing = alive[0].rtt;
+    window.WlspIsBackup = alive[0].server.includes('://');
+    _lsSet(FATE_WISP_LANE_KEY, { url: window.wlspServer, t: Date.now() });
+  }
+  return window.FATE_WISP_RESULTS;
+}
+
+/* curl-transport (libcurl-wasm) over the winning wisp lane */
+async function fateLoadTransport(){
+  if(window.FATE_TRANSPORT) return window.FATE_TRANSPORT;
+  if(!window.wlspServer || !window.FATE_WISP_RESULTS.some(r => r.rtt !== null)) await fateWispSweep();
+  if(!window.wlspServer) return null;
+  for(const base of FATE_ASSET_BASES){
+    try{
+      const mod = await import(base + 'curl/index.mjs');
+      const C = mod.default || mod.LibcurlClient;
+      if(!C) continue;
+      const t = new C({ wisp: window.wlspServer });
+      for (let _ti = 0; _ti < 150; _ti++){
+        try { await t.init(); break; }
+        catch (_e){
+          if (!String(_e).includes('wasm not loaded') || _ti === 149) throw _e;
+          await new Promise(_r => setTimeout(_r, 20));
+        }
+      }
+      window.FATE_TRANSPORT = t;
+      window.FATE_ASSETS_BASE_USED = base;
+      console.log('[FATE ARCADE] wisp transport READY - lane', window.wlspServer);
+      return t;
+    }catch(e){ console.warn('[FATE ARCADE] transport base failed:', base, (e && e.message) || e); }
+  }
+  console.warn('[FATE ARCADE] no asset base could serve curl/index.mjs');
+  return null;
+}
+/* ===== END WISP LANE HOST ===== */
+</script>
+<script>
+/* ===== FATE PORTAL v8.2 JET LANE ENGINE (self-healing boot, reference recipe) ===== */
+console.log('%c[FATE ARCADE] jet proxy engine loaded (self-healing boot)', 'color:#38bdf8;font-weight:bold;');
+
+/* ---- jet asset edges (CDN fallback; local files win when hosted next to the portal) ---- */
+const FATE_JET_EDGES = [
+  'https://cdn.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://fastly.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://gcore.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://testingcf.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://quantil.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://cdn.statically.io/gh/TongSherbet/storage/main/',
+  'https://raw.githack.com/TongSherbet/storage/main/'
+];
+
+let FATE_JET = null;
+let FATE_FRAME = null; /* JetFrame wrapper around the tunnel iframe */
+let FATE_JET_STATE = 'idle'; /* idle | booting | ready | sw-failed | transport-failed | controller-failed */
+let FATE_JET_ERR = '';
+let FATE_JET_BOOTING = null;
+let FATE_HAS_UTILS = false;
+const FATE_ASSET_SRC = {}; /* file -> 'local' | 'local/sj' | 'mirror n' */
+const fateSleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* ---- boot stage pill (visible at top of page during boot — no silent spinners) ---- */
+let FATE_STAGE_AT = 0, FATE_STAGE_HINTED = false;
+function fateJetStage(msg, kind){
+  try {
+    FATE_STAGE_AT = Date.now(); /* progress marker for the boot watchdog */
+    let p = document.getElementById('fateJetStage');
+    if (!p){
+      p = document.createElement('div'); p.id = 'fateJetStage';
+      p.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:2147483000;background:rgba(12,10,9,.93);border:1px solid rgba(245,158,11,.45);color:#fcd34d;font:600 12px/1.35 system-ui,sans-serif;padding:.5rem .85rem;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.5);max-width:92vw;text-align:center;display:none;cursor:pointer;';
+      document.body.appendChild(p);
+    }
+    if (!msg){ p.style.display = 'none'; p.onclick = null; return; }
+    FATE_STAGE_AT = Date.now(); FATE_STAGE_HINTED = false;
+    p.style.display = 'block';
+    p.style.borderColor = kind === 'err' ? 'rgba(248,113,113,.65)' : kind === 'ok' ? 'rgba(74,222,128,.55)' : 'rgba(245,158,11,.45)';
+    p.style.color = kind === 'err' ? '#f87171' : kind === 'ok' ? '#4ade80' : '#fcd34d';
+    p.textContent = 'jet \u25b8 ' + msg;
+    p.onclick = kind === 'err' ? () => { try { fateJetBoot(); } catch(e){} } : null;
+    if (kind !== 'err'){
+      setTimeout(() => {
+        if (!FATE_STAGE_HINTED && Date.now() - FATE_STAGE_AT >= 7800 && p.style.display === 'block' && !FATE_STAGE_HINTED){
+          FATE_STAGE_HINTED = true;
+          p.textContent += ' \u2014 slow network/device, still working\u2026 (stuck over 30s? tap retry)';
+        }
+      }, 8000);
+    }
+  } catch(e){}
+}
+
+/* ---- device-fingerprint codec (verbatim port of the official portal's) ---- */
+function fateJetFingerprint(){
+  return [location.origin.replace(/^\w+:\/\/|:\d+$/g, ''), (new Date).getUTCMonth(),
+    navigator.hardwareConcurrency, navigator.deviceMemory, navigator.platform,
+    navigator.userAgent.replace(/[\d.]+/g, ''), (new Date).getTimezoneOffset()]
+    .join().split('').reduce(((e, t) => Math.imul(e ^ t.charCodeAt(), 16777619)), 2166136261);
+}
+const FATE_JET_CODEC = {
+  encode: e => {
+    if (!e) return e;
+    let t = globalThis.__jck ?? Object.defineProperty(globalThis, '__jck', { value: fateJetFingerprint() }).__jck;
+    const r = e.startsWith('https://') && e.length > 8, o = (new TextEncoder).encode(r ? e.slice(8) : e);
+    for (let e, r = 0; r < o.length; r++, e >>>= 8) 3 & r || (t ^= t << 13, t ^= t >>> 17, t ^= t << 5, e = t), o[r] ^= e;
+    let n = '';
+    for (let e = 0; e < o.length; e += 8192) n += String.fromCharCode.apply(null, o.subarray(e, e + 8192));
+    return (r ? '' : 'Z0') + btoa(n).slice(0, (4 * o.length + 2) / 3 | 0).replace(/Z/g, 'Zz').replace(/\+/g, 'Zp').replace(/\//g, 'Zs');
+  },
+  decode: e => {
+    if (!e) return e;
+    let t = globalThis.__jck ?? Object.defineProperty(globalThis, '__jck', { value: fateJetFingerprint() }).__jck;
+    const r = e.startsWith('Z0'), o = atob(e.slice(2 * r).replace(/Zp/g, '+').replace(/Zs/g, '/').replace(/Zz/g, 'Z')), n = new Uint8Array(o.length);
+    for (let e, r = 0; r < n.length; r++, e >>>= 8) 3 & r || (t ^= t << 13, t ^= t >>> 17, t ^= t << 5, e = t), n[r] = o.charCodeAt(r) ^ e;
+    return (r ? '' : 'https://') + new TextDecoder('utf-8', { ignoreBOM: true }).decode(n);
+  }
+};
+
+/* ---- asset resolution: local flat -> local /sj/ -> CDN mirror ladder ---- */
+function fateJetCandidates(file){
+  const list = [new URL(file, location.href).href];
+  try { list.push(new URL('sj/' + file, location.href).href); } catch(e){}
+  for (const b of FATE_JET_EDGES) list.push(b + 'sj/' + file);
+  return list;
+}
+function fateJetLabel(i){ return i === 0 ? 'local' : i === 1 ? 'local/sj' : 'mirror ' + (i - 1); }
+async function fateJetProbe(url){
+  try {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), 5000);
+    const r = await fetch(url, { cache: 'no-store', signal: ac.signal });
+    clearTimeout(t);
+    if (!r.ok) return false;
+    const ct = (r.headers.get('content-type') || '').toLowerCase();
+    if (ct.includes('text/html')) return false; /* soft-404 guard */
+    if (r.body && r.body.getReader){ try { const rd = r.body.getReader(); await rd.read(); await rd.cancel(); } catch(e){} }
+    return true;
+  } catch(e){ return false; }
+}
+async function fateLoadScript(url){
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    const to = setTimeout(() => rej(new Error('timeout loading ' + url)), 15000);
+    s.src = url; s.async = false;
+    s.onload = () => { clearTimeout(to); res(); };
+    s.onerror = () => { clearTimeout(to); rej(new Error('failed to load ' + url)); };
+    document.head.appendChild(s);
+  });
+}
+async function fateJetLoadJs(file){
+  const cands = fateJetCandidates(file);
+  /* local-first fast path: when hosted next to the portal, skip the mirror fan-out */
+  for (let i = 0; i < Math.min(2, cands.length); i++){
+    if (await fateJetProbe(cands[i])){
+      try { await fateLoadScript(cands[i]); FATE_ASSET_SRC[file] = fateJetLabel(i); return cands[i]; }
+      catch(e){ /* local file broken — fall through to mirror ladder */ }
+    }
+  }
+  const probes = await Promise.all(cands.map(u => fateJetProbe(u)));
+  const order = cands.map((u, i) => [u, probes[i], i]).sort((a, b) => (b[1] - a[1]) || (a[2] - b[2])).map(x => x[0]);
+  for (const u of order){
+    try { await fateLoadScript(u); FATE_ASSET_SRC[file] = fateJetLabel(cands.indexOf(u)); return u; }
+    catch(e){ /* next candidate */ }
+  }
+  throw new Error('could not load ' + file + ' from any source');
+}
+async function fateJetResolveUrl(file){
+  const cands = fateJetCandidates(file);
+  for (let i = 0; i < Math.min(2, cands.length); i++){
+    if (await fateJetProbe(cands[i])){ FATE_ASSET_SRC[file] = fateJetLabel(i); return cands[i]; }
+  }
+  const probes = await Promise.all(cands.map(u => fateJetProbe(u)));
+  for (let i = 0; i < cands.length; i++){
+    if (probes[i]){ FATE_ASSET_SRC[file] = fateJetLabel(i); return cands[i]; }
+  }
+  FATE_ASSET_SRC[file] = 'unprobed';
+  return cands[0]; /* last resort guess */
+}
+
+/* ---- SW recovery toolkit (ported from the official portal's loader) ---- */
+function fateSwSoftReload(){
+  try { if (sessionStorage.fateJetSoft) return false; sessionStorage.fateJetSoft = '1'; } catch(e){ return false; }
+  location.reload(); return true;
+}
+async function fateSwReset(){
+  try { if (sessionStorage.fateJetReset) return false; sessionStorage.fateJetReset = '1'; } catch(e){ return false; }
+  console.warn('[FATE ARCADE] resetting service workers (unregister all + reload)');
+  try { const regs = await Promise.race([
+    navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))),
+    fateSleep(2000)
+  ]); } catch(e){}
+  location.reload();
+  return true;
+}
+async function fateSwAlive(reg, rounds){
+  const n = rounds || 3;
+  for (let i = 0; i < n; i++){
+    const ac = new AbortController(); const t = setTimeout(() => ac.abort(), 1500);
+    try {
+      const r = await fetch(new URL('__sw_alive', reg.scope), { cache: 'no-store', signal: ac.signal });
+      if ((await r.text()) === 'true') return true;
+    } catch(e){} finally { clearTimeout(t); }
+    await fateSleep(150);
+  }
+  return false;
+}
+
+async function fateJetSwStart(){
+  if (!('serviceWorker' in navigator)) throw new Error('service workers unsupported');
+  if (location.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(location.hostname)) throw new Error('https required (service workers)');
+  const swUrl = new URL('fate-sw.js', location.href).href;
+  /* FAST PATH: page already controlled by our SW — no register()/update() churn */
+  const ctl = navigator.serviceWorker.controller;
+  if (ctl && /fate-sw\.js$/.test(ctl.scriptURL)){
+    fateJetStage('checking service worker\u2026');
+    const reg = await navigator.serviceWorker.getRegistration().catch(() => null);
+    if (reg){
+      if (await fateSwAlive(reg)) { try { delete sessionStorage.fateJetSoft; } catch(e){} return ctl; }
+      fateJetStage('sw slow to answer \u2014 continuing (routing self-heals)\u2026');
+      try { delete sessionStorage.fateJetSoft; } catch(e){}
+      return ctl; /* NON-FATAL: handshake + warming retries cover the gap */
+    }
+  }
+  fateJetStage('registering service worker\u2026');
+  let reg;
+  try {
+    reg = await Promise.race([
+      navigator.serviceWorker.register(swUrl, { scope: './', updateViaCache: 'none' }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('registration timed out')), 20000))
+    ]);
+  } catch(e){ throw new Error('sw register failed: ' + (e.message || e)); }
+  if (!reg.active){
+    fateJetStage('activating service worker\u2026');
+    await Promise.race([
+      new Promise(res => {
+        const w = reg.installing || reg.waiting;
+        if (w) w.addEventListener('statechange', function(){ if (this.state === 'activated') res(); });
+        reg.addEventListener('updatefound', () => { const nw = reg.installing; nw && nw.addEventListener('statechange', function(){ if (this.state === 'activated') res(); }); });
+      }),
+      new Promise((res, rej) => setTimeout(() => rej(new Error('activate timeout')), 15000))
+    ]).catch(e => { throw new Error('sw not active: ' + (e.message || e)); });
+  }
+  if (!navigator.serviceWorker.controller){
+    fateJetStage('claiming the page\u2026');
+    try { (reg.active || reg.waiting || reg.installing).postMessage({ type: 'FATE:claim' }); } catch(e){}
+    const changed = new Promise(r => navigator.serviceWorker.addEventListener('controllerchange', r, { once: true }));
+    const redundant = new Promise(r => {
+      const w = reg.installing || reg.waiting;
+      if (w) w.addEventListener('statechange', function(){ if (this.state === 'redundant') r(); });
+    });
+    await Promise.race([changed, redundant, fateSleep(8000)]);
+  }
+  if (!navigator.serviceWorker.controller){
+    const stillInstalling = !!(reg.installing || reg.waiting);
+    if (stillInstalling) throw new Error('service worker is still installing (slow network) \u2014 wait a moment, then tap retry');
+    if (fateSwSoftReload()) return new Promise(() => {});
+    if (await fateSwReset()) return new Promise(() => {});
+    throw new Error('page never came under service worker control \u2014 reload the page once more');
+  }
+  fateJetStage('checking service worker\u2026');
+  if (!await fateSwAlive(reg)){
+    console.warn('[FATE ARCADE] sw_alive probe failed \u2014 continuing; routing self-heals');
+    fateJetStage('sw warming \u2014 continuing\u2026');
+  }
+  try { delete sessionStorage.fateJetSoft; } catch(e){}
+  return navigator.serviceWorker.controller;
+}
+
+function fateJetMakePlugins(){
+  const plugs = [];
+  if (!FATE_HAS_UTILS || !window.$jetUtils) return plugs;
+  try {
+    plugs.push(new $jetUtils.EventHandlerPlugin());
+    plugs.push(new $jetUtils.LinkHandlerPlugin(href => {
+      try { if (href && /^https?:/i.test(href)) window.open(href, '_blank', 'noopener'); } catch(e){}
+    }));
+    plugs.push(new $jetUtils.UrlWatcherPlugin(href => {
+      try {
+        const st = document.getElementById('fatePStatus');
+        if (st && href && document.getElementById('fateFrameJet') && !document.getElementById('fateFrameJet').classList.contains('hidden')){
+          st.textContent = 'tunnel \u25b8 ' + href;
+        }
+      } catch(e){}
+    }));
+    plugs.push(new $jetUtils.HttpCachePlugin());
+  } catch(e){ console.warn('[FATE ARCADE] utils plugins unavailable:', e); }
+  return plugs;
+}
+
+/* memoized transport getter — avoids duplicate concurrent wisp sweeps */
+async function fateGetTransport(){
+  if (window.FATE_TRANSPORT) return window.FATE_TRANSPORT;
+  if (fateGetTransport._p) return fateGetTransport._p;
+  fateGetTransport._p = (async () => {
+    try { return await fateLoadTransport(); }
+    finally { delete fateGetTransport._p; }
+  })();
+  return fateGetTransport._p;
+}
+
+async function fateJetBoot(){
+  if (FATE_JET_STATE === 'ready') return FATE_JET;
+  if (FATE_JET_BOOTING) return FATE_JET_BOOTING;
+  FATE_JET_STATE = 'booting'; FATE_JET_ERR = '';
+  fatePaintChip(); fateJetStage('starting boot\u2026');
+  FATE_JET_BOOTING = (async () => {
+    try {
+      await fateJetSwStart();
+      if (!navigator.serviceWorker.controller) return null; /* page reloading */
+    } catch(e){
+      FATE_JET_STATE = 'sw-failed'; FATE_JET_ERR = String(e.message || e);
+      FATE_JET_BOOTING = null; fatePaintChip(); fateJetStage('service worker failed \u2014 tap to retry', 'err'); return null;
+    }
+    let coreUrl = null;
+    try {
+      fateJetStage('loading jet files\u2026');
+      fateJetStage('loading jet.core.js\u2026');
+      coreUrl = await fateJetLoadJs('jet.core.js');   /* defines $jet (must load first) */
+      const apiP = fateJetLoadJs('jet.api.js');       /* defines $jetController (needs $jet) */
+      fateJetStage('loading jet.api.js\u2026');
+      /* utils MUST load after api: it destructures globalThis.$jetController at eval time */
+      const utilsP = apiP.then(() => fateJetLoadJs('jet.utils.js')).catch(() => {}); /* optional */
+      await apiP;
+      if (typeof $jetController === 'undefined') throw new Error('jet.api.js did not define $jetController');
+      const [injectUrl, wasmUrl] = await Promise.all([
+        fateJetResolveUrl('jet.inject.js'),
+        fateJetResolveUrl('jet.wasm')
+      ]);
+      try { await utilsP; } catch(e){}
+      FATE_HAS_UTILS = typeof window.$jetUtils !== 'undefined';
+      fateJetStage('connecting wisp tunnel\u2026');
+      const transport = await fateGetTransport();
+      if (!transport){
+        FATE_JET_STATE = 'transport-failed'; FATE_JET_ERR = 'wisp tunnel transport unavailable (no alive lane)';
+        FATE_JET_BOOTING = null; fatePaintChip(); fateJetStage('wisp tunnel down \u2014 tap to retry', 'err'); return null;
+      }
+      fateJetStage('starting jet controller\u2026');
+      const prefix = new URL('./~/', location.href).pathname;
+      FATE_JET = new $jetController.Controller({
+        serviceworker: navigator.serviceWorker.controller,
+        transport: transport,
+        jetConfig: { maskedfiles: ['jet.inject.js', 'jet.wasm.js'], flags: { syncxhr: false, disableComputedWrap: false, rewriterLogs: false, captureErrors: false, cleanErrors: false, scramitize: false, sourcemaps: false, destructureRewrites: true, allowInvalidJs: true, debugTrampolines: false, debugSourceURL: false, allowFailedIntercepts: true, encapsulateWorkers: true } },
+        config: { jetPath: coreUrl, wasmPath: wasmUrl, injectPath: injectUrl, virtualWasmPath: 'jet.wasm.js', codec: FATE_JET_CODEC, prefix: prefix }
+      });
+      /* ---- jet handshake: retry loop with FRESH port each round (official recipe) ---- */
+      let hsResolve;
+      const hsPromise = new Promise(r => { hsResolve = r; });
+      const __origResolve = FATE_JET.readyResolve;
+      FATE_JET.readyResolve = function(){ try { hsResolve(true); } catch(e){} return __origResolve.apply(FATE_JET, arguments); };
+      let handshook = await Promise.race([hsPromise, fateSleep(4000)]);
+      for (let i = 0; !handshook; i++){
+        if (i >= 5){
+          if (await fateSwReset()) return null;   /* unregister all SWs + reload */
+          throw new Error('the service worker never answered the jet handshake');
+        }
+        fateJetStage('retrying jet handshake (' + (i + 1) + '/5)\u2026');
+        FATE_JET.serviceWorkerController = navigator.serviceWorker.controller || FATE_JET.serviceWorkerController;
+        try { FATE_JET.setupMessagePort(); } catch(e){}
+        handshook = await Promise.race([hsPromise, fateSleep(4000)]);
+      }
+      await FATE_JET.ready;
+      FATE_JET.guardServiceWorkerRevive = false;
+      FATE_JET_STATE = 'ready'; FATE_JET_ERR = '';
+      try { FATE_FRAME = FATE_JET.createFrame(document.getElementById('fateFrameJet'), { plugins: fateJetMakePlugins() }); }
+      catch(e){ console.warn('[FATE ARCADE] createFrame failed:', e); }
+      try { sessionStorage.removeItem('fateWarmingN'); } catch(e){}
+      console.log('%c[FATE ARCADE] jet proxy READY - prefix ' + FATE_JET.prefix + ' - assets: ' + JSON.stringify(FATE_ASSET_SRC), 'color:#38bdf8;font-weight:bold;');
+      fateJetStage('ready', 'ok');
+      setTimeout(() => { if (FATE_JET_STATE === 'ready') fateJetStage(null); }, 2500);
+      fatePaintChip();
+      fateStartJetWatch();
+      return FATE_JET;
+    } catch(e){
+      if (String(e.message || e).includes('wisp tunnel')){
+        FATE_JET_STATE = 'transport-failed';
+      } else {
+        FATE_JET_STATE = 'controller-failed'; FATE_JET_ERR = String(e.message || e);
+      }
+      FATE_JET_BOOTING = null; fatePaintChip(); fateJetStage('boot failed \u2014 tap to retry', 'err'); return null;
+    }
+  })();
+  /* boot watchdog: fires only when NO stage progress for 75s */
+  const wd = setInterval(() => {
+    if (FATE_JET_STATE === 'booting' && Date.now() - FATE_STAGE_AT > 75000){
+      clearInterval(wd);
+      FATE_JET_STATE = 'controller-failed'; FATE_JET_ERR = 'no boot progress for 75s \u2014 network or device too slow';
+      FATE_JET_BOOTING = null; fatePaintChip(); fateJetStage('stuck \u2014 tap to retry', 'err');
+    }
+    if (FATE_JET_STATE !== 'booting') clearInterval(wd);
+  }, 5000);
+  return FATE_JET_BOOTING;
+}
+
+/* ---- SW health watcher (official recipe): periodic sw_alive probe, fresh port on
+        controllerchange, pending-RPC cleanup on pagehide. Survives iPad tab freezing. ---- */
+let fateWatchBusy = null;
+async function fateSwWatch(){
+  if (fateWatchBusy) return fateWatchBusy;
+  fateWatchBusy = (async () => {
+    try {
+      if (!FATE_JET || !navigator.serviceWorker) return;
+      const c = navigator.serviceWorker;
+      if (c.controller && FATE_JET.serviceWorkerController !== c.controller){
+        FATE_JET.serviceWorkerController = c.controller;
+        try { FATE_JET.setupMessagePort(); } catch(e){}
+      }
+      const reg = await c.getRegistration().catch(() => null);
+      if (reg && !await fateSwAlive(reg, 1)){
+        console.warn('[FATE ARCADE] sw_alive light probe failed \u2014 will re-check next tick');
+      }
+    } catch(e){} finally { fateWatchBusy = null; }
+  })();
+  return fateWatchBusy;
+}
+function fateStartJetWatch(){
+  try {
+    const c = navigator.serviceWorker;
+    setInterval(fateSwWatch, 20000);
+    addEventListener('focus', fateSwWatch);
+    document.addEventListener('visibilitychange', () => {
+      try { if (!document.hidden) { try { sessionStorage.removeItem('fateWarmingN'); } catch(e){} fateSwWatch(); } } catch(e){}
+    });
+    c.addEventListener('controllerchange', () => {
+      if (c.controller && FATE_JET){
+        FATE_JET.serviceWorkerController = c.controller;
+        try { FATE_JET.setupMessagePort(); } catch(e){}
+      }
+    });
+    /* pending-RPC cleanup on pagehide (zombie-promise guard, official recipe) */
+    if (FATE_JET.rpc){
+      const inflight = new Set();
+      const { recieve, sendRaw } = FATE_JET.rpc;
+      FATE_JET.rpc.recieve = function(e){
+        if (e && e[this.id] && e[this.id].$type === 'request') inflight.add(e[this.id].$token);
+        return recieve.call(this, e);
+      };
+      FATE_JET.rpc.sendRaw = function(e, t){
+        if (e && e[this.id] && e[this.id].$type === 'response') inflight.delete(e[this.id].$token);
+        return sendRaw.call(this, e, t);
+      };
+      addEventListener('pagehide', () => {
+        for (const tok of Array.from(inflight)){
+          try { sendRaw.call(FATE_JET.rpc, { [FATE_JET.rpc.id]: { $type: 'response', $token: tok, $error: 'page closed' } }, []); } catch(e){}
+        }
+        inflight.clear();
+      });
+    }
+  } catch(e){ console.warn('[FATE ARCADE] watcher setup failed:', e); }
+}
+
+function fateSJEncode(url){
+  if (!FATE_JET) return null;
+  return location.origin + FATE_JET.prefix + FATE_JET.config.codec.encode(url);
+}
+
+/* ---- nav chip painter ---- */
+function fatePaintChip(){
+  const el = document.getElementById('fateGxJetChip');
+  if (!el) return;
+  const map = {
+    idle: ['tunnel: idle', '#94a3b8'],
+    booting: ['tunnel: booting\u2026', '#fbbf24'],
+    ready: ['tunnel: ready', '#4ade80'],
+    'sw-failed': ['tunnel: sw problem', '#f87171'],
+    'transport-failed': ['tunnel: down', '#f87171'],
+    'controller-failed': ['tunnel: failed', '#f87171']
+  };
+  const [txt, col] = map[FATE_JET_STATE] || [FATE_JET_STATE, '#94a3b8'];
+  el.textContent = txt;
+  el.style.color = col;
+  el.style.borderColor = FATE_JET_STATE === 'ready' ? 'rgba(74,222,128,.45)' : 'rgba(148,163,184,.25)';
+}
+</script>
+<script>
+/* ===== FATE ARCADE ENGINE — 35k game vault (Storm0S fetch+blob technique + FATE tunnel fallback) ===== */
+console.log('%c[FATE ARCADE] arcade engine loaded', 'color:#f59e0b;font-weight:bold;');
+
+/* ---------- state ---------- */
+const GX_FAVS_KEY = 'fate_gx_favs';
+const GX_RECENT_KEY = 'fate_gx_recent';
+let GAMES = [];                 /* all entries: {name,url,image,source,kind,fetchGame,frameFallback} */
+let favorites = new Set(_lsGet(GX_FAVS_KEY) || []);
+let recent = _lsGet(GX_RECENT_KEY) || []; /* most-recent-first keys */
+let gxSource = 'All libraries';
+let gxKind = 'all';
+let gxView = 'all';
+let gxSort = 'az';
+let gxLimit = 80;
+let gxAutoLoad = true;
+let gxQuery = '';
+const searchText = new WeakMap();
+const nameCollator = new Intl.Collator();
+const gxKey = g => g.source + '|' + g.url;
+const FALLBACK_ICON = "data:image/svg+xml," + encodeURIComponent(
+  "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%2315131f'/><text x='32' y='41' font-family='Arial' font-size='26' font-weight='800' text-anchor='middle' fill='%23f59e0b' opacity='0.55'>F</text></svg>");
+
+/* ---------- catalog decode (gzip+base64, same technique as Storm0S) ---------- */
+async function fateDecodeCatalog(){
+  const b64 = window.FATE_GAMES_B64;
+  if (!b64 || !b64.length) throw new Error('catalog file fate-games-cat.js is missing next to games.html');
+  if (typeof DecompressionStream === 'undefined') throw new Error('this browser is too old — update iOS/Safari (needs 16.4+)');
+  const parts = [];
+  for (let i = 0; i < b64.length; i += 65536){
+    const s = atob(b64.slice(i, i + 65536));
+    const u = new Uint8Array(s.length);
+    for (let j = 0; j < s.length; j++) u[j] = s.charCodeAt(j);
+    parts.push(u);
+  }
+  const blob = new Blob(parts);
+  const out = await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+  const arr = JSON.parse(new TextDecoder().decode(out));
+  return arr.map(e => ({
+    name: String(e.n || 'Untitled'),
+    url: String(e.u || ''),
+    image: e.i ? String(e.i) : '',
+    source: String(e.s || 'Vault'),
+    kind: e.k ? String(e.k) : 'arcade',
+    fetchGame: e.f === 1 ? true : e.f === 0 ? false : undefined,
+    frameFallback: e.F === 1
+  })).filter(g => g.url);
+}
+
+/* ---------- Storm0S play pipeline: retrieve -> withBase -> blob ---------- */
+async function fateRetrieve(url){
+  const list = [url];
+  const m = url.match(/^https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^/@]+)@([^/]+)\/(.*)$/);
+  if (m) list.push('https://raw.githubusercontent.com/' + m[1] + '/' + m[2] + '/' + m[3] + '/' + m[4]);
+  for (const u of list){
+    try {
+      const ac = new AbortController(); const to = setTimeout(() => ac.abort(), 18000);
+      const r = await fetch(u, { signal: ac.signal }); clearTimeout(to);
+      if (!r.ok) continue;
+      const t = await r.text();
+      if (!/<html|<!doctype|<script|<iframe/i.test(t)) continue;
+      return { text: t, url: r.url };
+    } catch(e){}
+  }
+  throw Error('the host would not serve this game\u2019s HTML');
+}
+function fateWithBase(text, url){
+  const doc = new DOMParser().parseFromString(text, 'text/html');
+  if (!doc.querySelector('base')){
+    const b = doc.createElement('base'); b.href = url;
+    doc.head.prepend(b);
+  }
+  return '<!doctype html>\n' + doc.documentElement.outerHTML;
+}
+async function fatePlayableHTML(g, onStage){
+  let r = await fateRetrieve(g.url);
+  if (onStage) onStage('fetched ' + Math.round(r.text.length / 1024) + ' KB — preparing\u2026');
+  if (g.source === 'Lumin'){
+    /* peel single-iframe jsdelivr wrappers (up to 3 deep) */
+    const visited = new Set([r.url]);
+    for (let depth = 0; depth < 3; depth++){
+      const doc = new DOMParser().parseFromString(r.text, 'text/html');
+      const frames = doc.querySelectorAll('iframe[src]');
+      if (frames.length !== 1 || doc.querySelector('canvas')) break;
+      const raw = frames[0].getAttribute('src');
+      const base = doc.querySelector('base[href]')?.getAttribute('href');
+      const url = new URL(raw, base ? new URL(base, r.url).href : r.url).href;
+      if (!/^https?:/.test(url) || !url.includes('jsdelivr.net/') || visited.has(url)) break;
+      visited.add(url);
+      if (onStage) onStage('unwrapping layer ' + (depth + 2) + '\u2026');
+      r = await fateRetrieve(url);
+    }
+  }
+  return fateWithBase(r.text, r.url);
+}
+
+/* ---------- filtering / rendering ---------- */
+function gxFilters(){
+  const q = gxQuery.trim().toLowerCase();
+  const recentOrder = new Map(recent.map((k, i) => [k, i]));
+  const a = GAMES.filter(g => {
+    let text = searchText.get(g);
+    if (text === undefined){
+      text = (g.name + ' ' + g.source + ' ' + g.kind).toLowerCase();
+      searchText.set(g, text);
+    }
+    return (gxKind === 'all' || g.kind === gxKind)
+      && (gxSource === 'All libraries' || g.source === gxSource)
+      && (!q || text.includes(q))
+      && (gxView !== 'favorites' || favorites.has(gxKey(g)))
+      && (gxView !== 'recent' || recentOrder.has(gxKey(g)));
+  });
+  if (gxView === 'recent') a.sort((x, y) => recentOrder.get(gxKey(x)) - recentOrder.get(gxKey(y)));
+  else if (gxSort === 'source') a.sort((x, y) => nameCollator.compare(x.source, y.source) || nameCollator.compare(x.name, y.name));
+  else a.sort((x, y) => (gxSort === 'za' ? -1 : 1) * nameCollator.compare(x.name, y.name));
+  return a;
+}
+let gxRendered = [], gxAppendPending = false;
+function fateCard(g){
+  const box = document.createElement('article');
+  box.className = 'game-card';
+  const b = document.createElement('button');
+  b.className = 'launch';
+  b.setAttribute('aria-label', 'Play ' + g.name + ' from ' + g.source);
+  const art = document.createElement('div');
+  art.className = 'img-wrap';
+  const fb = document.createElement('div');
+  fb.className = 'img-fallback';
+  fb.textContent = g.name.slice(0, 2).toUpperCase();
+  art.appendChild(fb);
+  if (g.image){
+    const im = document.createElement('img');
+    im.className = 'game-img'; im.src = g.image; im.alt = '';
+    im.loading = 'lazy'; im.decoding = 'async';
+    im.onload = () => fb.remove();
+    im.onerror = () => { im.remove(); };
+    art.appendChild(im);
+  }
+  const badge = document.createElement('span');
+  badge.className = 'src-badge'; badge.textContent = g.source;
+  art.appendChild(badge);
+  const ov = document.createElement('div');
+  ov.className = 'play-overlay';
+  const pb = document.createElement('div');
+  pb.className = 'play-btn'; pb.textContent = '\u25b6';
+  ov.appendChild(pb);
+  art.appendChild(ov);
+  const cap = document.createElement('div');
+  cap.className = 'game-info';
+  const title = document.createElement('div');
+  title.className = 'game-name'; title.textContent = g.name; title.title = g.name;
+  const src = document.createElement('div');
+  src.className = 'game-src'; src.textContent = g.source + (g.kind !== 'arcade' ? ' \u00b7 ' + g.kind : '');
+  cap.append(title, src);
+  b.append(art, cap);
+  b.onclick = () => fatePlay(g);
+  const fav = document.createElement('button');
+  fav.className = 'fav-btn' + (favorites.has(gxKey(g)) ? ' active' : '');
+  fav.textContent = favorites.has(gxKey(g)) ? '\u2665' : '\u2661';
+  fav.setAttribute('aria-label', (favorites.has(gxKey(g)) ? 'Unfavorite ' : 'Favorite ') + g.name);
+  fav.onclick = ev => {
+    ev.stopPropagation();
+    const k = gxKey(g);
+    if (favorites.has(k)) favorites.delete(k); else favorites.add(k);
+    _lsSet(GX_FAVS_KEY, [...favorites]);
+    renderGrid(true);
+  };
+  box.append(b, fav);
+  return box;
+}
+function renderGrid(resetLimit){
+  if (resetLimit) gxLimit = 80;
+  const a = gxFilters();
+  gxRendered = a;
+  const count = document.getElementById('fateCount');
+  const viewLabel = gxView === 'favorites' ? 'your favorites' : gxView === 'recent' ? 'recently played' : (gxSource === 'All libraries' ? 'all libraries' : gxSource);
+  count.innerHTML = '<b>' + a.length.toLocaleString() + '</b> games \u00b7 ' + viewLabel + (gxQuery ? ' \u00b7 \u201c' + gxQuery.replace(/</g, '&lt;') + '\u201d' : '');
+  const grid = document.getElementById('fateGrid');
+  grid.replaceChildren(...a.slice(0, gxLimit).map(fateCard));
+  const remaining = gxLimit < a.length;
+  document.getElementById('fateMore').classList.toggle('hidden', !remaining);
+  document.getElementById('fateMore').textContent = 'Load ' + Math.min(80, a.length - gxLimit).toLocaleString() + ' more';
+  const empty = document.getElementById('fateEmpty');
+  if (!a.length){
+    empty.classList.remove('hidden');
+    empty.innerHTML = gxView === 'favorites'
+      ? '<b>No favorites yet</b>Tap the \u2661 on any game to keep it here.'
+      : gxView === 'recent'
+        ? '<b>Nothing here yet</b>Games you open will show up in this row.'
+        : '<b>No matches</b>Try another search, library or kind.';
+  } else empty.classList.add('hidden');
+}
+function appendGames(){
+  if (gxAppendPending || gxLimit >= gxRendered.length) return;
+  gxAppendPending = true;
+  requestAnimationFrame(() => {
+    const next = Math.min(gxLimit + 80, gxRendered.length);
+    document.getElementById('fateGrid').append(...gxRendered.slice(gxLimit, next).map(fateCard));
+    gxLimit = next;
+    gxAppendPending = false;
+    document.getElementById('fateMore').classList.toggle('hidden', gxLimit >= gxRendered.length);
+  });
+}
+const scrollSentinel = document.createElement('div');
+scrollSentinel.style.height = '1px';
+function checkScrollLoad(){
+  if (!gxAutoLoad || gxLimit >= gxRendered.length) return;
+  const r = scrollSentinel.getBoundingClientRect();
+  if (r.top < innerHeight + 600 && r.bottom >= 0) appendGames();
+}
+
+/* ---------- player ---------- */
+let FATE_ACTIVE_BLOB = null, FATE_CURRENT = null, FATE_PLAY_SEQ = 0, FATE_MODE = 'direct';
+const $id = id => document.getElementById(id);
+function fateShowSpin(show, title, sub){
+  const sp = $id('fatePSpin');
+  sp.classList.toggle('hide', !show);
+  if (title) $id('fatePSpinTitle').textContent = title;
+  if (sub !== undefined) $id('fatePSpinSub').textContent = sub || '';
+}
+function fatePStatus(msg, kind){
+  const st = $id('fatePStatus');
+  st.textContent = msg;
+  st.className = 'fp-status' + (kind ? ' ' + kind : '');
+}
+function fateShowErr(show, title, msg){
+  const e = $id('fatePErr');
+  e.classList.toggle('show', !!show);
+  if (show){
+    $id('fatePErrTitle').textContent = title || 'This game would not load';
+    $id('fatePErrMsg').textContent = msg || '';
+  }
+}
+function fateSetMode(mode){
+  FATE_MODE = mode;
+  $id('fateFrameDirect').classList.toggle('hidden', mode !== 'direct');
+  $id('fateFrameJet').classList.toggle('hidden', mode !== 'jet');
+}
+function fateRevokeBlob(){
+  if (FATE_ACTIVE_BLOB){ try { URL.revokeObjectURL(FATE_ACTIVE_BLOB); } catch(e){} FATE_ACTIVE_BLOB = null; }
+}
+async function fatePlay(g){
+  const seq = ++FATE_PLAY_SEQ;
+  FATE_CURRENT = g;
+  fateShowErr(false);
+  $id('fateFrameJet').src = 'about:blank'; /* stop any tunnel game first */
+  fateSetMode('direct');
+  fateRevokeBlob();
+  $id('fatePlayer').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  $id('fatePName').textContent = g.name;
+  $id('fatePTunnel').disabled = false;
+  fateShowSpin(true, 'Loading ' + g.name + '\u2026', g.source + ' \u00b7 picking the fastest route');
+  fatePStatus('loading\u2026');
+  const frame = $id('fateFrameDirect');
+  frame.src = 'about:blank';
+  try {
+    let url = g.url;
+    if (g.fetchGame === true){
+      /* Storm0S technique: fetch HTML -> inject <base> -> same-origin blob (kills X-Frame-Options) */
+      try {
+        const html = await fatePlayableHTML(g, s => { if (seq === FATE_PLAY_SEQ) fateShowSpin(true, 'Loading ' + g.name + '\u2026', s); });
+        if (seq !== FATE_PLAY_SEQ) return;
+        const blob = new Blob([html], { type: 'text/html' });
+        FATE_ACTIVE_BLOB = URL.createObjectURL(blob);
+        url = FATE_ACTIVE_BLOB;
+        fatePStatus('opened locally (fetch + blob \u2014 embed blocks bypassed)', 'ok');
+      } catch(err){
+        if (seq !== FATE_PLAY_SEQ) return;
+        if (!g.frameFallback){
+          fateShowSpin(false);
+          fatePStatus('fetch failed \u2014 ' + (err.message || err), 'err');
+          fateShowErr(true, 'Could not fetch this game\u2019s code', (err.message || err) + '. The library host may be down or blocked. Try the wisp tunnel, a new tab, or pick another game.');
+          fateBumpRecent(g);
+          return;
+        }
+        /* frameFallback: fall through to direct embed */
+        fatePStatus('fetch failed \u2014 trying direct embed\u2026');
+      }
+    } else {
+      fatePStatus('direct embed\u2026');
+    }
+    if (seq !== FATE_PLAY_SEQ) return;
+    fateShowSpin(false);
+    frame.src = url;
+    $id('fatePNewtab').disabled = false;
+    if (g.fetchGame !== true) fatePStatus('direct embed \u00b7 blank screen? tap \u26a1Tunnel', '');
+    fateBumpRecent(g);
+  } catch(e){
+    if (seq !== FATE_PLAY_SEQ) return;
+    fateShowSpin(false);
+    fatePStatus('failed \u2014 ' + (e.message || e), 'err');
+    fateShowErr(true, 'Could not open this game', String(e.message || e));
+  }
+}
+function fateBumpRecent(g){
+  const k = gxKey(g);
+  recent = [k, ...recent.filter(x => x !== k)].slice(0, 60);
+  _lsSet(GX_RECENT_KEY, recent);
+}
+async function fatePlayViaJet(){
+  if (!FATE_CURRENT) return;
+  const g = FATE_CURRENT;
+  $id('fatePTunnel').disabled = true;
+  fateShowErr(false);
+  fatePStatus('waking the tunnel\u2026');
+  fateShowSpin(true, 'Opening through the tunnel\u2026', 'jet proxy \u00b7 your wisp lane carries the game');
+  try {
+    if (FATE_JET_STATE !== 'ready') await fateJetBoot();
+    if (FATE_JET_STATE !== 'ready' || !FATE_FRAME) throw new Error(FATE_JET_ERR || 'tunnel unavailable right now');
+    $id('fateFrameDirect').src = 'about:blank'; /* stop the old game FIRST — revoking a blob that is still in use crashes the tab */
+    fateRevokeBlob();
+    fateSetMode('jet');
+    $id('fateFrameJet').src = 'about:blank';
+    await fateSleep(30);
+    FATE_FRAME.go(g.url);
+    fateShowSpin(false);
+    fatePStatus('running through the wisp tunnel \u26a1', 'ok');
+    $id('fatePTunnel').disabled = false;
+  } catch(e){
+    fateShowSpin(false);
+    fatePStatus('tunnel failed \u2014 ' + (e.message || e), 'err');
+    fateShowErr(true, 'The tunnel is not available', (e.message || e) + '. Keep this tab in the foreground (iPads freeze background tabs), then retry. Or try a new tab / another game.');
+    $id('fatePTunnel').disabled = false;
+  }
+}
+function fateClosePlayer(){
+  FATE_PLAY_SEQ++;
+  $id('fatePlayer').classList.add('hidden');
+  $id('fateFrameDirect').src = 'about:blank';
+  $id('fateFrameJet').src = 'about:blank';
+  fateRevokeBlob();
+  FATE_CURRENT = null;
+  document.body.style.overflow = '';
+  if (gxView === 'recent') renderGrid(true);
+}
+function fateReloadGame(){
+  if (!FATE_CURRENT) return;
+  if (FATE_MODE === 'jet' && FATE_FRAME){ try { FATE_FRAME.reload(); return; } catch(e){} }
+  fatePlay(FATE_CURRENT);
+}
+async function fateNewtabGame(){
+  if (!FATE_CURRENT) return;
+  const g = FATE_CURRENT;
+  const tab = window.open('about:blank', '_blank');
+  if (!tab){ alert('Allow popups to open the game in a new tab.'); return; }
+  tab.opener = null;
+  tab.document.title = 'Loading game HTML';
+  tab.document.body.style.cssText = 'font:15px system-ui;background:#050505;color:#fcd34d;display:grid;place-items:center;height:100vh;margin:0';
+  tab.document.body.textContent = 'Loading game HTML\u2026';
+  try {
+    let blob;
+    if (FATE_ACTIVE_BLOB && FATE_MODE === 'direct' && g.fetchGame === true){
+      const res = await fetch(FATE_ACTIVE_BLOB);
+      blob = new Blob([await res.text()], { type: 'text/html' });
+    } else if (g.fetchGame === true){
+      blob = new Blob([await fatePlayableHTML(g)], { type: 'text/html' });
+    } else {
+      return tab.location.replace(g.url);
+    }
+    if (tab.closed) return;
+    const url = URL.createObjectURL(blob);
+    tab.location.replace(url);
+    const cleanup = setInterval(() => { if (tab.closed){ clearInterval(cleanup); URL.revokeObjectURL(url); } }, 10000);
+  } catch(e){
+    if (!tab.closed){
+      tab.document.title = 'Game HTML unavailable';
+      tab.document.body.textContent = 'Could not fetch this game\u2019s HTML. The host may block downloading its code.';
+    }
+  }
+}
+function fateFullscreenGame(){
+  const w = $id('fatePWrap');
+  if (w.requestFullscreen) w.requestFullscreen().catch(() => {});
+  else if (w.webkitRequestFullscreen) w.webkitRequestFullscreen();
+}
+
+/* ---------- build pills / kinds ---------- */
+function fateBuildFacets(){
+  const srcCount = new Map();
+  const kindCount = new Map();
+  for (const g of GAMES){
+    srcCount.set(g.source, (srcCount.get(g.source) || 0) + 1);
+    kindCount.set(g.kind, (kindCount.get(g.kind) || 0) + 1);
+  }
+  const srcs = [...srcCount.entries()].sort((a, b) => b[1] - a[1]);
+  const pills = $id('fateSources');
+  pills.replaceChildren();
+  const mkPill = (label, val, cnt) => {
+    const p = document.createElement('button');
+    p.className = 'pill' + (gxSource === val ? ' active' : '');
+    p.innerHTML = label.replace(/</g, '&lt;') + ' <small>' + cnt.toLocaleString() + '</small>';
+    p.onclick = () => { gxSource = val; fateBuildFacets(); renderGrid(true); pills.scrollLeft = 0; };
+    return p;
+  };
+  pills.appendChild(mkPill('All libraries', 'All libraries', GAMES.length));
+  for (const [s, c] of srcs) pills.appendChild(mkPill(s, s, c));
+  const kinds = $id('fateKinds');
+  kinds.replaceChildren();
+  const kk = [['all', 'All kinds'], ['arcade', 'Arcade'], ...[...kindCount.entries()].filter(k => k[0] !== 'arcade').sort((a, b) => b[1] - a[1]).map(([k, c]) => [k, k + ' (' + c + ')'])];
+  for (const [val, label] of kk){
+    const b = document.createElement('button');
+    b.className = 'kind' + (gxKind === val ? ' active' : '');
+    b.textContent = label;
+    b.onclick = () => { gxKind = val; fateBuildFacets(); renderGrid(true); };
+    kinds.appendChild(b);
+  }
+}
+
+/* ---------- boot ---------- */
+async function fateArcadeStart(){
+  try {
+    fateJetStage('unpacking the vault\u2026');
+    $id('fateHeroSub').innerHTML = 'unpacking <b>' + (window.FATE_GAMES_META ? window.FATE_GAMES_META.count.toLocaleString() : '35,000+') + '</b> games\u2026';
+    const t0 = performance.now();
+    GAMES = await fateDecodeCatalog();
+    const secs = ((performance.now() - t0) / 1000).toFixed(1);
+    const libs = new Set(GAMES.map(g => g.source)).size;
+    $id('fateHeroSub').innerHTML = '<b>' + GAMES.length.toLocaleString() + ' games</b> \u00b7 ' + libs + ' libraries \u00b7 loaded in ' + secs + 's \u00b7 tap any card to play';
+    document.querySelector('#fateSearch').placeholder = 'Search ' + GAMES.length.toLocaleString() + ' games\u2026';
+    fateBuildFacets();
+    renderGrid(true);
+    fateJetStage(null);
+    /* warm the tunnel in the background (non-fatal — most games load direct) */
+    setTimeout(() => { try { if (FATE_JET_STATE === 'idle') fateJetBoot(); } catch(e){} }, 1200);
+  } catch(e){
+    fateJetStage('catalog problem \u2014 ' + (e.message || e), 'err');
+    $id('fateCount').textContent = 'catalog failed to unpack: ' + (e.message || e);
+    $id('fateHeroSub').textContent = 'make sure fate-games-cat.js sits in the same folder as games.html';
+  }
+}
+
+/* ---------- wiring ---------- */
+let searchDebounce;
+$id('fateSearch').addEventListener('input', function(){
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => { gxQuery = this.value; renderGrid(true); }, 130);
+});
+document.querySelectorAll('[data-view]').forEach(b => {
+  b.onclick = () => {
+    gxView = b.dataset.view;
+    document.querySelectorAll('[data-view]').forEach(x => x.classList.toggle('active', x === b));
+    renderGrid(true);
+  };
+});
+$id('fateSort').onchange = function(){ gxSort = this.value; renderGrid(true); };
+$id('fateMore').onclick = appendGames;
+$id('fateAuto').onclick = function(){
+  gxAutoLoad = !gxAutoLoad;
+  this.setAttribute('aria-pressed', String(gxAutoLoad));
+  this.textContent = 'Auto-load: ' + (gxAutoLoad ? 'on' : 'off');
+  if (gxAutoLoad) checkScrollLoad();
+};
+$id('fateRandom').onclick = () => {
+  const a = gxFilters();
+  if (a.length) fatePlay(a[Math.floor(Math.random() * a.length)]);
+};
+$id('fatePBack').onclick = fateClosePlayer;
+$id('fatePReload').onclick = fateReloadGame;
+$id('fatePTunnel').onclick = fatePlayViaJet;
+$id('fatePNewtab').onclick = fateNewtabGame;
+$id('fatePFull').onclick = fateFullscreenGame;
+$id('fatePErrRetry').onclick = () => FATE_CURRENT && fatePlay(FATE_CURRENT);
+$id('fatePErrTunnel').onclick = fatePlayViaJet;
+$id('fatePErrNewtab').onclick = fateNewtabGame;
+$id('fatePErrClose').onclick = fateClosePlayer;
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$id('fatePlayer').classList.contains('hidden')) fateClosePlayer(); });
+/* infinite scroll (Storm recipe) */
+document.querySelector('.main').insertBefore(scrollSentinel, document.querySelector('.load-more-wrap'));
+const pagingObserver = new IntersectionObserver(checkScrollLoad, { rootMargin: '600px' });
+pagingObserver.observe(scrollSentinel);
+addEventListener('scroll', checkScrollLoad, { passive: true });
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fateArcadeStart, { once: true });
+else fateArcadeStart();
+/* ===== END FATE ARCADE ENGINE ===== */
+</script>
+</body>
+</html>

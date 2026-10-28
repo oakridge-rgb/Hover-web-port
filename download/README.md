@@ -138,3 +138,27 @@ service worker). Same login as the portal; the tunnel auto-boots on page load.
 Open the Apps modal — the status box shows each boot stage and where every jet file
 loaded from (`local` = your hosting, `mirror n` = CDN fallback). The amber pill at the
 top shows live boot progress and turns into a red tap-to-retry pill on failure.
+
+## FATE Arcade — 35k games (NEW, verified agent-browser E2E)
+
+- **`games.html` + `fate-games-cat.js`** — the whole Storm0S vault, FATE style. The
+  portal FAB's "Games" button now opens **35,310 games from 69 libraries** (GN-Math,
+  Unb Games, Nebula, UGS, js13kGames, CVK, Hydra, Lumin, GhostProxy, DuckMath…).
+- Catalog ships gzipped+base64 (2.7 MB file, same technique Storm0S uses) and
+  unpacks via `DecompressionStream('gzip')` in ~0.2 s on device.
+- **Play pipeline (Storm0S recipe)**: `fetchGame:true` games are fetched (with a
+  jsdelivr→raw.githubusercontent mirror ladder), get `<base href>` injected, then run
+  from a **same-origin blob URL** — X-Frame-Options/CSP embed blocks are bypassed.
+  `frameFallback` + no-flag games load as direct embeds (gamemonetize etc.).
+- **⚡ Tunnel button** in the player = jet/wisp proxy retry: the whole game loads
+  through your lane (`./~/…`) when a host is blocked. Tunnel auto-boots in the
+  background and the nav chip shows its state.
+- Player bar: back / status / ⚡Tunnel / reload / new-tab (opens the fetched blob) /
+  fullscreen. Favorites ♡ + Recent + search + 69 library pills + kind filter +
+  sort + random + auto-load infinite scroll all persist locally.
+- Verified E2E: Bowmasters fully playable via fetch+blob ("YOU vs Crazy Sam" screen);
+  Tiny Arcade site rendering through the tunnel; gamemonetize "TAP TO START" direct
+  embed; favorites/recent views; player close; catalog 0.2 s unpack. Evidence:
+  `scripts/verify-games-1..5.png`.
+- Deploy: add **`games.html`** + **`fate-games-cat.js`** to the same folder as the
+  other files (deploy set is now **11 files**) — no new service worker, no CDN deps.

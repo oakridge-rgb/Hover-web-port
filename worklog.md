@@ -378,3 +378,24 @@ Stage Summary:
 - FATE Browser is live: a real multi-tab tabbed browser (FATE style) riding the SAME jet stack — deploy set is now 9 files in v8.2-deploy/, no new service worker, no new deps.
 - Deliverables: download/v8.2-deploy/browser.html + download/browser.html (identical); scripts/browser-engine.js + scripts/build-browser.py for future edits.
 - Key decision: one createFrame() per tab (native multi-frame support) — each tab gets its own /~/{frameId}/ route; back/forward are stack-based for predictability.
+
+---
+## 2026-10-29 — FATE Arcade: the 33k-game vault (Storm0S acquired)
+
+Agent: main (Z.ai)
+Task: "This mf got 33k games and allat, pls help me get what he got, but it might be hard, lets start with this file" (+ uploaded Storm0S loader index.html)
+
+Work Log:
+- Reverse-engineered the uploaded loader → repo masterstorm257-maker/STORM0S; GitHub API rate-limited, so used jsdelivr data API (repo = 3 files) and pulled the 17.7 MB STORM0S.html.
+- Found 49 gzip+base64 blobs inside; blob_00 = the master catalog: 35,354 entries {name,url,image,source,fetchGame,frameFallback,kind} across 70 sources (Unb Games 5,000 / Nebula 3,062 / UGS 2,823 / js13kGames 2,800 / gamemonetize 5,000-on-cdn...). Key insight: GN-Math entries point at freebuisness/html — the SAME repo family as the user's proven 618-fix.html.
+- Extracted Storm's play pipeline from the minified source: retrieve() (18s, markup check, jsdelivr→raw mirror fallback) → withBase() (<base href> injection) → Blob → URL.createObjectURL → same-origin iframe (kills X-Frame-Options); frameFallback → direct iframe; Lumin peel (3-deep single-iframe unwrap); newtab via blob; DecompressionStream('gzip') for embedded data.
+- Built scripts/make_games_catalog.py: normalized 35,354 entries to compact keys (n/u/i/s/k/f/F), 9.0 MB JSON → 2.0 MB gzip → fate-games-cat.js 2.7 MB (window.FATE_GAMES_B64).
+- Built download/v8.2-deploy/games.html (66.5 KB): shared gate (fate_v6_auth), wisp lane host + v8.2 jet engine ported verbatim from browser.html (self-healing boot, handshake retries, watchdog, SW watcher, stage pill), FATE Arcade UI (hero, search, 69 library pills w/ counts, kind chips, sort, random, favorites/recents, 80-card pages + sentinel auto-load), player overlay (back/status/⚡Tunnel/reload/newtab/fullscreen), Storm pipeline port, jet fallback via FATE_FRAME.go() + fateSJEncode, catalog decode w/ old-Safari error.
+- E2E (agent-browser, :8902): gate pass → 35,310 games · 69 libraries unpacked in 0.2s; grid + covers + fallback initials; search "bowmasters" → 18 hits; Bowmasters launched fetch+blob → fully playable (YOU vs Crazy Sam); ⚡Tunnel → Tiny Arcade site rendering through /~/{frame}/ prefix on wisp lane api.personalloanonline.net; gamemonetize direct embed → "TAP TO START"; favorites=1, recent=3; player close OK. All 5 jet assets "local", tunnel chip ready.
+- BUG found+fixed: tunnel switch revoked the blob URL while the direct iframe still ran it → tab crash. Fix: blank old frame FIRST, then revoke (both directions). Verified no crash after fix.
+- README.md: FATE Arcade section (11-file deploy set).
+
+Stage Summary:
+- The vault is ours: 35,310 games from 69 libraries live in FATE style at games.html, three verified play paths (fetch+blob / direct embed / wisp tunnel), zero new service worker, zero CDN deps.
+- Deliverables: download/v8.2-deploy/games.html + fate-games-cat.js; scripts/make_games_catalog.py + scripts/out/stormos/ (catalog_full.json + extracted blobs) for future re-dumps.
+- Note: 44 'extra' entries dropped (embedded Storm0S extras carry no URL); catalog regenerable anytime via make_games_catalog.py.
