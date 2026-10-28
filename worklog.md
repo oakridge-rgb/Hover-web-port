@@ -343,3 +343,20 @@ Stage Summary:
 - v8.2 fixes "keeps booting and never starts" with the reference site's own self-healing recipe: handshake retry with fresh ports, SW reset ladder, capped warming retries, auto-resume after recovery reloads, progress pill, no-churn fast path, progress-based watchdog.
 - Deliverables: download/v8.2-deploy/ = EXACTLY 7 files to upload (test.html, fate-sw.js, jet.core.js, jet.api.js, jet.inject.js, jet.utils.js, jet.wasm); download/test-v8-jet-lane.html + download/fate-sw.js updated; README.md rewritten (file table + iPad foreground note).
 - Key files: scripts/jet-engine.js (v8.2 engine), scripts/fate-sw.js (v3 template), scripts/build-portal-v82.py, scripts/serve-daemon.py, scripts/sw-eval-test.js.
+---
+Task ID: 17
+Agent: main (Z.ai)
+Task: "Perfect make a dedicated movies page for our website FATE STYLE and don't have the games or anything in there just a seperate page with working movies via our jet thingy"
+
+Work Log:
+- Mined upload/tv.html: hls.js + artplayer player engine, playM3u8 (Safari native-HLS branch + MSE with net/media retry), parseM3U, IPTV source ladder (somestuffserver m3u8list + corsproxy, Free-TV, iptv-org, local tv/master.m3u) — ported the proven pieces.
+- Confirmed reference Movies shortcut = https://aether.ist/ (main payload SHORTCUTS).
+- Built scripts/movies-engine.js: FM_SITES tiles (Aether hero + Tubi + Internet Archive + YouTube storefront) via fateBrowseOpen; vault = m3u sources filtered to /movie|film|cinema/i groups, deduped by stream, paged 60, poster cards (tvg-logo, letter fallback, group chip); fetch ladder direct -> corsproxy -> JET TUNNEL (same-origin fetch via fateSJEncode + SW route) per source; search; Artplayer modal ported from tv.html (watchdog 25s, muted-autoplay fallback, Retry/Next, session dead-set); paste-any-m3u8/mp4 instant player; nav lane chip painter (fate_wisp_lane_v6 shared with portal); auto-boots the tunnel on load.
+- Built scripts/build-movies.py: assembles download/movies.html (73.3 KB) = FATE gate (shared fate_v6_auth + pass.js) + FATE CSS (portal subset, purple-tinted movies accents) + lib loader (hls.js/artplayer mirror chains incl /hls.min.js/ + /artplayer.js/ local edges) + wisp lane host (11 servers, 14 asset bases, fateLoadTransport with wasm-retry) + jet-engine.js PATCHED (FATE_JET_APPS -> 4 movie sites, modal retitle "Movie Sites") + movies engine. Writes download/ + v8.2-deploy/ copies (md5-identical).
+- E2E (agent-browser, 127.0.0.1:8902, download/ root served so /v8.2-deploy/* is subfolder-safe): seed-auth.html sets fate_v6_auth + unregisters stale SWs; movies.html: gate passes, jet READY ~2s (all 5 assets "local", lane api.personalloanonline.net, prefix /v8.2-deploy/~/x4y59e78/), 4 site cards, vault 699 movies (freetv + iptvorg alive from this network; somestuff down -> ladder clean), Aether via tunnel loads real page (title "Aether", frame URL under jet prefix, address bar decodes), custom Mux m3u8 -> readyState 4 ACTUALLY PLAYING (635s, autoplay), Next-flow opens random other movie, search "Pluto" -> 164 hits, Escape closes, zero game code (grep: only password fallback + "no games" text). node --check 5/5 script blocks. Screenshots: verify-movies-home.png, -aether.png, -player.png, -vault.png, -search.png.
+- README.md updated: 8-file deploy table (+movies.html), FATE Movies section (3 ways to watch + iPad foreground note), movies E2E evidence.
+
+Stage Summary:
+- FATE Movies is live: a dedicated FATE-styled movies-only page that rides the SAME 8-file v8.2 deploy (no new hosting burden — reuses fate-sw.js + jet.* + shared lane cache + shared login).
+- Deliverables: download/v8.2-deploy/ = 8 files (test.html, movies.html, fate-sw.js, jet.core.js, jet.api.js, jet.inject.js, jet.utils.js, jet.wasm); download/movies.html standalone copy.
+- Key files: scripts/movies-engine.js, scripts/build-movies.py, download/seed-auth.html (E2E helper, NOT for deploy).

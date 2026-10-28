@@ -1,0 +1,18 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>seed</title></head><body>
+<script>
+/* E2E seed: authenticate as the portal would + clear stale SWs from old sessions */
+(function(){
+  function hash(s){ var h=5381; for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0; return h.toString(36); }
+  try { localStorage.setItem('fate_v6_auth', hash('fate2026')); } catch(e){}
+  if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
+    navigator.serviceWorker.getRegistrations().then(function(regs){
+      Promise.all(regs.map(function(r){ return r.unregister().catch(function(){}); })).then(function(){
+        document.title = 'seeded-' + regs.length;
+      });
+    });
+  } else { document.title = 'seeded-0'; }
+})();
+</script>
+<a href="v8.2-deploy/movies.html">open movies</a>
+<a href="v8.2-deploy/test.html">open portal</a>
+</body></html>

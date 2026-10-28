@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FATE Movies</title>
+<link rel="shortcut icon" href="media/logo.svg" type="image/x-icon" />
+<script src="pass.js"></script>
+<script>
+/* ===== V6 ACCESS GATE (same auth as the portal — opens straight through if you're logged in) ===== */
+(function(){
+  var AUTH_KEY='fate_v6_auth';
+  function passes(){
+    if(typeof FATE_PASS==='undefined')return['fate2026'];
+    return Array.isArray(FATE_PASS)?FATE_PASS.map(String):[String(FATE_PASS)];
+  }
+  function hash(s){
+    var h=5381;
+    for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;
+    return h.toString(36);
+  }
+  function isAuthed(){
+    try{
+      var v=localStorage.getItem(AUTH_KEY);
+      return !!v&&passes().map(hash).indexOf(v)>-1;
+    }catch(e){return false}
+  }
+  if(!isAuthed()){
+    location.replace('index.html');
+  }
+})();
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root{--primary:#f59e0b;--secondary:#ef4444;--accent:#10b981;--bg-deep:#050505;--glass:rgba(0,0,0,0.55);--glass-border:rgba(255,255,255,0.1);--text:#f8fafc;--text-muted:#cbd5e1}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;min-height:100vh;overflow-x:hidden;padding-top:80px}
+.bg-image{position:fixed;inset:0;z-index:0;background:url("/img/background.png") center center/cover no-repeat}
+.bg-overlay{position:fixed;inset:0;z-index:1;background:rgba(5,5,5,0.55);backdrop-filter:blur(4px)}
+.nav-glass{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(5,5,5,0.6);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--glass-border);padding:16px 24px}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.nav-brand{display:flex;align-items:center;gap:12px}
+.nav-logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(245,158,11,0.4);flex-shrink:0}
+.nav-logo span{font-weight:800;font-size:18px;color:white;font-family:"Space Grotesk",sans-serif}
+.nav-title{font-family:"Space Grotesk",sans-serif;font-size:1.25rem;font-weight:700;background:linear-gradient(135deg,#fff,#fcd34d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap}
+.nav-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.nav-link{padding:10px 20px;border-radius:12px;font-weight:500;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .3s cubic-bezier(.4,0,.2,1);background:none;border:none;cursor:pointer;font-family:inherit;font-size:.9rem}
+.nav-link:hover{background:rgba(245,158,11,0.1);color:#fff}
+.panic-btn{padding:10px 20px;border-radius:12px;background:linear-gradient(135deg,#dc2626,#991b1b);color:white;font-weight:700;font-size:.85rem;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(220,38,38,0.4);transition:all .3s ease;text-transform:uppercase;letter-spacing:.5px}
+.panic-btn:hover{transform:scale(1.05);box-shadow:0 8px 30px rgba(220,38,38,0.6)}
+.main{position:relative;z-index:4;max-width:1200px;margin:0 auto;padding:40px 24px 80px}
+.page-header{text-align:center;margin-bottom:2.25rem}
+.page-header h1{font-family:"Space Grotesk",sans-serif;font-size:clamp(2.5rem,8vw,4rem);font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#fff 0%,#fcd34d 50%,#a78bfa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.page-header p{color:var(--text-muted);margin-top:.5rem;font-size:1rem}
+.fm-url-row{max-width:760px;margin:0 auto 1.75rem;display:flex;gap:.75rem;align-items:center}
+.fm-url-row .search-input{flex:1;margin:0}
+.search-input{width:100%;padding:16px 24px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;color:var(--text);font-size:1rem;outline:none;transition:all .3s ease;font-family:inherit}
+.search-input:focus{border-color:rgba(245,158,11,0.4);box-shadow:0 0 0 3px rgba(245,158,11,0.1),0 10px 40px rgba(245,158,11,0.1)}
+.search-input::placeholder{color:#64748b}
+.fm-playbtn{padding:16px 26px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;font-weight:800;font-size:.95rem;cursor:pointer;white-space:nowrap;box-shadow:0 8px 25px rgba(245,158,11,0.35);transition:all .3s ease;font-family:inherit}
+.fm-playbtn:hover{transform:translateY(-2px);box-shadow:0 12px 35px rgba(245,158,11,0.5)}
+.stats-bar{display:flex;justify-content:center;align-items:center;gap:1.5rem;margin-bottom:2rem;flex-wrap:wrap;color:var(--text-muted);font-size:.875rem}
+.stat{display:flex;align-items:center;gap:6px}
+.stat svg{width:16px;height:16px;fill:var(--primary)}
+.fm-h3{font-family:"Space Grotesk",sans-serif;font-size:1.15rem;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:1rem}
+.fm-h3 svg{width:18px;height:18px;fill:var(--primary)}
+.fm-h3 .cnt{font-size:.72rem;font-weight:700;color:#c4b5fd;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.35);padding:3px 10px;border-radius:20px}
+section{margin-bottom:2.5rem}
+.site-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+.site-card{position:relative;display:flex;flex-direction:column;gap:.4rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:1.25rem;cursor:pointer;transition:all .35s cubic-bezier(.4,0,.2,1);overflow:hidden}
+.site-card:hover{transform:translateY(-6px);border-color:rgba(167,139,250,0.45);box-shadow:0 18px 40px rgba(0,0,0,0.45),0 0 40px rgba(167,139,250,0.12)}
+.site-card .ic{width:52px;height:52px;border-radius:14px;background:rgba(0,0,0,0.5);display:grid;place-items:center;margin-bottom:.35rem}
+.site-card .lbl{font-weight:800;font-size:1.05rem;font-family:"Space Grotesk",sans-serif}
+.site-card .desc{color:var(--text-muted);font-size:.8rem;line-height:1.45}
+.site-card .via{margin-top:.4rem;font-size:.64rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#a78bfa;opacity:.75}
+.site-card.hero{grid-column:span 2;background:linear-gradient(135deg,rgba(167,139,250,0.14),rgba(99,102,241,0.05));border-color:rgba(167,139,250,0.35)}
+.site-card.hero .lbl{font-size:1.35rem;background:linear-gradient(135deg,#fff,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+@media(max-width:700px){.site-card.hero{grid-column:span 1}}
+.vault-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}
+@media(max-width:640px){.vault-grid{grid-template-columns:repeat(auto-fill,minmax(118px,1fr))}}
+.vault-card{position:relative;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .35s cubic-bezier(.4,0,.2,1)}
+.vault-card:hover{transform:translateY(-6px) scale(1.02);border-color:rgba(245,158,11,0.35);box-shadow:0 18px 40px rgba(0,0,0,0.45),0 0 35px rgba(245,158,11,0.1)}
+.fm-poster{position:relative;aspect-ratio:2/3;background:linear-gradient(135deg,#1a1a2e,#0f0f1a);display:grid;place-items:center;overflow:hidden}
+.fm-letter{position:absolute;font-family:"Space Grotesk",sans-serif;font-size:2.6rem;font-weight:800;color:rgba(245,158,11,0.35)}
+.fm-poster img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
+.fm-name{padding:9px 10px 3px;font-size:.8rem;font-weight:600;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.fm-group{padding:0 10px 10px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;text-align:center;color:#a78bfa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.load-more-wrap{text-align:center;padding:2rem 1rem}
+.load-more-btn{padding:14px 32px;border-radius:30px;background:linear-gradient(135deg,rgba(167,139,250,0.2),rgba(245,158,11,0.2));border:1px solid rgba(167,139,250,0.35);color:var(--text);font-weight:600;cursor:pointer;transition:all .3s ease;display:inline-flex;align-items:center;gap:10px;font-family:inherit}
+.load-more-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(167,139,250,0.2)}
+.empty{text-align:center;padding:3rem 2rem;color:var(--text-muted);grid-column:1/-1}
+.empty svg{width:64px;height:64px;fill:#334155;margin-bottom:1rem}
+.skeleton-img{background:linear-gradient(90deg,#1a1a2e 25%,#252538 50%,#1a1a2e 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+/* ---- player modal (portal popup style) ---- */
+.popup-overlay{position:fixed;inset:0;z-index:9998;background:rgba(5,5,5,0.95);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px}
+.popup-overlay.open{display:flex;animation:fadeIn .3s ease}
+.popup-box{width:100%;max-width:1200px;height:86vh;background:rgba(10,10,10,0.95);border-radius:24px;overflow:hidden;display:flex;flex-direction:column;border:1px solid var(--glass-border);box-shadow:0 25px 50px rgba(0,0,0,0.5);animation:slideUp .4s cubic-bezier(.4,0,.2,1)}
+.popup-header{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.3);border-bottom:1px solid var(--glass-border);gap:12px}
+.popup-titles{flex:1;min-width:0}
+.popup-title{font-family:"Space Grotesk",sans-serif;font-size:1.1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.popup-sub{color:var(--text-muted);font-size:.75rem;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.popup-actions{display:flex;gap:10px}
+.popup-btn{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s ease;font-size:.9rem;flex-shrink:0}
+.popup-btn:hover{background:rgba(245,158,11,0.2);border-color:rgba(245,158,11,0.4)}
+.popup-btn.close:hover{background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4)}
+.popup-content{flex:1;position:relative;background:#000}
+#fmPlayer{width:100%;height:100%}
+#fmPlayer .art-video-player{width:100%;height:100%}
+.fm-status{position:absolute;inset:0;z-index:5;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(5,5,5,0.88);text-align:center;padding:2rem}
+.fm-status.show{display:flex}
+.fm-spin{width:44px;height:44px;border:3px solid rgba(245,158,11,0.2);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
+#fmStatusText{color:var(--text);font-weight:600;font-size:.95rem;max-width:520px;line-height:1.5}
+#fmStatusActs{display:none;gap:.75rem}
+.fm-act{padding:10px 22px;border-radius:12px;border:1px solid rgba(245,158,11,0.4);background:rgba(245,158,11,0.12);color:#fcd34d;font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit}
+.fm-act:hover{background:rgba(245,158,11,0.25)}
+.fm-chip{padding:8px 14px;border-radius:12px;font-size:.72rem;font-weight:700;border:1px solid rgba(148,163,184,.25);white-space:nowrap;background:rgba(0,0,0,0.4)}
+@media(max-width:768px){
+  body{padding-top:72px}
+  .nav-glass{padding:12px 14px}
+  .nav-title{font-size:1.05rem}
+  .nav-link{padding:8px 12px;font-size:.82rem}
+  .panic-btn{padding:8px}
+  .panic-btn span{display:none}
+  .fm-url-row{flex-direction:column}
+  .fm-playbtn{width:100%}
+  .main{padding:28px 14px 60px}
+}
+</style>
+<script>
+(function(){
+  var HLS_SOURCES=[
+    '/hls.min.js/',
+    'https://gcore.jsdelivr.net/npm/hls.js@1/dist/hls.min.js',
+    'https://testingcf.jsdelivr.net/npm/hls.js@1/dist/hls.min.js',
+    'https://fastly.jsdelivr.net/npm/hls.js@1/dist/hls.min.js',
+    'https://unpkg.com/hls.js@1/dist/hls.min.js'
+  ];
+  var ART_SOURCES=[
+    '/artplayer.js/',
+    'https://gcore.jsdelivr.net/npm/artplayer@5/dist/artplayer.js',
+    'https://testingcf.jsdelivr.net/npm/artplayer@5/dist/artplayer.js',
+    'https://fastly.jsdelivr.net/npm/artplayer@5/dist/artplayer.js',
+    'https://unpkg.com/artplayer@5/dist/artplayer.js'
+  ];
+  window.fateEngine={hls:null,art:null};
+  function loadChain(srcs,i,which){
+    return new Promise(function(resolve,reject){
+      if(i>=srcs.length)return reject(new Error('all sources failed'));
+      var s=document.createElement('script');
+      s.src=srcs[i];
+      s.onload=function(){window.fateEngine[which]=srcs[i];resolve(srcs[i])};
+      s.onerror=function(){s.remove();loadChain(srcs,i+1,which).then(resolve,reject)};
+      document.head.appendChild(s);
+    });
+  }
+  window.fateTVLibs='loading';
+  window.fateTVLibsReady=Promise.all([
+    loadChain(HLS_SOURCES,0,'hls'),
+    loadChain(ART_SOURCES,0,'art')
+  ]);
+  window.fateTVLibsReady.then(function(){ window.fateTVLibs='ok'; }).catch(function(){ window.fateTVLibs='failed'; });
+})();
+</script>
+</head>
+<body>
+
+<div class="bg-image"></div><div class="bg-overlay"></div>
+<nav class="nav-glass"><div class="nav-inner">
+  <div class="nav-brand">
+    <div class="nav-logo"><span>F</span></div>
+    <div class="nav-title">FATE Movies</div>
+  </div>
+  <div class="nav-links">
+    <span class="fm-chip" id="fmJetChip">tunnel: idle</span>
+    <button class="nav-link" onclick="fateToggleApps()" title="All movie sites (through the tunnel)">Sites</button>
+    <a class="nav-link" href="test.html" title="Back to the FATE portal">Portal</a>
+    <button class="panic-btn" onclick="location.replace('index.html')" title="Emergency exit"><span>Panic</span></button>
+  </div>
+</div></nav>
+<main class="main">
+  <div class="page-header">
+    <h1>FATE Movies</h1>
+    <p>Streaming sites through your wisp tunnel + a free movie vault + instant player &mdash; no games, just cinema.</p>
+  </div>
+
+  <div class="fm-url-row">
+    <input id="fmCustomUrl" class="search-input" placeholder="Paste any .m3u8 or .mp4 link and hit Play&hellip;" spellcheck="false" />
+    <button class="fm-playbtn" onclick="fmPlayCustom()">&#9654; Play</button>
+  </div>
+
+  <div class="stats-bar">
+    <span class="stat" id="fmVaultStats">loading vault&hellip;</span>
+  </div>
+
+  <section>
+    <h3 class="fm-h3"><svg viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg> Stream sites <span class="cnt">jet tunnel</span></h3>
+    <div class="site-grid" id="fmSiteGrid"></div>
+  </section>
+
+  <section>
+    <h3 class="fm-h3"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-2 14V8l6 4-6 4z"/></svg> Free movie vault</h3>
+    <div class="fm-url-row" style="margin-bottom:1.25rem">
+      <input id="fmSearch" class="search-input" placeholder="Search the vault&hellip;" spellcheck="false" />
+    </div>
+    <div class="vault-grid" id="fmVaultGrid"></div>
+    <div class="load-more-wrap"><button class="load-more-btn" id="fmMoreBtn" onclick="fmRenderMore()" style="display:none">Load more</button></div>
+  </section>
+</main>
+
+<div class="popup-overlay" id="movieModal">
+  <div class="popup-box">
+    <div class="popup-header">
+      <div class="popup-titles">
+        <div class="popup-title" id="fmPlayerTitle">Movie</div>
+        <div class="popup-sub" id="fmPlayerSub"></div>
+      </div>
+      <div class="popup-actions">
+        <button class="popup-btn" onclick="fmRetry()" title="Retry stream">&#10227;</button>
+        <button class="popup-btn" onclick="fmNext()" title="Random other movie">&#9197;</button>
+        <button class="popup-btn close" onclick="fmClosePlayer()" title="Close">&#10005;</button>
+      </div>
+    </div>
+    <div class="popup-content">
+      <div id="fmPlayer"></div>
+      <div class="fm-status" id="fmStatus">
+        <div class="fm-spin"></div>
+        <span id="fmStatusText">Connecting&hellip;</span>
+        <div id="fmStatusActs">
+          <button class="fm-act" onclick="fmRetry()">&#10227; Retry</button>
+          <button class="fm-act" onclick="fmNext()">&#9197; Next movie</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== FATE MOVIES WISP LANE HOST (shared fate_wisp_lane_v6 cache with the portal) ===== */
+function _lsGet(k){ try{ return JSON.parse(localStorage.getItem(k) || 'null'); }catch(e){ return null; } }
+function _lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+const FATE_WISP_SERVERS = [
+  'cdn.northstreetumc.org','cdn.vipersfutbol.com','cdn.pcesc.org','cdn.kcchallengevbc.com',
+  'cdn.slcbmooc.org','cdn.topstargym.net','cdn.goaplytexas.org','cdn.clearfieldswimming.com',
+  'cdn.richardacademy.cfd','wss://athollcottage.com/connection/','wss://api.personalloanonline.net/ws/'
+];
+const FATE_ASSET_BASES = [
+  'https://cdn.jsdelivr.net/gh/%54ongSherbet/storage@main/',
+  'https://quantil.jsdelivr.net/gh/%54ongSherbet/storage@main/',
+  'https://fastly.jsdelivr.net/gh/%54ongSherbet/storage@main/',
+  'https://testingcf.jsdelivr.net/gh/%54ongSherbet/storage@main/',
+  'https://gcore.jsdelivr.net/gh/%54ongSherbet/storage@main/',
+  'https://originfastly.jsdelivr.net/gh/%54ongSherbet/storage@main/',
+  'https://cdn.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://fastly.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://gcore.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://cdn.statically.io/gh/TongSherbet/storage/main/',
+  'https://rawcdn.githack.com/TongSherbet/storage/main/',
+  'https://raw.githack.com/TongSherbet/storage/main/',
+  'https://raw.githubusercontent.com/TongSherbet/storage/main/',
+  'https://cdn.staticdeliver.com/gh/TongSherbet/storage@main/'
+];
+const FATE_WISP_LANE_KEY = 'fate_wisp_lane_v6';
+window.FATE_WISP_RESULTS = [];
+
+function fateWispUrl(s){ return s.includes('://') ? s : ('wss://' + s + '/'); }
+
+/* exact port of the working portal's testWlspDomain() — binary wisp handshake */
+function fateTestWlsp(server, timeoutMs){
+  return new Promise(resolve => {
+    let ws;
+    try{ ws = new WebSocket(fateWispUrl(server)); }catch(e){ return resolve(null); }
+    ws.binaryType = 'arraybuffer';
+    const id = (Math.floor(4294967294 * Math.random()) + 1) >>> 0;
+    let gotEcho = false, t0 = 0;
+    const finish = v => {
+      clearTimeout(timer);
+      try{ ws.onmessage = ws.onerror = ws.onclose = null; ws.close(); }catch(e){}
+      resolve(v);
+    };
+    const timer = setTimeout(() => finish(null), timeoutMs || 4500);
+    ws.onerror = () => finish(null);
+    ws.onclose = () => { if(!gotEcho) finish(null); };
+    ws.onmessage = evt => {
+      const d = evt.data;
+      if(!(d instanceof ArrayBuffer) || d.byteLength < 5) return finish(null);
+      const dv = new DataView(d);
+      const type = dv.getUint8(0), sid = dv.getUint32(1, true);
+      if(gotEcho){ if(sid === id) finish(Math.round(performance.now() - t0)); return; }
+      if(sid === 0){
+        if(type === 5) ws.send(new Uint8Array([5,0,0,0,0,2,1]));
+        else if(type === 3){
+          const host = '127.0.0.1';
+          const hb = new TextEncoder().encode(host);
+          const frame = new Uint8Array([1,0,0,0,0,1,69,0,...hb]);
+          new DataView(frame.buffer).setUint32(1, id, true);
+          gotEcho = true; t0 = performance.now();
+          try{ ws.send(frame); }catch(e){ return finish(null); }
+        }
+      }
+    };
+  });
+}
+
+async function fateWispSweep(){
+  const cached = _lsGet(FATE_WISP_LANE_KEY);
+  if(cached && cached.url && Date.now() - cached.t < 10 * 60 * 1000){
+    window.wlspServer = cached.url; /* trust briefly; still re-verify below */
+  }
+  const probes = FATE_WISP_SERVERS.map(async s => ({ server: s, rtt: await fateTestWlsp(s, 4500) }));
+  window.FATE_WISP_RESULTS = await Promise.all(probes);
+  const alive = window.FATE_WISP_RESULTS.filter(r => r.rtt !== null).sort((a, b) => a.rtt - b.rtt);
+  if(alive.length){
+    window.wlspServer = fateWispUrl(alive[0].server);
+    window.WlspPing = alive[0].rtt;
+    window.WlspIsBackup = alive[0].server.includes('://');
+    _lsSet(FATE_WISP_LANE_KEY, { url: window.wlspServer, t: Date.now() });
+  }
+  return window.FATE_WISP_RESULTS;
+}
+
+/* curl-transport (libcurl-wasm) over the winning wisp lane */
+async function fateLoadTransport(){
+  if(window.FATE_TRANSPORT) return window.FATE_TRANSPORT;
+  if(!window.wlspServer || !window.FATE_WISP_RESULTS.some(r => r.rtt !== null)) await fateWispSweep();
+  if(!window.wlspServer) return null;
+  for(const base of FATE_ASSET_BASES){
+    try{
+      const mod = await import(base + 'curl/index.mjs');
+      const C = mod.default || mod.LibcurlClient;
+      if(!C) continue;
+      const t = new C({ wisp: window.wlspServer });
+      for (let _ti = 0; _ti < 150; _ti++){
+        try { await t.init(); break; }
+        catch (_e){
+          if (!String(_e).includes('wasm not loaded') || _ti === 149) throw _e;
+          await new Promise(_r => setTimeout(_r, 20));
+        }
+      }
+      window.FATE_TRANSPORT = t;
+      window.FATE_ASSETS_BASE_USED = base;
+      console.log('[FATE MOVIES] wisp transport READY - lane', window.wlspServer, '- assets', base);
+      return t;
+    }catch(e){ console.warn('[FATE MOVIES] transport base failed:', base, (e && e.message) || e); }
+  }
+  console.warn('[FATE MOVIES] no asset base could serve curl/index.mjs');
+  return null;
+}
+/* ===== END WISP LANE HOST ===== */
+</script>
+<script>
+/* ===== FATE PORTAL v8.2 JET LANE ENGINE (self-healing boot, reference recipe) ===== */
+console.log('%c[FATE PORTAL v8.2] jet proxy engine loaded (self-healing boot)', 'color:#38bdf8;font-weight:bold;');
+
+/* ---- jet asset edges (CDN fallback; local files win when hosted next to test.html) ---- */
+const FATE_JET_EDGES = [
+  'https://cdn.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://fastly.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://gcore.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://testingcf.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://quantil.jsdelivr.net/gh/TongSherbet/storage@main/',
+  'https://cdn.statically.io/gh/TongSherbet/storage/main/',
+  'https://raw.githack.com/TongSherbet/storage/main/'
+];
+
+/* movie-site shortcut set (FATE Movies page) */
+const FATE_JET_APPS = [
+  { label: 'Aether', url: 'https://aether.ist/', color: '#a78bfa',
+    icon: '<path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>' },
+  { label: 'Tubi', url: 'https://tubitv.com/', color: '#ff7a59',
+    icon: '<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-2 14V8l6 4-6 4z"/>' },
+  { label: 'Archive', url: 'https://archive.org/details/movies', color: '#fbbf24',
+    icon: '<path d="M3 3h18v4H3V3zm1 6h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9zm5 2v2h6v-2H9z"/>' },
+  { label: 'YouTube', url: 'https://www.youtube.com/feed/storefront', color: '#ff0000',
+    icon: '<path d="M21.58 7.19a2.5 2.5 0 0 0-1.76-1.77C18.25 5 12 5 12 5s-6.25 0-7.82.42A2.5 2.5 0 0 0 2.42 7.19 26.2 26.2 0 0 0 2 12a26.2 26.2 0 0 0 .42 4.81 2.5 2.5 0 0 0 1.76 1.77C5.75 19 12 19 12 19s6.25 0 7.82-.42a2.5 2.5 0 0 0 1.76-1.77A26.2 26.2 0 0 0 22 12a26.2 26.2 0 0 0-.42-4.81zM10 15V9l5.2 3z"/>' }
+];
+let FATE_JET = null;
+let FATE_FRAME = null; /* JetFrame wrapper around the browse iframe */
+let FATE_JET_STATE = 'idle'; /* idle | booting | ready | sw-failed | transport-failed | controller-failed */
+let FATE_JET_ERR = '';
+let FATE_JET_PENDING = null;
+let FATE_JET_BOOTING = null;
+let FATE_HAS_UTILS = false;
+let FATE_BROWSE_OPEN = false;
+const FATE_ASSET_SRC = {}; /* file -> 'local' | 'local/sj' | 'mirror n' */
+const fateSleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* ---- boot stage pill (visible at top of page during boot — no more silent spinners) ---- */
+let FATE_STAGE_AT = 0, FATE_STAGE_HINTED = false;
+function fateJetStage(msg, kind){
+  try {
+    FATE_STAGE_AT = Date.now(); /* progress marker for the boot watchdog */
+    let p = document.getElementById('fateJetStage');
+    if (!p){
+      p = document.createElement('div'); p.id = 'fateJetStage';
+      p.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:2147483000;background:rgba(12,10,9,.93);border:1px solid rgba(245,158,11,.45);color:#fcd34d;font:600 12px/1.35 system-ui,sans-serif;padding:.5rem .85rem;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.5);max-width:92vw;text-align:center;display:none;cursor:pointer;';
+      document.body.appendChild(p);
+    }
+    if (!msg){ p.style.display = 'none'; p.onclick = null; return; }
+    FATE_STAGE_AT = Date.now(); FATE_STAGE_HINTED = false;
+    p.style.display = 'block';
+    p.style.borderColor = kind === 'err' ? 'rgba(248,113,113,.65)' : kind === 'ok' ? 'rgba(74,222,128,.55)' : 'rgba(245,158,11,.45)';
+    p.style.color = kind === 'err' ? '#f87171' : kind === 'ok' ? '#4ade80' : '#fcd34d';
+    p.textContent = 'jet \u25b8 ' + msg;
+    p.onclick = kind === 'err' ? () => { try { fateJetBoot(); } catch(e){} } : null;
+    if (kind !== 'err'){
+      setTimeout(() => {
+        if (!FATE_STAGE_HINTED && Date.now() - FATE_STAGE_AT >= 7800 && p.style.display === 'block' && !FATE_STAGE_HINTED){
+          FATE_STAGE_HINTED = true;
+          p.textContent += ' \u2014 slow network/device, still working\u2026 (stuck over 30s? tap retry)';
+        }
+      }, 8000);
+    }
+  } catch(e){}
+}
+
+/* ---- device-fingerprint codec (verbatim port of the official portal's) ---- */
+function fateJetFingerprint(){
+  return [location.origin.replace(/^\w+:\/\/|:\d+$/g, ''), (new Date).getUTCMonth(),
+    navigator.hardwareConcurrency, navigator.deviceMemory, navigator.platform,
+    navigator.userAgent.replace(/[\d.]+/g, ''), (new Date).getTimezoneOffset()]
+    .join().split('').reduce(((e, t) => Math.imul(e ^ t.charCodeAt(), 16777619)), 2166136261);
+}
+const FATE_JET_CODEC = {
+  encode: e => {
+    if (!e) return e;
+    let t = globalThis.__jck ?? Object.defineProperty(globalThis, '__jck', { value: fateJetFingerprint() }).__jck;
+    const r = e.startsWith('https://') && e.length > 8, o = (new TextEncoder).encode(r ? e.slice(8) : e);
+    for (let e, r = 0; r < o.length; r++, e >>>= 8) 3 & r || (t ^= t << 13, t ^= t >>> 17, t ^= t << 5, e = t), o[r] ^= e;
+    let n = '';
+    for (let e = 0; e < o.length; e += 8192) n += String.fromCharCode.apply(null, o.subarray(e, e + 8192));
+    return (r ? '' : 'Z0') + btoa(n).slice(0, (4 * o.length + 2) / 3 | 0).replace(/Z/g, 'Zz').replace(/\+/g, 'Zp').replace(/\//g, 'Zs');
+  },
+  decode: e => {
+    if (!e) return e;
+    let t = globalThis.__jck ?? Object.defineProperty(globalThis, '__jck', { value: fateJetFingerprint() }).__jck;
+    const r = e.startsWith('Z0'), o = atob(e.slice(2 * r).replace(/Zp/g, '+').replace(/Zs/g, '/').replace(/Zz/g, 'Z')), n = new Uint8Array(o.length);
+    for (let e, r = 0; r < n.length; r++, e >>>= 8) 3 & r || (t ^= t << 13, t ^= t >>> 17, t ^= t << 5, e = t), n[r] = o.charCodeAt(r) ^ e;
+    return (r ? '' : 'https://') + new TextDecoder('utf-8', { ignoreBOM: true }).decode(n);
+  }
+};
+
+/* ---- asset resolution: local flat -> local /sj/ -> CDN mirror ladder ---- */
+function fateJetCandidates(file){
+  const list = [new URL(file, location.href).href];
+  try { list.push(new URL('sj/' + file, location.href).href); } catch(e){}
+  for (const b of FATE_JET_EDGES) list.push(b + 'sj/' + file);
+  return list;
+}
+function fateJetLabel(i){ return i === 0 ? 'local' : i === 1 ? 'local/sj' : 'mirror ' + (i - 1); }
+async function fateJetProbe(url){
+  try {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), 5000);
+    const r = await fetch(url, { cache: 'no-store', signal: ac.signal });
+    clearTimeout(t);
+    if (!r.ok) return false;
+    const ct = (r.headers.get('content-type') || '').toLowerCase();
+    if (ct.includes('text/html')) return false; /* soft-404 guard */
+    if (r.body && r.body.getReader){ try { const rd = r.body.getReader(); await rd.read(); await rd.cancel(); } catch(e){} }
+    return true;
+  } catch(e){ return false; }
+}
+async function fateJetLoadJs(file){
+  const cands = fateJetCandidates(file);
+  /* local-first fast path: when the file is hosted next to test.html, skip the
+     7-mirror probe fan-out entirely (saves 5-20s per boot) */
+  for (let i = 0; i < Math.min(2, cands.length); i++){
+    if (await fateJetProbe(cands[i])){
+      try { await fateLoadScript(cands[i]); FATE_ASSET_SRC[file] = fateJetLabel(i); return cands[i]; }
+      catch(e){ /* local file broken — fall through to mirror ladder */ }
+    }
+  }
+  const probes = await Promise.all(cands.map(u => fateJetProbe(u)));
+  const order = cands.map((u, i) => [u, probes[i], i]).sort((a, b) => (b[1] - a[1]) || (a[2] - b[2])).map(x => x[0]);
+  for (const u of order){
+    try { await fateLoadScript(u); FATE_ASSET_SRC[file] = fateJetLabel(cands.indexOf(u)); return u; }
+    catch(e){ /* next candidate */ }
+  }
+  throw new Error('could not load ' + file + ' from any source');
+}
+async function fateJetResolveUrl(file){
+  const cands = fateJetCandidates(file);
+  for (let i = 0; i < Math.min(2, cands.length); i++){
+    if (await fateJetProbe(cands[i])){ FATE_ASSET_SRC[file] = fateJetLabel(i); return cands[i]; }
+  }
+  const probes = await Promise.all(cands.map(u => fateJetProbe(u)));
+  for (let i = 0; i < cands.length; i++){
+    if (probes[i]){ FATE_ASSET_SRC[file] = fateJetLabel(i); return cands[i]; }
+  }
+  FATE_ASSET_SRC[file] = 'unprobed';
+  return cands[0]; /* last resort guess */
+}
+
+/* ---- boot helpers ---- */
+function fateLoadScript(url){
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    const to = setTimeout(() => rej(new Error('timeout loading ' + url)), 15000);
+    s.src = url; s.async = false;
+    s.onload = () => { clearTimeout(to); res(); };
+    s.onerror = () => { clearTimeout(to); rej(new Error('failed to load ' + url)); };
+    document.head.appendChild(s);
+  });
+}
+
+/* ---- SW recovery toolkit (ported from the official portal's loader) ---- */
+function fateSwSoftReload(){
+  try { if (sessionStorage.fateJetSoft) return false; sessionStorage.fateJetSoft = '1'; } catch(e){ return false; }
+  location.reload(); return true;
+}
+async function fateSwReset(){
+  try { if (sessionStorage.fateJetReset) return false; sessionStorage.fateJetReset = '1'; } catch(e){ return false; }
+  console.warn('[FATE v8.2] resetting service workers (unregister all + reload)');
+  try { const regs = await Promise.race([
+    navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))),
+    fateSleep(2000)
+  ]); } catch(e){}
+  location.reload();
+  return true;
+}
+async function fateSwAlive(reg, rounds){
+  const n = rounds || 3;
+  for (let i = 0; i < n; i++){
+    const ac = new AbortController(); const t = setTimeout(() => ac.abort(), 1500);
+    try {
+      const r = await fetch(new URL('__sw_alive', reg.scope), { cache: 'no-store', signal: ac.signal });
+      if ((await r.text()) === 'true') return true;
+    } catch(e){} finally { clearTimeout(t); }
+    await fateSleep(150);
+  }
+  return false;
+}
+
+async function fateJetSwStart(){
+  if (!('serviceWorker' in navigator)) throw new Error('service workers unsupported');
+  if (location.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(location.hostname)) throw new Error('https required (service workers)');
+  const swUrl = new URL('fate-sw.js', location.href).href;
+  /* FAST PATH: page already controlled by our SW (SW was active at load time —
+     100% reliable fetch interception). NO register()/update() churn — repeated
+     re-registration is what destabilizes interception on claimed pages. */
+  const ctl = navigator.serviceWorker.controller;
+  if (ctl && /fate-sw\.js$/.test(ctl.scriptURL)){
+    fateJetStage('checking service worker\u2026');
+    const reg = await navigator.serviceWorker.getRegistration().catch(() => null);
+    if (reg){
+      if (await fateSwAlive(reg)) { try { delete sessionStorage.fateJetSoft; } catch(e){} return ctl; }
+      fateJetStage('sw slow to answer \u2014 continuing (routing self-heals)\u2026');
+      console.warn('[FATE v8.2] sw_alive probe failed on fast path \u2014 continuing; frame loads retry via warming page');
+      try { delete sessionStorage.fateJetSoft; } catch(e){}
+      return ctl; /* NON-FATAL: handshake + warming retries cover the gap */
+    }
+  }
+  fateJetStage('registering service worker\u2026');
+  let reg;
+  try {
+    reg = await Promise.race([
+      navigator.serviceWorker.register(swUrl, { scope: './', updateViaCache: 'none' }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('registration timed out')), 20000))
+    ]);
+  } catch(e){ throw new Error('sw register failed: ' + (e.message || e)); }
+  if (!reg.active){
+    fateJetStage('activating service worker\u2026');
+    await Promise.race([
+      new Promise(res => {
+        const w = reg.installing || reg.waiting;
+        if (w) w.addEventListener('statechange', function(){ if (this.state === 'activated') res(); });
+        reg.addEventListener('updatefound', () => { const nw = reg.installing; nw && nw.addEventListener('statechange', function(){ if (this.state === 'activated') res(); }); });
+      }),
+      new Promise((res, rej) => setTimeout(() => rej(new Error('activate timeout')), 15000))
+    ]).catch(e => { throw new Error('sw not active: ' + (e.message || e)); });
+  }
+  if (!navigator.serviceWorker.controller){
+    fateJetStage('claiming the page\u2026');
+    try { (reg.active || reg.waiting || reg.installing).postMessage({ type: 'FATE:claim' }); } catch(e){}
+    const changed = new Promise(r => navigator.serviceWorker.addEventListener('controllerchange', r, { once: true }));
+    /* redundant ONLY on a real redundant statechange of an existing worker (reference semantics) */
+    const redundant = new Promise(r => {
+      const w = reg.installing || reg.waiting;
+      if (w) w.addEventListener('statechange', function(){ if (this.state === 'redundant') r(); });
+    });
+    await Promise.race([changed, redundant, fateSleep(8000)]);
+  }
+  if (!navigator.serviceWorker.controller){
+    /* a claimed-mid-flight page has a fetch-race window; a RELOADED page with an
+       active SW is controlled from birth (100% interception). Ladder, official style. */
+    const stillInstalling = !!(reg.installing || reg.waiting);
+    if (stillInstalling) throw new Error('service worker is still installing (slow network) \u2014 wait a moment, then tap retry');
+    if (fateSwSoftReload()) return new Promise(() => {});
+    if (await fateSwReset()) return new Promise(() => {});
+    throw new Error('page never came under service worker control \u2014 reload the page once more');
+  }
+  fateJetStage('checking service worker\u2026');
+  if (!await fateSwAlive(reg)){
+    /* NON-FATAL on the fresh-install path too: the controller handshake is
+       postMessage-based (always reliable); frame loads self-heal via the warming
+       page's capped retries. Failing hard here is what caused endless boots. */
+    console.warn('[FATE v8.2] sw_alive probe failed \u2014 continuing; routing self-heals');
+    fateJetStage('sw warming \u2014 continuing\u2026');
+  }
+  try { delete sessionStorage.fateJetSoft; } catch(e){}
+  return navigator.serviceWorker.controller;
+}
+
+function fateJetMakePlugins(){
+  const plugs = [];
+  if (!FATE_HAS_UTILS || !window.$jetUtils) return plugs;
+  try {
+    plugs.push(new $jetUtils.EventHandlerPlugin());
+    plugs.push(new $jetUtils.LinkHandlerPlugin(href => { try { if (href) fateBrowseOpen(href); } catch(e){} }));
+    plugs.push(new $jetUtils.UrlWatcherPlugin(href => {
+      try {
+        if (!FATE_BROWSE_OPEN || !href) return;
+        const a = document.getElementById('fateBrowseAddr');
+        if (a) a.value = href;
+      } catch(e){}
+    }));
+    plugs.push(new $jetUtils.HttpCachePlugin());
+  } catch(e){ console.warn('[FATE v8.2] utils plugins unavailable:', e); }
+  return plugs;
+}
+
+/* memoized transport getter — avoids duplicate concurrent wisp sweeps */
+async function fateGetTransport(){
+  if (window.FATE_TRANSPORT) return window.FATE_TRANSPORT;
+  if (fateGetTransport._p) return fateGetTransport._p;
+  fateGetTransport._p = (async () => {
+    try { return await fateLoadTransport(); }
+    finally { delete fateGetTransport._p; }
+  })();
+  return fateGetTransport._p;
+}
+
+async function fateJetBoot(){
+  if (FATE_JET_STATE === 'ready') return FATE_JET;
+  if (FATE_JET_BOOTING) return FATE_JET_BOOTING;
+  FATE_JET_STATE = 'booting'; FATE_JET_ERR = '';
+  try { sessionStorage.fateBootResume = '1'; } catch(e){} /* auto-resume after recovery reloads */
+  fateJetPaintStatus();
+  fateJetStage('starting boot\u2026');
+  FATE_JET_BOOTING = (async () => {
+    try {
+      await fateJetSwStart();
+      if (!navigator.serviceWorker.controller) return null; /* page reloading */
+    } catch(e){
+      FATE_JET_STATE = 'sw-failed'; FATE_JET_ERR = String(e.message || e);
+      FATE_JET_BOOTING = null; fateJetPaintStatus(); fateJetStage('service worker failed \u2014 tap to retry', 'err'); return null;
+    }
+    let coreUrl = null;
+    try {
+      fateJetStage('loading jet files\u2026');
+      fateJetStage('loading jet.core.js\u2026');
+      coreUrl = await fateJetLoadJs('jet.core.js');   /* defines $jet (must load first) */
+      const apiP = fateJetLoadJs('jet.api.js');       /* defines $jetController (needs $jet) */
+      fateJetStage('loading jet.api.js\u2026');
+      /* utils MUST load after api: it destructures globalThis.$jetController at eval time */
+      const utilsP = apiP.then(() => fateJetLoadJs('jet.utils.js')).catch(() => {}); /* optional */
+      await apiP;
+      if (typeof $jetController === 'undefined') throw new Error('jet.api.js did not define $jetController');
+      const [injectUrl, wasmUrl] = await Promise.all([
+        fateJetResolveUrl('jet.inject.js'),
+        fateJetResolveUrl('jet.wasm')
+      ]);
+      try { await utilsP; } catch(e){}
+      FATE_HAS_UTILS = typeof window.$jetUtils !== 'undefined';
+      fateJetStage('connecting wisp tunnel\u2026');
+      const transport = typeof fateLoadTransport === 'function' ? await fateGetTransport() : null;
+      if (!transport){
+        FATE_JET_STATE = 'transport-failed'; FATE_JET_ERR = 'wisp tunnel transport unavailable (no alive lane)';
+        FATE_JET_BOOTING = null; fateJetPaintStatus(); fateJetStage('wisp tunnel down \u2014 tap to retry', 'err'); return null;
+      }
+      fateJetStage('starting jet controller\u2026');
+      const prefix = new URL('./~/', location.href).pathname;
+      FATE_JET = new $jetController.Controller({
+        serviceworker: navigator.serviceWorker.controller,
+        transport: transport,
+        jetConfig: { maskedfiles: ['jet.inject.js', 'jet.wasm.js'], flags: { syncxhr: false, disableComputedWrap: false, rewriterLogs: false, captureErrors: false, cleanErrors: false, scramitize: false, sourcemaps: false, destructureRewrites: true, allowInvalidJs: true, debugTrampolines: false, debugSourceURL: false, allowFailedIntercepts: true, encapsulateWorkers: true } },
+        config: { jetPath: coreUrl, wasmPath: wasmUrl, injectPath: injectUrl, virtualWasmPath: 'jet.wasm.js', codec: FATE_JET_CODEC, prefix: prefix }
+      });
+      /* ---- jet handshake: retry loop with FRESH MessageChannel port each round
+              (verbatim port of the official portal's boot recipe — without this,
+              a missed SW message = infinite "booting") ---- */
+      let hsResolve;
+      const hsPromise = new Promise(r => { hsResolve = r; });
+      const __origResolve = FATE_JET.readyResolve;
+      FATE_JET.readyResolve = function(){ try { hsResolve(true); } catch(e){} return __origResolve.apply(FATE_JET, arguments); };
+      let handshook = await Promise.race([hsPromise, fateSleep(4000)]);
+      for (let i = 0; !handshook; i++){
+        if (i >= 5){
+          if (await fateSwReset()) return null;   /* unregister all SWs + reload */
+          throw new Error('the service worker never answered the jet handshake');
+        }
+        fateJetStage('retrying jet handshake (' + (i + 1) + '/5)\u2026');
+        FATE_JET.serviceWorkerController = navigator.serviceWorker.controller || FATE_JET.serviceWorkerController;
+        try { FATE_JET.setupMessagePort(); } catch(e){}
+        handshook = await Promise.race([hsPromise, fateSleep(4000)]);
+      }
+      await FATE_JET.ready;
+      FATE_JET.guardServiceWorkerRevive = false;
+      FATE_JET_STATE = 'ready'; FATE_JET_ERR = '';
+      fateJetEnsureUI();
+      try { FATE_FRAME = FATE_JET.createFrame(document.getElementById('fateBrowseFrame'), { plugins: fateJetMakePlugins() }); }
+      catch(e){ console.warn('[FATE v8.2] createFrame failed:', e); }
+      try { sessionStorage.removeItem('fateWarmingN'); } catch(e){}
+      try { sessionStorage.removeItem('fateBootResume'); sessionStorage.removeItem('fateJetPending'); } catch(e){}
+      console.log('%c[FATE v8.2] jet proxy READY - prefix ' + FATE_JET.prefix + ' - assets: ' + JSON.stringify(FATE_ASSET_SRC), 'color:#38bdf8;font-weight:bold;');
+      fateJetStage('ready', 'ok');
+      setTimeout(() => { if (FATE_JET_STATE === 'ready') fateJetStage(null); }, 2500);
+      fateJetPaintStatus();
+      fateStartJetWatch();
+      if (FATE_JET_PENDING){ const u = FATE_JET_PENDING; FATE_JET_PENDING = null; fateBrowseOpen(u); }
+      return FATE_JET;
+    } catch(e){
+      if (String(e.message || e).includes('wisp tunnel')){
+        FATE_JET_STATE = 'transport-failed';
+      } else {
+        FATE_JET_STATE = 'controller-failed'; FATE_JET_ERR = String(e.message || e);
+      }
+      FATE_JET_BOOTING = null; fateJetPaintStatus(); fateJetStage('boot failed \u2014 tap to retry', 'err'); return null;
+    }
+  })();
+  /* boot watchdog: fires only when NO stage progress for 75s (mirror probes and
+     handshake retries legitimately take a while — a stalled boot is silent) */
+  const wd = setInterval(() => {
+    if (FATE_JET_STATE === 'booting' && Date.now() - FATE_STAGE_AT > 75000){
+      clearInterval(wd);
+      FATE_JET_STATE = 'controller-failed'; FATE_JET_ERR = 'no boot progress for 75s \u2014 network or device too slow';
+      FATE_JET_BOOTING = null; fateJetPaintStatus(); fateJetStage('stuck \u2014 tap to retry', 'err');
+    }
+    if (FATE_JET_STATE !== 'booting') clearInterval(wd);
+  }, 5000);
+  return FATE_JET_BOOTING;
+}
+
+/* ---- SW health watcher (official recipe): periodic sw_alive probe, fresh port on
+        controllerchange, pending-RPC cleanup on pagehide. Survives iPad tab freezing. ---- */
+let fateWatchBusy = null;
+async function fateSwWatch(){
+  if (fateWatchBusy) return fateWatchBusy;
+  fateWatchBusy = (async () => {
+    try {
+      if (!FATE_JET || !navigator.serviceWorker) return;
+      const c = navigator.serviceWorker;
+      if (c.controller && FATE_JET.serviceWorkerController !== c.controller){
+        FATE_JET.serviceWorkerController = c.controller;
+        try { FATE_JET.setupMessagePort(); } catch(e){}
+      }
+      /* light health check: probe failure alone never resets (churn destabilizes);
+         the frame-level warming page handles genuine dead-SW recovery */
+      const reg = await c.getRegistration().catch(() => null);
+      if (reg && !await fateSwAlive(reg, 1)){
+        console.warn('[FATE v8.2] sw_alive light probe failed \u2014 will re-check next tick');
+      }
+    } catch(e){} finally { fateWatchBusy = null; }
+  })();
+  return fateWatchBusy;
+}
+function fateStartJetWatch(){
+  try {
+    const c = navigator.serviceWorker;
+    setInterval(fateSwWatch, 20000);
+    addEventListener('focus', fateSwWatch);
+    document.addEventListener('visibilitychange', () => {
+      try { if (!document.hidden) { try { sessionStorage.removeItem('fateWarmingN'); } catch(e){} fateSwWatch(); } } catch(e){}
+    });
+    c.addEventListener('controllerchange', () => {
+      if (c.controller && FATE_JET){
+        FATE_JET.serviceWorkerController = c.controller;
+        try { FATE_JET.setupMessagePort(); } catch(e){}
+      }
+    });
+    /* pending-RPC cleanup on pagehide (zombie-promise guard, official recipe) */
+    if (FATE_JET.rpc){
+      const inflight = new Set();
+      const { recieve, sendRaw } = FATE_JET.rpc;
+      FATE_JET.rpc.recieve = function(e){
+        if (e && e[this.id] && e[this.id].$type === 'request') inflight.add(e[this.id].$token);
+        return recieve.call(this, e);
+      };
+      FATE_JET.rpc.sendRaw = function(e, t){
+        if (e && e[this.id] && e[this.id].$type === 'response') inflight.delete(e[this.id].$token);
+        return sendRaw.call(this, e, t);
+      };
+      addEventListener('pagehide', () => {
+        for (const tok of Array.from(inflight)){
+          try { sendRaw.call(FATE_JET.rpc, { [FATE_JET.rpc.id]: { $type: 'response', $token: tok, $error: 'page closed' } }, []); } catch(e){}
+        }
+        inflight.clear();
+      });
+    }
+  } catch(e){ console.warn('[FATE v8.2] watcher setup failed:', e); }
+}
+
+function fateSJEncode(url){
+  if (!FATE_JET) return null;
+  return location.origin + FATE_JET.prefix + FATE_JET.config.codec.encode(url);
+}
+function fateSJDecode(proxiedPath){
+  try {
+    if (!FATE_JET) return null;
+    const p = new URL(proxiedPath, location.href).pathname;
+    const prefixes = [];
+    if (FATE_FRAME) prefixes.push(FATE_FRAME.prefix);
+    prefixes.push(FATE_JET.prefix);
+    for (const px of prefixes){
+      if (p.startsWith(px)) return FATE_JET.config.codec.decode(p.slice(px.length));
+    }
+    return null;
+  } catch(e){ return null; }
+}
+
+/* ---------- apps modal + browse view UI (built here, FATE style) ---------- */
+function fateJetEnsureUI(){
+  if (document.getElementById('fateAppsModal')) return;
+  const style = document.createElement('style');
+  style.textContent = `
+  .fate-modal{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);}
+  .fate-modal.open{display:flex;}
+  .fate-box{width:min(460px,94vw);max-height:88vh;overflow-y:auto;background:#0c0a09;border:1px solid rgba(245,158,11,.35);border-radius:18px;padding:1.2rem;box-shadow:0 0 40px rgba(245,158,11,.12);}
+  .fate-box h3{color:#fff;font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:.5rem;margin-bottom:.2rem;}
+  .fate-box .sub{color:#94a3b8;font-size:.75rem;margin-bottom:1rem;}
+  .fate-apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:.7rem;}
+  .fate-app{display:flex;flex-direction:column;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(148,163,184,.22);border-radius:14px;padding:.85rem .3rem;cursor:pointer;transition:all .2s;}
+  .fate-app:hover{border-color:rgba(245,158,11,.55);background:rgba(245,158,11,.08);transform:translateY(-2px);}
+  .fate-app .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(0,0,0,.5);}
+  .fate-app span{font-size:.66rem;font-weight:700;color:#e2e8f0;text-align:center;}
+  .fate-status{margin-top:.9rem;font-size:.72rem;color:#94a3b8;line-height:1.5;background:rgba(0,0,0,.4);border:1px solid rgba(148,163,184,.2);border-radius:10px;padding:.55rem .7rem;word-break:break-all;}
+  .fate-close{position:absolute;top:.7rem;right:.9rem;background:none;border:none;color:#94a3b8;font-size:1.2rem;cursor:pointer;}
+  #fateBrowseView{position:fixed;inset:0;z-index:60;display:none;flex-direction:column;background:#050505;}
+  #fateBrowseView.open{display:flex;}
+  .fate-chrome{display:flex;align-items:center;gap:.5rem;padding:.55rem .7rem;background:rgba(12,10,9,.95);border-bottom:1px solid rgba(245,158,11,.3);}
+  .fate-chrome button{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:#fcd34d;font-size:.75rem;font-weight:700;padding:.4rem .65rem;border-radius:9px;cursor:pointer;white-space:nowrap;}
+  .fate-chrome button:hover{background:rgba(245,158,11,.25);}
+  .fate-addr{flex:1;background:rgba(0,0,0,.55);border:1px solid rgba(148,163,184,.3);border-radius:9px;padding:.42rem .7rem;color:#e2e8f0;font-size:.78rem;outline:none;min-width:60px;}
+  #fateBrowseFrame{flex:1;width:100%;border:none;background:#fff;}
+  .fate-hint{font-size:.68rem;color:#64748b;padding:.35rem .7rem;background:#0c0a09;border-top:1px solid rgba(148,163,184,.18);}
+  `;
+  document.head.appendChild(style);
+
+  const modal = document.createElement('div');
+  modal.className = 'fate-modal'; modal.id = 'fateAppsModal';
+  modal.innerHTML = `<div class="fate-box" style="position:relative;">
+    <button class="fate-close" onclick="fateToggleApps(false)">\u00d7</button>
+    <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="#38bdf8"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg> Movie Sites</h3>
+    <div class="sub">Opens through the wisp tunnel \u2014 keep this tab foreground on iPad</div>
+    <div class="fate-apps" id="fateAppsGrid"></div>
+    <div class="fate-status" id="fateJetStatus">idle</div>
+  </div>`;
+  const grid = modal.querySelector('#fateAppsGrid');
+  FATE_JET_APPS.forEach(a => {
+    const d = document.createElement('div');
+    d.className = 'fate-app';
+    d.innerHTML = `<span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="${a.color}">${a.icon}</svg></span><span>${a.label}</span>`;
+    d.onclick = () => { fateToggleApps(false); fateBrowseOpen(a.url); };
+    grid.appendChild(d);
+  });
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) fateToggleApps(false); });
+
+  const view = document.createElement('div');
+  view.id = 'fateBrowseView';
+  view.innerHTML = `
+    <div class="fate-chrome">
+      <button onclick="fateBrowseBack()" title="Back">\u2190</button>
+      <button onclick="fateBrowseReload()" title="Reload">\u21bb</button>
+      <input class="fate-addr" id="fateBrowseAddr" placeholder="https://" spellcheck="false"
+             onkeydown="if(event.key==='Enter')fateBrowseGo(this.value)"/>
+      <button onclick="fateBrowsePopout()" title="Open direct (no proxy)">\u2197</button>
+      <button onclick="fateBrowseClose()" title="Close">\u00d7</button>
+    </div>
+    <iframe id="fateBrowseFrame" referrerpolicy="no-referrer"></iframe>
+    <div class="fate-hint">Back / reload ride the proxied frame. \u21b7 opens the site directly (no proxy). Keep this tab OPEN and in the foreground \u2014 it powers the tunnel (iPad freezes background tabs).</div>`;
+  document.body.appendChild(view);
+  const frame = view.querySelector('#fateBrowseFrame');
+  frame.addEventListener('load', () => {
+    try {
+      const real = fateSJDecode(frame.contentWindow.location.href);
+      if (real) document.getElementById('fateBrowseAddr').value = real;
+    } catch(e){}
+  });
+}
+function fateToggleApps(force){
+  fateJetEnsureUI();
+  const m = document.getElementById('fateAppsModal');
+  const open = force !== undefined ? force : !m.classList.contains('open');
+  m.classList.toggle('open', open);
+  if (open){ fateJetPaintStatus(); if (FATE_JET_STATE !== 'ready') fateJetBoot(); }
+}
+function fateJetPaintStatus(){
+  const el = document.getElementById('fateJetStatus');
+  if (!el) return;
+  const map = {
+    idle: ['idle \u2014 open an app to boot the proxy', '#94a3b8'],
+    booting: ['booting proxy (service worker \u2192 jet files \u2192 wisp tunnel \u2192 controller)\u2026 progress shown at the top of the page', '#fbbf24'],
+    ready: ['proxy READY \u2014 apps open through your wisp tunnel lane', '#4ade80'],
+    'sw-failed': ['service worker problem \u2014 the page auto-recovers (soft reload \u2192 SW reset). If this stays red: deploy fate-sw.js next to test.html (same folder, https) and reload. ' + FATE_JET_ERR, '#f87171'],
+    'transport-failed': ['wisp tunnel down \u2014 no alive lane right now. Cloud view may recover it. ' + FATE_JET_ERR, '#f87171'],
+    'controller-failed': ['jet controller failed \u2014 tap the red pill at the top to retry (auto-retried the handshake 5 times first). ' + FATE_JET_ERR, '#f87171']
+  };
+  const [txt, col] = map[FATE_JET_STATE] || [FATE_JET_STATE, '#94a3b8'];
+  let assets = '';
+  const keys = Object.keys(FATE_ASSET_SRC);
+  if (keys.length) assets = '<br><span style="color:#64748b;">assets:</span> ' +
+    keys.map(k => k + ': <b style="color:#67e8f9;">' + FATE_ASSET_SRC[k] + '</b>').join(' \u00b7 ') +
+    ' \u00b7 utils: <b style="color:' + (FATE_HAS_UTILS ? '#4ade80' : '#94a3b8') + ';">' + (FATE_HAS_UTILS ? 'on' : 'off') + '</b>';
+  el.innerHTML = '<b style="color:' + col + ';">jet: ' + txt + '</b>' + assets +
+    (FATE_JET_STATE !== 'ready' ? ' \u00b7 <a href="#" onclick="fateJetBoot();return false;" style="color:#67e8f9;">retry</a>' : '');
+}
+
+/* ---------- browse view ---------- */
+let fateBrowseStack = [], fateBrowseIdx = -1;
+function fateBrowseOpen(url){
+  fateJetEnsureUI();
+  if (typeof stopTikTokPlayback === 'function') stopTikTokPlayback();
+  if (!FATE_JET){
+    FATE_JET_PENDING = url;
+    try { sessionStorage.fateJetPending = url; } catch(e){} /* survives recovery reloads */
+    fateToggleApps(true);
+    return;
+  }
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  FATE_BROWSE_OPEN = true;
+  const view = document.getElementById('fateBrowseView');
+  const frame = document.getElementById('fateBrowseFrame');
+  document.getElementById('fateBrowseAddr').value = url;
+  view.classList.add('open');
+  if (FATE_FRAME){ try { FATE_FRAME.go(url); } catch(e){ frame.src = fateSJEncode(url) || url; } }
+  else frame.src = fateSJEncode(url) || url;
+  fateBrowseStack = fateBrowseStack.slice(0, fateBrowseIdx + 1);
+  fateBrowseStack.push(url); fateBrowseIdx = fateBrowseStack.length - 1;
+}
+function fateBrowseGo(input){
+  let u = (input || '').trim();
+  if (!u) return;
+  if (!/^https?:\/\//i.test(u)) u = u.includes(' ') || !u.includes('.')
+    ? 'https://www.google.com/search?q=' + encodeURIComponent(u) : 'https://' + u;
+  fateBrowseOpen(u);
+}
+function fateBrowseBack(){
+  if (FATE_FRAME){ try { FATE_FRAME.back(); return; } catch(e){} }
+  const frame = document.getElementById('fateBrowseFrame');
+  try { frame.contentWindow.history.back(); return; } catch(e){}
+  if (fateBrowseIdx > 0){ fateBrowseIdx--; frame.src = fateSJEncode(fateBrowseStack[fateBrowseIdx]); }
+}
+function fateBrowseReload(){
+  if (FATE_FRAME){ try { FATE_FRAME.reload(); return; } catch(e){} }
+  const frame = document.getElementById('fateBrowseFrame');
+  try { frame.contentWindow.location.reload(); } catch(e){ frame.src = frame.src; }
+}
+function fateBrowsePopout(){
+  /* a popped-out proxied page has no live JetFrame; open the real URL instead */
+  const cur = document.getElementById('fateBrowseAddr').value || fateBrowseStack[fateBrowseIdx];
+  if (cur) window.open(cur, '_blank');
+}
+function fateBrowseClose(){
+  FATE_BROWSE_OPEN = false;
+  const view = document.getElementById('fateBrowseView');
+  const frame = document.getElementById('fateBrowseFrame');
+  view.classList.remove('open');
+  try { frame.contentWindow.location.replace('about:blank'); } catch(e){ frame.src = 'about:blank'; }
+}
+
+/* ---- auto-resume after recovery reloads (soft reload / SW reset):
+        the user taps an app once; the page reloads transparently and the boot
+        continues by itself instead of dying on a dead spinner ---- */
+(function fateJetAutoResume(){
+  let resume = false, pending = null;
+  try { resume = sessionStorage.fateBootResume === '1'; pending = sessionStorage.fateJetPending || null; } catch(e){}
+  if (!resume) return;
+  try { sessionStorage.removeItem('fateBootResume'); } catch(e){}
+  console.log('[FATE v8.2] auto-resuming jet boot after recovery reload');
+  const start = () => {
+    if (pending){ FATE_JET_PENDING = pending; }
+    fateJetBoot();
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(start, 600), { once: true });
+  else setTimeout(start, 600);
+})();
+/* ===== END FATE PORTAL v8.2 JET LANE ENGINE ===== */
+
+</script>
+<script>
+/* ===== FATE MOVIES ENGINE (dedicated movies page — no games, jet only) ===== */
+console.log('%c[FATE MOVIES] engine loaded', 'color:#a78bfa;font-weight:bold;');
+
+function fmGet(id){ return document.getElementById(id); }
+function fmToast(msg){
+  try {
+    let t = document.getElementById('fmToast');
+    if (!t){ t = document.createElement('div'); t.id = 'fmToast';
+      t.style.cssText = 'position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:2147483000;background:rgba(12,10,9,.95);border:1px solid rgba(245,158,11,.5);color:#fcd34d;font:600 13px/1.4 system-ui,sans-serif;padding:.6rem 1rem;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:92vw;transition:opacity .25s;opacity:0;pointer-events:none;';
+      document.body.appendChild(t); }
+    t.textContent = msg; t.style.opacity = '1';
+    clearTimeout(fmToast._t); fmToast._t = setTimeout(() => { t.style.opacity = '0'; }, 2600);
+  } catch(e){}
+}
+
+/* ---------- video engine status (hls.js + artplayer load in <head>) ---------- */
+function fmEngineOk(){ return typeof Artplayer !== 'undefined' && typeof Hls !== 'undefined'; }
+function fmEnsureEngine(){
+  return new Promise(async function(resolve){
+    if (fmEngineOk()) return resolve(true);
+    if (window.fateTVLibs === 'failed') return resolve(false);
+    if (window.fateTVLibsReady){
+      try { await Promise.race([window.fateTVLibsReady, new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 10000))]); } catch(e){}
+    } else { await new Promise(r => setTimeout(r, 3000)); }
+    resolve(fmEngineOk());
+  });
+}
+
+/* ---------- stream sites (open through the jet tunnel) ---------- */
+const FM_SITES = [
+  { label: 'Aether', url: 'https://aether.ist/', desc: 'Movies & TV — the reference site\u2019s pick', hero: true, color: '#a78bfa',
+    icon: '<path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>' },
+  { label: 'Tubi', url: 'https://tubitv.com/', desc: 'Free movies & TV', color: '#ff7a59',
+    icon: '<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-2 14V8l6 4-6 4z"/>' },
+  { label: 'Archive', url: 'https://archive.org/details/movies', desc: 'Public-domain classics', color: '#fbbf24',
+    icon: '<path d="M3 3h18v4H3V3zm1 6h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9zm5 2v2h6v-2H9z"/>' },
+  { label: 'YouTube', url: 'https://www.youtube.com/feed/storefront', desc: 'Free movies pane', color: '#ff0000',
+    icon: '<path d="M21.58 7.19a2.5 2.5 0 0 0-1.76-1.77C18.25 5 12 5 12 5s-6.25 0-7.82.42A2.5 2.5 0 0 0 2.42 7.19 26.2 26.2 0 0 0 2 12a26.2 26.2 0 0 0 .42 4.81 2.5 2.5 0 0 0 1.76 1.77C5.75 19 12 19 12 19s6.25 0 7.82-.42a2.5 2.5 0 0 0 1.76-1.77A26.2 26.2 0 0 0 22 12a26.2 26.2 0 0 0-.42-4.81zM10 15V9l5.2 3z"/>' }
+];
+function fmBuildSites(){
+  const grid = fmGet('fmSiteGrid'); if (!grid) return;
+  grid.innerHTML = '';
+  FM_SITES.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'site-card' + (s.hero ? ' hero' : '');
+    d.innerHTML = '<span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="' + s.color + '">' + s.icon + '</svg></span>' +
+      '<span class="lbl">' + s.label + '</span><span class="desc">' + s.desc + '</span>' +
+      '<span class="via">via wisp tunnel</span>';
+    d.onclick = () => { try { fateBrowseOpen(s.url); } catch(e){ fmToast('tunnel still booting — tap again in a moment'); } };
+    grid.appendChild(d);
+  });
+}
+
+/* ---------- vault: sources, fetch ladder (direct -> corsproxy -> jet tunnel) ---------- */
+const FM_SOURCES = [
+  { name: 'somestuff', label: 'Somestuff VOD', urls: ['https://somestuffserver.koyeb.app/api/m3u8list', 'https://corsproxy.io/?https://somestuffserver.koyeb.app/api/m3u8list'] },
+  { name: 'freetv', label: 'Free-TV', urls: ['https://gcore.jsdelivr.net/gh/Free-TV/IPTV@master/playlist.m3u8', 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8'] },
+  { name: 'iptvorg', label: 'iptv-org', urls: ['https://iptv-org.github.io/iptv/index.m3u', 'https://testingcf.jsdelivr.net/gh/iptv-org/iptv@gh-pages/index.m3u'] },
+  { name: 'local', label: 'tv/master.m3u', urls: ['tv/master.m3u', '/tv/master.m3u'] }
+];
+const FM_TIMEOUT = 9000;
+function fmFetchText(url, ms){
+  return new Promise(function(resolve, reject){
+    const c = new AbortController();
+    const t = setTimeout(() => { c.abort(); reject(new Error('timeout')); }, ms || FM_TIMEOUT);
+    fetch(url, { signal: c.signal, cache: 'no-store' }).then(r => {
+      clearTimeout(t);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    }).then(resolve, e => { clearTimeout(t); reject(e); });
+  });
+}
+async function fmFetchLadder(urls){
+  const chain = (urls || []).slice();
+  if (chain.length) chain.push('https://corsproxy.io/?' + chain[0]);
+  for (const u of chain){
+    try { return await fmFetchText(u); } catch(e){ console.warn('[FATE MOVIES] lane failed:', u, (e && e.message) || e); }
+  }
+  /* last lane: the jet tunnel — same-origin fetch the SW routes over wisp */
+  try {
+    if (typeof FATE_JET !== 'undefined' && FATE_JET && FATE_JET_STATE === 'ready' && typeof fateSJEncode === 'function' && urls && urls[0]){
+      const p = fateSJEncode(urls[0]);
+      if (p){
+        const r = await fetch(p, { cache: 'no-store' });
+        if (r.ok) return await r.text();
+      }
+    }
+  } catch(e){ console.warn('[FATE MOVIES] jet tunnel lane failed:', (e && e.message) || e); }
+  throw new Error('all lanes failed');
+}
+
+/* ---------- m3u parsing (port of FATE TV) ---------- */
+function fmParseM3U(text){
+  text = String(text).replace(/(http[^\s#]+)(#EXTINF)/g, '$1\n$2');
+  const lines = text.split('\n'), out = [];
+  for (let i = 0; i < lines.length; i++){
+    const line = lines[i].trim();
+    if (line.startsWith('#EXTINF')){
+      const title = line.split(',').pop().trim();
+      const logo = (line.match(/tvg-logo="(.*?)"/) || [])[1] || '';
+      const country = (line.match(/tvg-country="(.*?)"/) || [])[1] || '';
+      const group = (line.match(/group-title="(.*?)"/) || [])[1] || '';
+      const stream = ((lines[i + 1] || '').trim().split('#')[0]);
+      if (stream && stream.startsWith('http')) out.push({ title, logo, stream, country, group });
+    }
+  }
+  return out;
+}
+function fmIsMovie(ch){ return /movie|film|cinema/i.test(ch.group || ''); }
+
+/* ---------- vault state + render ---------- */
+let fmAll = [], fmView = [], fmRendered = 0, fmQ = '';
+const FM_PAGE = 60;
+const fmAlive = {};
+const FM_DEAD = new Set(); /* streams that failed before ever playing (this session) */
+const FM_POSTER_PH = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="30" height="45"><rect fill="none" width="30" height="45"/></svg>');
+
+function fmStats(){
+  const alive = Object.keys(fmAlive).filter(k => fmAlive[k]).length;
+  const srcs = FM_SOURCES.length;
+  const eng = fmEngineOk() ? 'engine ok' : 'engine loading';
+  return fmAll.length.toLocaleString() + ' movies \u00b7 sources ' + alive + '/' + srcs + ' \u00b7 ' + eng;
+}
+function fmPaintStats(){ const el = fmGet('fmVaultStats'); if (el) el.textContent = fmStats(); }
+
+function fmApplyFilter(){
+  const q = fmQ.trim().toLowerCase();
+  fmView = !q ? fmAll : fmAll.filter(c => c.title.toLowerCase().includes(q));
+  fmRendered = 0;
+  const grid = fmGet('fmVaultGrid'); if (grid) grid.innerHTML = '';
+  if (!fmView.length){
+    if (grid) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><svg viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>' +
+      (fmAll.length ? '<p>No movies match "' + fmQ.replace(/[<>&]/g, '') + '"</p>' : '<p>No movie streams found — every source is unreachable on this network.</p><p style="font-size:.78rem;color:#64748b;margin-top:.5rem">Jet tunnel lane kicks in automatically once the tunnel is ready.</p>') +
+      '<button class="load-more-btn" style="margin-top:1.25rem" onclick="fmLoadVault()">Retry</button></div>';
+  }
+  fmRenderMore();
+}
+function fmRenderMore(){
+  const grid = fmGet('fmVaultGrid'); if (!grid) return;
+  const slice = fmView.slice(fmRendered, fmRendered + FM_PAGE);
+  slice.forEach(ch => grid.appendChild(fmCard(ch)));
+  fmRendered += slice.length;
+  const btn = fmGet('fmMoreBtn');
+  if (btn) btn.style.display = fmRendered < fmView.length ? 'inline-flex' : 'none';
+  fmPaintStats();
+}
+function fmCard(ch){
+  const d = document.createElement('div');
+  d.className = 'vault-card';
+  const letter = (ch.title || '?').trim().charAt(0).toUpperCase();
+  d.innerHTML = '<div class="fm-poster"><span class="fm-letter">' + (/[A-Z0-9]/.test(letter) ? letter : '\u25b6') + '</span>' +
+    (ch.logo ? '<img loading="lazy" src="' + ch.logo.replace(/"/g, '') + '" onerror="this.remove()">' : '') +
+    '</div><div class="fm-name">' + ch.title.replace(/[<>&]/g, '') + '</div>' +
+    (ch.group ? '<div class="fm-group">' + ch.group.replace(/[<>&]/g, '') + '</div>' : '');
+  d.onclick = () => fmPlay(ch);
+  return d;
+}
+
+async function fmLoadVault(){
+  const grid = fmGet('fmVaultGrid');
+  if (grid) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="skeleton-img" style="width:44px;height:44px;border-radius:50%;margin:0 auto 1rem;animation:spin 1s linear infinite,shimmer 1.5s infinite"></div><p>Fetching movie sources\u2026</p></div>';
+  fmPaintStats();
+  const results = await Promise.allSettled(FM_SOURCES.map(async s => {
+    const text = await fmFetchLadder(s.urls);
+    fmAlive[s.name] = true;
+    return { name: s.name, list: fmParseM3U(text) };
+  }));
+  const seen = new Set();
+  fmAll = [];
+  results.forEach(r => {
+    if (r.status !== 'fulfilled') return;
+    r.value.list.forEach(ch => {
+      if (!fmIsMovie(ch)) return;
+      if (FM_DEAD.has(ch.stream)) return;
+      const k = ch.stream;
+      if (seen.has(k)) return;
+      seen.add(k);
+      fmAll.push(ch);
+    });
+  });
+  /* longest titles last look messy — sort by group then title for a tidy wall */
+  fmAll.sort((a, b) => (a.group || '').localeCompare(b.group || '') || a.title.localeCompare(b.title));
+  console.log('[FATE MOVIES] vault loaded:', fmAll.length, 'movies · sources', JSON.stringify(fmAlive));
+  fmApplyFilter();
+}
+
+/* ---------- player (ArtPlayer + HLS, port of FATE TV engine) ---------- */
+let fmArt = null, fmCur = null, fmEver = false, fmFailLock = false;
+let fmWd = null, fmWdTick = null;
+
+function fmIsNative(url){ return /\.(mp4|webm|ogg|mp3|m4a|mov)(\?|$)/i.test(url || ''); }
+
+function fmShowStatus(txt, withActs){
+  const el = fmGet('fmStatus'); if (!el) return;
+  fmGet('fmStatusText').textContent = txt;
+  fmGet('fmStatusActs').style.display = withActs === false ? 'none' : 'flex';
+  el.classList.add('show');
+}
+function fmHideStatus(){ const el = fmGet('fmStatus'); if (el) el.classList.remove('show'); }
+function fmStartWatchdog(sec){
+  fmClearWatchdog();
+  let left = sec || 25;
+  fmWd = setTimeout(fmWatchdogFire, (sec || 25) * 1000);
+  fmWdTick = setInterval(() => {
+    left--;
+    const t = fmGet('fmStatusText');
+    if (t && left > 0 && !fmFailLock) t.textContent = 'Connecting to stream\u2026 ' + left + 's';
+  }, 1000);
+}
+function fmClearWatchdog(){
+  if (fmWd){ clearTimeout(fmWd); fmWd = null; }
+  if (fmWdTick){ clearInterval(fmWdTick); fmWdTick = null; }
+}
+function fmWatchdogFire(){
+  fmClearWatchdog();
+  if (!fmGet('movieModal').classList.contains('open')) return;
+  const v = fmArt && fmArt.video;
+  if (v && v.readyState >= 2){
+    if (v.paused){ fmShowStatus('Stream ready \u2014 tap \u25b6 to start', false); }
+    else { fmHideStatus(); fmEver = true; }
+    return;
+  }
+  fmFail('No response from stream');
+}
+function fmFail(reason){
+  if (fmFailLock) return;
+  if (!fmGet('movieModal').classList.contains('open')) return;
+  fmFailLock = true;
+  fmClearWatchdog();
+  if (!fmEver && fmCur && fmCur.stream) FM_DEAD.add(fmCur.stream);
+  fmShowStatus(reason + ' \u2014 dead stream. Retry, or try another movie.', true);
+}
+function fmRetry(){
+  if (!fmCur) return;
+  const ch = fmCur;
+  fmClosePlayer(true);
+  fmPlay(ch);
+}
+function fmNext(){
+  const pool = fmView.filter(c => !FM_DEAD.has(c.stream) && (!fmCur || c.stream !== fmCur.stream));
+  if (!pool.length){ fmToast('No other movies available'); return; }
+  fmClosePlayer(true);
+  fmPlay(pool[Math.floor(Math.random() * pool.length)]);
+}
+
+function fmPlayM3u8(video, url, player){
+  /* Apple devices: Safari's built-in HLS player (its MSE is unreliable,
+     and native playback doesn't demand CORS headers) */
+  if (video.canPlayType('application/vnd.apple.mpegurl')){
+    video.src = url;
+    return;
+  }
+  if (window.Hls && Hls.isSupported()){
+    if (player.hls){ try { player.hls.destroy(); } catch(e){} }
+    let netRetries = 0, mediaRecovered = false;
+    const hls = new Hls({
+      manifestLoadingTimeOut: 15000,
+      manifestLoadingMaxRetry: 3,
+      fragLoadingMaxRetry: 6,
+      liveSyncDurationCount: 3,
+      lowLatencyMode: false
+    });
+    hls.loadSource(url);
+    hls.attachMedia(video);
+    player.hls = hls;
+    hls.on(Hls.Events.ERROR, function(ev, data){
+      if (!data || !data.fatal) return;
+      if (data.type === Hls.ErrorTypes.MEDIA_ERROR){
+        if (!mediaRecovered){ mediaRecovered = true; try { hls.recoverMediaError(); return; } catch(e){} }
+        fmFail('Media error'); return;
+      }
+      if (netRetries < 3){
+        netRetries++;
+        fmShowStatus('Reconnecting\u2026 (' + netRetries + '/3)', false);
+        try { hls.startLoad(); return; } catch(e){}
+      }
+      fmFail('Stream unreachable');
+    });
+    player.on('destroy', function(){ try { hls.destroy(); } catch(e){} });
+  } else {
+    fmShowStatus('This device can\u2019t play HLS streams', true);
+  }
+}
+
+async function fmPlay(ch){
+  if (!(await fmEnsureEngine())){
+    fmGet('fmPlayerTitle').textContent = ch ? ch.title : 'Movie';
+    fmGet('fmPlayerSub').textContent = 'Video engine not loaded \u2014 every CDN fallback failed';
+    fmGet('movieModal').classList.add('open');
+    fmShowStatus('hls.js / artplayer could not load on this network. They load local-first if you put hls.min.js and artplayer.js next to movies.html.', true);
+    return;
+  }
+  try {
+    if (fmArt){ try { fmArt.destroy(); } catch(e){} fmArt = null; }
+    fmCur = ch; fmEver = false; fmFailLock = false;
+    fmClearWatchdog();
+    let stream = String(ch.stream || '');
+    let swapped = false;
+    if (location.protocol === 'https:' && stream.indexOf('http://') === 0){ stream = 'https://' + stream.slice(7); swapped = true; }
+    fmGet('fmPlayerTitle').textContent = ch.title || 'Movie';
+    fmGet('fmPlayerSub').textContent = (ch.group || 'Movie') + (ch.country ? ' \u00b7 ' + ch.country : '');
+    fmGet('movieModal').classList.add('open');
+    document.body.classList.add('player-open');
+    fmShowStatus(swapped ? 'Trying secure version\u2026 25s' : 'Connecting to stream\u2026 25s', false);
+    fmStartWatchdog(25);
+    const useHls = !fmIsNative(stream);
+    fmArt = new Artplayer({
+      container: '#fmPlayer',
+      url: stream,
+      type: useHls ? 'm3u8' : '',
+      isLive: useHls,
+      autoplay: true,
+      volume: 1,
+      setting: true,
+      playbackRate: true,
+      flip: true,
+      aspectRatio: true,
+      fullscreen: true,
+      fullscreenWeb: true,
+      pip: true,
+      screenshot: true,
+      autoSize: false,
+      playsInline: true,
+      customType: useHls ? { m3u8: fmPlayM3u8 } : {}
+    });
+    window.currentFmArt = fmArt;
+    fmArt.on('ready', function(){
+      fmClearWatchdog();
+      const p = fmArt.video.play();
+      if (p && p.catch) p.catch(function(){
+        fmArt.muted = true;
+        const p2 = fmArt.video.play();
+        if (p2 && p2.catch) p2.catch(function(){ fmShowStatus('Stream ready \u2014 tap \u25b6 to start', false); });
+        fmToast('Autoplay blocked \u2014 started muted, tap \ud83d\udd0a to unmute');
+      });
+    });
+    fmArt.on('video:loadeddata', function(){
+      fmClearWatchdog();
+      fmHideStatus(); fmEver = true;
+    });
+    fmArt.on('video:error', function(){ /* hls handler covers fatal cases; native <video> errors land here */ });
+  } catch(e){
+    console.warn('[FATE MOVIES] player error:', e);
+    fmShowStatus('Player error: ' + String((e && e.message) || e), true);
+  }
+}
+function fmClosePlayer(keepModalOpenForSwap){
+  fmClearWatchdog();
+  if (fmArt){ try { fmArt.destroy(); } catch(e){} fmArt = null; window.currentFmArt = null; }
+  if (!keepModalOpenForSwap){
+    fmGet('movieModal').classList.remove('open');
+    document.body.classList.remove('player-open');
+    fmHideStatus();
+  }
+}
+function fmPlayCustom(){
+  const v = (fmGet('fmCustomUrl').value || '').trim();
+  if (!v){ fmToast('Paste an .m3u8 or .mp4 link first'); return; }
+  fmPlay({ title: 'Custom stream', group: 'custom', stream: v });
+}
+
+/* ---------- nav chip + auto-paint ---------- */
+function fmPaintChip(){
+  const el = fmGet('fmJetChip'); if (!el) return;
+  let s = 'idle'; try { s = FATE_JET_STATE; } catch(e){}
+  const lane = (typeof window !== 'undefined' && window.wlspServer) ? String(window.wlspServer).replace(/^wss:\/\//, '').replace(/\/$/, '') : '';
+  const map = {
+    idle: ['tunnel: idle', '#94a3b8', 'rgba(148,163,184,.25)'],
+    booting: ['tunnel: booting\u2026', '#fbbf24', 'rgba(245,158,11,.3)'],
+    ready: ['tunnel: ready' + (lane ? ' \u00b7 ' + lane.split('/')[0] : ''), '#4ade80', 'rgba(74,222,128,.3)'],
+    'sw-failed': ['tunnel: sw error', '#f87171', 'rgba(248,113,113,.3)'],
+    'transport-failed': ['tunnel: down', '#f87171', 'rgba(248,113,113,.3)'],
+    'controller-failed': ['tunnel: error', '#f87171', 'rgba(248,113,113,.3)']
+  };
+  const [txt, col, bg] = map[s] || map.idle;
+  el.textContent = txt;
+  el.style.color = col; el.style.borderColor = bg; el.style.background = 'rgba(0,0,0,.4)';
+}
+
+/* ---------- boot ---------- */
+(function fmBoot(){
+  const start = () => {
+    fmBuildSites();
+    fmPaintChip();
+    setInterval(fmPaintChip, 1200);
+    setInterval(fmPaintStats, 2500);
+    const search = fmGet('fmSearch');
+    if (search) search.addEventListener('input', () => { fmQ = search.value || ''; fmApplyFilter(); });
+    const custom = fmGet('fmCustomUrl');
+    if (custom) custom.addEventListener('keydown', e => { if (e.key === 'Enter') fmPlayCustom(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && fmGet('movieModal').classList.contains('open')) fmClosePlayer();
+    });
+    fmLoadVault();
+    /* auto-boot the tunnel: a movies page should be ready when the user taps */
+    setTimeout(() => {
+      try { if (typeof FATE_JET_STATE !== 'undefined' && FATE_JET_STATE === 'idle') fateJetBoot(); } catch(e){}
+    }, 500);
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+  else start();
+})();
+/* ===== END FATE MOVIES ENGINE ===== */
+
+</script>
+</body>
+</html>

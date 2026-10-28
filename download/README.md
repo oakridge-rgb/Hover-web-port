@@ -1,4 +1,4 @@
-# FATE Portal — v8.2 (jet proxy, self-healing boot)
+# FATE Portal — v8.2 (jet proxy, self-healing boot) + FATE Movies page
 
 ## "It just keeps booting and never starts" — FIXED
 
@@ -22,13 +22,14 @@ they solved every one of these already; v8.2 now runs their exact recipe):
 6. **iPad tab freezing** — SW health watcher every 20s + on focus/visibility; fresh
    MessageChannel port on controllerchange; pending requests resolved on pagehide.
 
-## Deploy — ONLY these 7 files (answers "do we need all of these files?")
+## Deploy — ONLY these 8 files (answers "do we need all of these files?")
 
 Upload the **contents** of `v8.2-deploy/` into ONE folder on your host, names exact:
 
 | File | Required? | What it is |
 |---|---|---|
 | `test.html` | REQUIRED | the portal (v8.2, 205 KB) |
+| `movies.html` | REQUIRED | **FATE Movies** — dedicated movies-only page (no games) |
 | `fate-sw.js` | REQUIRED | service worker (jet.sw.js already baked in — self-contained) |
 | `jet.core.js` | REQUIRED | jet rewriter engine |
 | `jet.api.js` | REQUIRED | jet controller ($jetController) |
@@ -39,7 +40,24 @@ Upload the **contents** of `v8.2-deploy/` into ONE folder on your host, names ex
 **Everything else in `download/` (v2–v8.1 files, old copies) is legacy — do not upload,
 you can ignore or delete it.** HTTPS is required (service workers). Subfolders are fine.
 
-## How to use
+## FATE Movies (`movies.html`)
+
+A dedicated movies-only page in the same FATE style — **no games, no portal, just cinema**.
+Same login as the portal (opens straight through if you're already in `test.html`).
+
+Three ways to watch:
+1. **Stream sites** — Aether (the reference site's Movies pick), Tubi, Internet Archive,
+   YouTube Movies — each opens full-screen through the jet tunnel (back/reload work in-portal).
+2. **Free movie vault** — a searchable poster wall of movie streams (movie groups from
+   Free-TV / iptv-org / Somestuff playlists; ~700 movies). Tap a poster → plays right on the
+   page (hls.js + artplayer, the same engine as your TV page). Dead stream? ⟳ Retry / ⏭ Next.
+3. **Instant player** — paste ANY `.m3u8` or `.mp4` link at the top and hit Play.
+
+The tunnel auto-boots when the page loads (chip in the nav shows the lane). If direct
+playlist downloads are blocked on your network, the vault automatically re-fetches them
+through the jet tunnel. Keep the tab in the FOREGROUND on iPad during first boot.
+
+## How to use (portal)
 
 - **Apps button** in the quick-actions row (or press **A**) — 10 tiles, same set as the
   reference site: TikTok /foryou, YouTube, Geforce Now, Geometry Dash, Kick, Twitch,
@@ -62,6 +80,18 @@ you can ignore or delete it.** HTTPS is required (service workers). Subfolders a
   message — page stays put, **no reload loop** (the old behavior).
 - Cloud games + arcade + TikTok feed regressions: intact (2413 arcade / 163 cloud).
 - node syntax clean on all script blocks + fate-sw.js. Evidence: `scripts/verify-v82-*.png`.
+
+## FATE Movies — verified (agent-browser E2E)
+
+- Gate: same `fate_v6_auth` login as the portal — authed session opens straight through.
+- Tunnel: auto-boots on page load → READY, all 5 jet assets `local`, lane chip green.
+- Aether through the jet tunnel: real page loads, address bar decodes.
+- Vault: **699 movies** rendered (Free-TV + iptv-org alive; the ladder auto-falls-back per
+  source, and a jet-tunnel lane kicks in for blocked sources once the proxy is ready).
+- Player: Mux test m3u8 → readyState 4, **actually playing** (duration 635s, autoplay ok);
+  Retry/Next flows verified on dead IPTV streams; search "Pluto" → 164 hits.
+- **Zero game code on the page** (only the login fallback + the words "no games").
+- node syntax clean on all 5 script blocks. Evidence: `scripts/verify-movies-*.png`.
 
 ## For debugging (only if something still fails)
 

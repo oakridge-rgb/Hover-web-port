@@ -1,0 +1,642 @@
+     1→/* ===== FATE PORTAL v8.2 JET LANE ENGINE (self-healing boot, reference recipe) ===== */
+     2→console.log('%c[FATE PORTAL v8.2] jet proxy engine loaded (self-healing boot)', 'color:#38bdf8;font-weight:bold;');
+     3→
+     4→/* ---- jet asset edges (CDN fallback; local files win when hosted next to test.html) ---- */
+     5→const FATE_JET_EDGES = [
+     6→  'https://cdn.jsdelivr.net/gh/TongSherbet/storage@main/',
+     7→  'https://fastly.jsdelivr.net/gh/TongSherbet/storage@main/',
+     8→  'https://gcore.jsdelivr.net/gh/TongSherbet/storage@main/',
+     9→  'https://testingcf.jsdelivr.net/gh/TongSherbet/storage@main/',
+    10→  'https://quantil.jsdelivr.net/gh/TongSherbet/storage@main/',
+    11→  'https://cdn.statically.io/gh/TongSherbet/storage/main/',
+    12→  'https://raw.githack.com/TongSherbet/storage/main/'
+    13→];
+    14→
+    15→/* exact reference SHORTCUTS set */
+    16→const FATE_JET_APPS = [
+    17→  { label: 'TikTok', url: 'https://www.tiktok.com/foryou', color: '#25f4ee',
+    18→    icon: '<path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/>' },
+    19→  { label: 'YouTube', url: 'https://youtube.com/', color: '#ff0000',
+    20→    icon: '<path d="M21.58 7.19a2.5 2.5 0 0 0-1.76-1.77C18.25 5 12 5 12 5s-6.25 0-7.82.42A2.5 2.5 0 0 0 2.42 7.19 26.2 26.2 0 0 0 2 12a26.2 26.2 0 0 0 .42 4.81 2.5 2.5 0 0 0 1.76 1.77C5.75 19 12 19 12 19s6.25 0 7.82-.42a2.5 2.5 0 0 0 1.76-1.77A26.2 26.2 0 0 0 22 12a26.2 26.2 0 0 0-.42-4.81zM10 15V9l5.2 3z"/>' },
+    21→  { label: 'Geforce Now', url: 'https://play.geforcenow.com/mall/', color: '#76b900',
+    22→    icon: '<path d="M7 7h10a5 5 0 0 1 5 5v1a4 4 0 0 1-7.2 2.4L13 13h-2l-1.8 2.4A4 4 0 0 1 2 13v-1a5 5 0 0 1 5-5zm1 3v2H6v2h2v2h2v-2h2v-2h-2v-2H8zm8 1a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/>' },
+    23→  { label: 'Geometry Dash', url: 'https://web-dashers.github.io/', color: '#38bdf8',
+    24→    icon: '<path d="M4 4h16v16H4V4zm3 3v10h10V7H7zm2 2h6v6H9V9z"/>' },
+    25→  { label: 'Kick', url: 'https://kick.com/', color: '#53fc18',
+    26→    icon: '<path d="M3 3h6v4h2V5h2V3h2V2h6v7h-2v2h2v2h2v2h-2v2h-2v2h2v2h-6v-1h-2v-2h-2v-2H9v4H3V3zm6 8H7v2h2v-2z"/>' },
+    27→  { label: 'Twitch', url: 'https://twitch.tv', color: '#9146ff',
+    28→    icon: '<path d="M4 2L2 6v14h5v3h3l3-3h4l5-5V2H4zm16 11l-3 3h-5l-3 3v-3H5V4h15v9zM15 7h2v5h-2V7zm-5 0h2v5h-2V7z"/>' },
+    29→  { label: 'Snapchat', url: 'https://www.snapchat.com/web', color: '#fffc00',
+    30→    icon: '<path d="M12 2c3 0 5 2.2 5 5.2 0 1.1-.1 2.1-.2 3 .5.2 1.1 0 1.6-.2.6-.2 1.2-.1 1.4.4.2.6-.3 1-1 1.4-.6.3-1.5.7-1.6 1.3-.1.5.3 1.2 1 2 .8 1 2 2.1 3.5 2.5.4.1.6.5.4.9-.1.3-.5.6-1.2.8-.5.1-1 .2-1.2.5-.1.2-.1.5-.2.8-.1.3-.3.5-.7.4-.5-.1-1.1-.2-1.8-.1-.7.1-1.3.4-2 .8-.9.6-1.9 1.3-3.2 1.3s-2.3-.7-3.2-1.3c-.7-.4-1.3-.7-2-.8-.7-.1-1.3 0-1.8.1-.4.1-.6-.1-.7-.4-.1.3-.1-.6-.2-.8-.2-.3-.7-.4-1.2-.5-.7-.2-1.1-.5-1.2-.8-.2-.4 0-.8.4-.9C4.5 18 5.7 16.9 6.5 15.9c.7-.8 1.1-1.5 1-2-.1-.6-1-1-1.6-1.3-.7-.4-1.2-.8-1-1.4.2-.5.8-.6 1.4-.4.5.2 1.1.4 1.6.2-.1-.9-.2-1.9-.2-3C7 4.2 9 2 12 2z"/>' },
+    31→  { label: 'Instagram', url: 'https://instagram.com', color: '#e1306c',
+    32→    icon: '<path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zm5.8-4.3a1.2 1.2 0 1 1-1.2 1.2 1.2 1.2 0 0 1 1.2-1.2z"/>' },
+    33→  { label: 'Discord', url: 'https://discord.com/app', color: '#5865f2',
+    34→    icon: '<path d="M19.6 5.9A16.3 16.3 0 0 0 15.9 4.7l-.5 1a15 15 0 0 0-6.8 0l-.5-1A16.3 16.3 0 0 0 4.4 5.9 17.6 17.6 0 0 0 1.5 17a16.6 16.6 0 0 0 5 2.6l.9-1.5a10.8 10.8 0 0 1-1.7-.8l.4-.3a11.8 11.8 0 0 0 11.8 0l.4.3a10.8 10.8 0 0 1-1.7.8l.9 1.5a16.6 16.6 0 0 0 5-2.6 17.6 17.6 0 0 0-2.9-11.1zM8.7 14.7c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/>' },
+    35→  { label: 'Movies', url: 'https://aether.ist/', color: '#a78bfa',
+    36→    icon: '<path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>' }
+    37→];
+    38→
+    39→let FATE_JET = null;
+    40→let FATE_FRAME = null; /* JetFrame wrapper around the browse iframe */
+    41→let FATE_JET_STATE = 'idle'; /* idle | booting | ready | sw-failed | transport-failed | controller-failed */
+    42→let FATE_JET_ERR = '';
+    43→let FATE_JET_PENDING = null;
+    44→let FATE_JET_BOOTING = null;
+    45→let FATE_HAS_UTILS = false;
+    46→let FATE_BROWSE_OPEN = false;
+    47→const FATE_ASSET_SRC = {}; /* file -> 'local' | 'local/sj' | 'mirror n' */
+    48→const fateSleep = ms => new Promise(r => setTimeout(r, ms));
+    49→
+    50→/* ---- boot stage pill (visible at top of page during boot — no more silent spinners) ---- */
+    51→let FATE_STAGE_AT = 0, FATE_STAGE_HINTED = false;
+    52→function fateJetStage(msg, kind){
+    53→  try {
+    54→    FATE_STAGE_AT = Date.now(); /* progress marker for the boot watchdog */
+    55→    let p = document.getElementById('fateJetStage');
+    56→    if (!p){
+    57→      p = document.createElement('div'); p.id = 'fateJetStage';
+    58→      p.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:2147483000;background:rgba(12,10,9,.93);border:1px solid rgba(245,158,11,.45);color:#fcd34d;font:600 12px/1.35 system-ui,sans-serif;padding:.5rem .85rem;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.5);max-width:92vw;text-align:center;display:none;cursor:pointer;';
+    59→      document.body.appendChild(p);
+    60→    }
+    61→    if (!msg){ p.style.display = 'none'; p.onclick = null; return; }
+    62→    FATE_STAGE_AT = Date.now(); FATE_STAGE_HINTED = false;
+    63→    p.style.display = 'block';
+    64→    p.style.borderColor = kind === 'err' ? 'rgba(248,113,113,.65)' : kind === 'ok' ? 'rgba(74,222,128,.55)' : 'rgba(245,158,11,.45)';
+    65→    p.style.color = kind === 'err' ? '#f87171' : kind === 'ok' ? '#4ade80' : '#fcd34d';
+    66→    p.textContent = 'jet \u25b8 ' + msg;
+    67→    p.onclick = kind === 'err' ? () => { try { fateJetBoot(); } catch(e){} } : null;
+    68→    if (kind !== 'err'){
+    69→      setTimeout(() => {
+    70→        if (!FATE_STAGE_HINTED && Date.now() - FATE_STAGE_AT >= 7800 && p.style.display === 'block' && !FATE_STAGE_HINTED){
+    71→          FATE_STAGE_HINTED = true;
+    72→          p.textContent += ' \u2014 slow network/device, still working\u2026 (stuck over 30s? tap retry)';
+    73→        }
+    74→      }, 8000);
+    75→    }
+    76→  } catch(e){}
+    77→}
+    78→
+    79→/* ---- device-fingerprint codec (verbatim port of the official portal's) ---- */
+    80→function fateJetFingerprint(){
+    81→  return [location.origin.replace(/^\w+:\/\/|:\d+$/g, ''), (new Date).getUTCMonth(),
+    82→    navigator.hardwareConcurrency, navigator.deviceMemory, navigator.platform,
+    83→    navigator.userAgent.replace(/[\d.]+/g, ''), (new Date).getTimezoneOffset()]
+    84→    .join().split('').reduce(((e, t) => Math.imul(e ^ t.charCodeAt(), 16777619)), 2166136261);
+    85→}
+    86→const FATE_JET_CODEC = {
+    87→  encode: e => {
+    88→    if (!e) return e;
+    89→    let t = globalThis.__jck ?? Object.defineProperty(globalThis, '__jck', { value: fateJetFingerprint() }).__jck;
+    90→    const r = e.startsWith('https://') && e.length > 8, o = (new TextEncoder).encode(r ? e.slice(8) : e);
+    91→    for (let e, r = 0; r < o.length; r++, e >>>= 8) 3 & r || (t ^= t << 13, t ^= t >>> 17, t ^= t << 5, e = t), o[r] ^= e;
+    92→    let n = '';
+    93→    for (let e = 0; e < o.length; e += 8192) n += String.fromCharCode.apply(null, o.subarray(e, e + 8192));
+    94→    return (r ? '' : 'Z0') + btoa(n).slice(0, (4 * o.length + 2) / 3 | 0).replace(/Z/g, 'Zz').replace(/\+/g, 'Zp').replace(/\//g, 'Zs');
+    95→  },
+    96→  decode: e => {
+    97→    if (!e) return e;
+    98→    let t = globalThis.__jck ?? Object.defineProperty(globalThis, '__jck', { value: fateJetFingerprint() }).__jck;
+    99→    const r = e.startsWith('Z0'), o = atob(e.slice(2 * r).replace(/Zp/g, '+').replace(/Zs/g, '/').replace(/Zz/g, 'Z')), n = new Uint8Array(o.length);
+   100→    for (let e, r = 0; r < n.length; r++, e >>>= 8) 3 & r || (t ^= t << 13, t ^= t >>> 17, t ^= t << 5, e = t), n[r] = o.charCodeAt(r) ^ e;
+   101→    return (r ? '' : 'https://') + new TextDecoder('utf-8', { ignoreBOM: true }).decode(n);
+   102→  }
+   103→};
+   104→
+   105→/* ---- asset resolution: local flat -> local /sj/ -> CDN mirror ladder ---- */
+   106→function fateJetCandidates(file){
+   107→  const list = [new URL(file, location.href).href];
+   108→  try { list.push(new URL('sj/' + file, location.href).href); } catch(e){}
+   109→  for (const b of FATE_JET_EDGES) list.push(b + 'sj/' + file);
+   110→  return list;
+   111→}
+   112→function fateJetLabel(i){ return i === 0 ? 'local' : i === 1 ? 'local/sj' : 'mirror ' + (i - 1); }
+   113→async function fateJetProbe(url){
+   114→  try {
+   115→    const ac = new AbortController();
+   116→    const t = setTimeout(() => ac.abort(), 5000);
+   117→    const r = await fetch(url, { cache: 'no-store', signal: ac.signal });
+   118→    clearTimeout(t);
+   119→    if (!r.ok) return false;
+   120→    const ct = (r.headers.get('content-type') || '').toLowerCase();
+   121→    if (ct.includes('text/html')) return false; /* soft-404 guard */
+   122→    if (r.body && r.body.getReader){ try { const rd = r.body.getReader(); await rd.read(); await rd.cancel(); } catch(e){} }
+   123→    return true;
+   124→  } catch(e){ return false; }
+   125→}
+   126→async function fateJetLoadJs(file){
+   127→  const cands = fateJetCandidates(file);
+   128→  /* local-first fast path: when the file is hosted next to test.html, skip the
+   129→     7-mirror probe fan-out entirely (saves 5-20s per boot) */
+   130→  for (let i = 0; i < Math.min(2, cands.length); i++){
+   131→    if (await fateJetProbe(cands[i])){
+   132→      try { await fateLoadScript(cands[i]); FATE_ASSET_SRC[file] = fateJetLabel(i); return cands[i]; }
+   133→      catch(e){ /* local file broken — fall through to mirror ladder */ }
+   134→    }
+   135→  }
+   136→  const probes = await Promise.all(cands.map(u => fateJetProbe(u)));
+   137→  const order = cands.map((u, i) => [u, probes[i], i]).sort((a, b) => (b[1] - a[1]) || (a[2] - b[2])).map(x => x[0]);
+   138→  for (const u of order){
+   139→    try { await fateLoadScript(u); FATE_ASSET_SRC[file] = fateJetLabel(cands.indexOf(u)); return u; }
+   140→    catch(e){ /* next candidate */ }
+   141→  }
+   142→  throw new Error('could not load ' + file + ' from any source');
+   143→}
+   144→async function fateJetResolveUrl(file){
+   145→  const cands = fateJetCandidates(file);
+   146→  for (let i = 0; i < Math.min(2, cands.length); i++){
+   147→    if (await fateJetProbe(cands[i])){ FATE_ASSET_SRC[file] = fateJetLabel(i); return cands[i]; }
+   148→  }
+   149→  const probes = await Promise.all(cands.map(u => fateJetProbe(u)));
+   150→  for (let i = 0; i < cands.length; i++){
+   151→    if (probes[i]){ FATE_ASSET_SRC[file] = fateJetLabel(i); return cands[i]; }
+   152→  }
+   153→  FATE_ASSET_SRC[file] = 'unprobed';
+   154→  return cands[0]; /* last resort guess */
+   155→}
+   156→
+   157→/* ---- boot helpers ---- */
+   158→function fateLoadScript(url){
+   159→  return new Promise((res, rej) => {
+   160→    const s = document.createElement('script');
+   161→    const to = setTimeout(() => rej(new Error('timeout loading ' + url)), 15000);
+   162→    s.src = url; s.async = false;
+   163→    s.onload = () => { clearTimeout(to); res(); };
+   164→    s.onerror = () => { clearTimeout(to); rej(new Error('failed to load ' + url)); };
+   165→    document.head.appendChild(s);
+   166→  });
+   167→}
+   168→
+   169→/* ---- SW recovery toolkit (ported from the official portal's loader) ---- */
+   170→function fateSwSoftReload(){
+   171→  try { if (sessionStorage.fateJetSoft) return false; sessionStorage.fateJetSoft = '1'; } catch(e){ return false; }
+   172→  location.reload(); return true;
+   173→}
+   174→async function fateSwReset(){
+   175→  try { if (sessionStorage.fateJetReset) return false; sessionStorage.fateJetReset = '1'; } catch(e){ return false; }
+   176→  console.warn('[FATE v8.2] resetting service workers (unregister all + reload)');
+   177→  try { const regs = await Promise.race([
+   178→    navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))),
+   179→    fateSleep(2000)
+   180→  ]); } catch(e){}
+   181→  location.reload();
+   182→  return true;
+   183→}
+   184→async function fateSwAlive(reg, rounds){
+   185→  const n = rounds || 3;
+   186→  for (let i = 0; i < n; i++){
+   187→    const ac = new AbortController(); const t = setTimeout(() => ac.abort(), 1500);
+   188→    try {
+   189→      const r = await fetch(new URL('__sw_alive', reg.scope), { cache: 'no-store', signal: ac.signal });
+   190→      if ((await r.text()) === 'true') return true;
+   191→    } catch(e){} finally { clearTimeout(t); }
+   192→    await fateSleep(150);
+   193→  }
+   194→  return false;
+   195→}
+   196→
+   197→async function fateJetSwStart(){
+   198→  if (!('serviceWorker' in navigator)) throw new Error('service workers unsupported');
+   199→  if (location.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(location.hostname)) throw new Error('https required (service workers)');
+   200→  const swUrl = new URL('fate-sw.js', location.href).href;
+   201→  /* FAST PATH: page already controlled by our SW (SW was active at load time —
+   202→     100% reliable fetch interception). NO register()/update() churn — repeated
+   203→     re-registration is what destabilizes interception on claimed pages. */
+   204→  const ctl = navigator.serviceWorker.controller;
+   205→  if (ctl && /fate-sw\.js$/.test(ctl.scriptURL)){
+   206→    fateJetStage('checking service worker\u2026');
+   207→    const reg = await navigator.serviceWorker.getRegistration().catch(() => null);
+   208→    if (reg){
+   209→      if (await fateSwAlive(reg)) { try { delete sessionStorage.fateJetSoft; } catch(e){} return ctl; }
+   210→      fateJetStage('sw slow to answer \u2014 continuing (routing self-heals)\u2026');
+   211→      console.warn('[FATE v8.2] sw_alive probe failed on fast path \u2014 continuing; frame loads retry via warming page');
+   212→      try { delete sessionStorage.fateJetSoft; } catch(e){}
+   213→      return ctl; /* NON-FATAL: handshake + warming retries cover the gap */
+   214→    }
+   215→  }
+   216→  fateJetStage('registering service worker\u2026');
+   217→  let reg;
+   218→  try {
+   219→    reg = await Promise.race([
+   220→      navigator.serviceWorker.register(swUrl, { scope: './', updateViaCache: 'none' }),
+   221→      new Promise((_, rej) => setTimeout(() => rej(new Error('registration timed out')), 20000))
+   222→    ]);
+   223→  } catch(e){ throw new Error('sw register failed: ' + (e.message || e)); }
+   224→  if (!reg.active){
+   225→    fateJetStage('activating service worker\u2026');
+   226→    await Promise.race([
+   227→      new Promise(res => {
+   228→        const w = reg.installing || reg.waiting;
+   229→        if (w) w.addEventListener('statechange', function(){ if (this.state === 'activated') res(); });
+   230→        reg.addEventListener('updatefound', () => { const nw = reg.installing; nw && nw.addEventListener('statechange', function(){ if (this.state === 'activated') res(); }); });
+   231→      }),
+   232→      new Promise((res, rej) => setTimeout(() => rej(new Error('activate timeout')), 15000))
+   233→    ]).catch(e => { throw new Error('sw not active: ' + (e.message || e)); });
+   234→  }
+   235→  if (!navigator.serviceWorker.controller){
+   236→    fateJetStage('claiming the page\u2026');
+   237→    try { (reg.active || reg.waiting || reg.installing).postMessage({ type: 'FATE:claim' }); } catch(e){}
+   238→    const changed = new Promise(r => navigator.serviceWorker.addEventListener('controllerchange', r, { once: true }));
+   239→    /* redundant ONLY on a real redundant statechange of an existing worker (reference semantics) */
+   240→    const redundant = new Promise(r => {
+   241→      const w = reg.installing || reg.waiting;
+   242→      if (w) w.addEventListener('statechange', function(){ if (this.state === 'redundant') r(); });
+   243→    });
+   244→    await Promise.race([changed, redundant, fateSleep(8000)]);
+   245→  }
+   246→  if (!navigator.serviceWorker.controller){
+   247→    /* a claimed-mid-flight page has a fetch-race window; a RELOADED page with an
+   248→       active SW is controlled from birth (100% interception). Ladder, official style. */
+   249→    const stillInstalling = !!(reg.installing || reg.waiting);
+   250→    if (stillInstalling) throw new Error('service worker is still installing (slow network) \u2014 wait a moment, then tap retry');
+   251→    if (fateSwSoftReload()) return new Promise(() => {});
+   252→    if (await fateSwReset()) return new Promise(() => {});
+   253→    throw new Error('page never came under service worker control \u2014 reload the page once more');
+   254→  }
+   255→  fateJetStage('checking service worker\u2026');
+   256→  if (!await fateSwAlive(reg)){
+   257→    /* NON-FATAL on the fresh-install path too: the controller handshake is
+   258→       postMessage-based (always reliable); frame loads self-heal via the warming
+   259→       page's capped retries. Failing hard here is what caused endless boots. */
+   260→    console.warn('[FATE v8.2] sw_alive probe failed \u2014 continuing; routing self-heals');
+   261→    fateJetStage('sw warming \u2014 continuing\u2026');
+   262→  }
+   263→  try { delete sessionStorage.fateJetSoft; } catch(e){}
+   264→  return navigator.serviceWorker.controller;
+   265→}
+   266→
+   267→function fateJetMakePlugins(){
+   268→  const plugs = [];
+   269→  if (!FATE_HAS_UTILS || !window.$jetUtils) return plugs;
+   270→  try {
+   271→    plugs.push(new $jetUtils.EventHandlerPlugin());
+   272→    plugs.push(new $jetUtils.LinkHandlerPlugin(href => { try { if (href) fateBrowseOpen(href); } catch(e){} }));
+   273→    plugs.push(new $jetUtils.UrlWatcherPlugin(href => {
+   274→      try {
+   275→        if (!FATE_BROWSE_OPEN || !href) return;
+   276→        const a = document.getElementById('fateBrowseAddr');
+   277→        if (a) a.value = href;
+   278→      } catch(e){}
+   279→    }));
+   280→    plugs.push(new $jetUtils.HttpCachePlugin());
+   281→  } catch(e){ console.warn('[FATE v8.2] utils plugins unavailable:', e); }
+   282→  return plugs;
+   283→}
+   284→
+   285→/* memoized transport getter — avoids duplicate concurrent wisp sweeps */
+   286→async function fateGetTransport(){
+   287→  if (window.FATE_TRANSPORT) return window.FATE_TRANSPORT;
+   288→  if (fateGetTransport._p) return fateGetTransport._p;
+   289→  fateGetTransport._p = (async () => {
+   290→    try { return await fateLoadTransport(); }
+   291→    finally { delete fateGetTransport._p; }
+   292→  })();
+   293→  return fateGetTransport._p;
+   294→}
+   295→
+   296→async function fateJetBoot(){
+   297→  if (FATE_JET_STATE === 'ready') return FATE_JET;
+   298→  if (FATE_JET_BOOTING) return FATE_JET_BOOTING;
+   299→  FATE_JET_STATE = 'booting'; FATE_JET_ERR = '';
+   300→  try { sessionStorage.fateBootResume = '1'; } catch(e){} /* auto-resume after recovery reloads */
+   301→  fateJetPaintStatus();
+   302→  fateJetStage('starting boot\u2026');
+   303→  FATE_JET_BOOTING = (async () => {
+   304→    try {
+   305→      await fateJetSwStart();
+   306→      if (!navigator.serviceWorker.controller) return null; /* page reloading */
+   307→    } catch(e){
+   308→      FATE_JET_STATE = 'sw-failed'; FATE_JET_ERR = String(e.message || e);
+   309→      FATE_JET_BOOTING = null; fateJetPaintStatus(); fateJetStage('service worker failed \u2014 tap to retry', 'err'); return null;
+   310→    }
+   311→    let coreUrl = null;
+   312→    try {
+   313→      fateJetStage('loading jet files\u2026');
+   314→      fateJetStage('loading jet.core.js\u2026');
+   315→      coreUrl = await fateJetLoadJs('jet.core.js');   /* defines $jet (must load first) */
+   316→      const apiP = fateJetLoadJs('jet.api.js');       /* defines $jetController (needs $jet) */
+   317→      fateJetStage('loading jet.api.js\u2026');
+   318→      /* utils MUST load after api: it destructures globalThis.$jetController at eval time */
+   319→      const utilsP = apiP.then(() => fateJetLoadJs('jet.utils.js')).catch(() => {}); /* optional */
+   320→      await apiP;
+   321→      if (typeof $jetController === 'undefined') throw new Error('jet.api.js did not define $jetController');
+   322→      const [injectUrl, wasmUrl] = await Promise.all([
+   323→        fateJetResolveUrl('jet.inject.js'),
+   324→        fateJetResolveUrl('jet.wasm')
+   325→      ]);
+   326→      try { await utilsP; } catch(e){}
+   327→      FATE_HAS_UTILS = typeof window.$jetUtils !== 'undefined';
+   328→      fateJetStage('connecting wisp tunnel\u2026');
+   329→      const transport = typeof fateLoadTransport === 'function' ? await fateGetTransport() : null;
+   330→      if (!transport){
+   331→        FATE_JET_STATE = 'transport-failed'; FATE_JET_ERR = 'wisp tunnel transport unavailable (no alive lane)';
+   332→        FATE_JET_BOOTING = null; fateJetPaintStatus(); fateJetStage('wisp tunnel down \u2014 tap to retry', 'err'); return null;
+   333→      }
+   334→      fateJetStage('starting jet controller\u2026');
+   335→      const prefix = new URL('./~/', location.href).pathname;
+   336→      FATE_JET = new $jetController.Controller({
+   337→        serviceworker: navigator.serviceWorker.controller,
+   338→        transport: transport,
+   339→        jetConfig: { maskedfiles: ['jet.inject.js', 'jet.wasm.js'], flags: { syncxhr: false, disableComputedWrap: false, rewriterLogs: false, captureErrors: false, cleanErrors: false, scramitize: false, sourcemaps: false, destructureRewrites: true, allowInvalidJs: true, debugTrampolines: false, debugSourceURL: false, allowFailedIntercepts: true, encapsulateWorkers: true } },
+   340→        config: { jetPath: coreUrl, wasmPath: wasmUrl, injectPath: injectUrl, virtualWasmPath: 'jet.wasm.js', codec: FATE_JET_CODEC, prefix: prefix }
+   341→      });
+   342→      /* ---- jet handshake: retry loop with FRESH MessageChannel port each round
+   343→              (verbatim port of the official portal's boot recipe — without this,
+   344→              a missed SW message = infinite "booting") ---- */
+   345→      let hsResolve;
+   346→      const hsPromise = new Promise(r => { hsResolve = r; });
+   347→      const __origResolve = FATE_JET.readyResolve;
+   348→      FATE_JET.readyResolve = function(){ try { hsResolve(true); } catch(e){} return __origResolve.apply(FATE_JET, arguments); };
+   349→      let handshook = await Promise.race([hsPromise, fateSleep(4000)]);
+   350→      for (let i = 0; !handshook; i++){
+   351→        if (i >= 5){
+   352→          if (await fateSwReset()) return null;   /* unregister all SWs + reload */
+   353→          throw new Error('the service worker never answered the jet handshake');
+   354→        }
+   355→        fateJetStage('retrying jet handshake (' + (i + 1) + '/5)\u2026');
+   356→        FATE_JET.serviceWorkerController = navigator.serviceWorker.controller || FATE_JET.serviceWorkerController;
+   357→        try { FATE_JET.setupMessagePort(); } catch(e){}
+   358→        handshook = await Promise.race([hsPromise, fateSleep(4000)]);
+   359→      }
+   360→      await FATE_JET.ready;
+   361→      FATE_JET.guardServiceWorkerRevive = false;
+   362→      FATE_JET_STATE = 'ready'; FATE_JET_ERR = '';
+   363→      fateJetEnsureUI();
+   364→      try { FATE_FRAME = FATE_JET.createFrame(document.getElementById('fateBrowseFrame'), { plugins: fateJetMakePlugins() }); }
+   365→      catch(e){ console.warn('[FATE v8.2] createFrame failed:', e); }
+   366→      try { sessionStorage.removeItem('fateWarmingN'); } catch(e){}
+   367→      try { sessionStorage.removeItem('fateBootResume'); sessionStorage.removeItem('fateJetPending'); } catch(e){}
+   368→      console.log('%c[FATE v8.2] jet proxy READY - prefix ' + FATE_JET.prefix + ' - assets: ' + JSON.stringify(FATE_ASSET_SRC), 'color:#38bdf8;font-weight:bold;');
+   369→      fateJetStage('ready', 'ok');
+   370→      setTimeout(() => { if (FATE_JET_STATE === 'ready') fateJetStage(null); }, 2500);
+   371→      fateJetPaintStatus();
+   372→      fateStartJetWatch();
+   373→      if (FATE_JET_PENDING){ const u = FATE_JET_PENDING; FATE_JET_PENDING = null; fateBrowseOpen(u); }
+   374→      return FATE_JET;
+   375→    } catch(e){
+   376→      if (String(e.message || e).includes('wisp tunnel')){
+   377→        FATE_JET_STATE = 'transport-failed';
+   378→      } else {
+   379→        FATE_JET_STATE = 'controller-failed'; FATE_JET_ERR = String(e.message || e);
+   380→      }
+   381→      FATE_JET_BOOTING = null; fateJetPaintStatus(); fateJetStage('boot failed \u2014 tap to retry', 'err'); return null;
+   382→    }
+   383→  })();
+   384→  /* boot watchdog: fires only when NO stage progress for 75s (mirror probes and
+   385→     handshake retries legitimately take a while — a stalled boot is silent) */
+   386→  const wd = setInterval(() => {
+   387→    if (FATE_JET_STATE === 'booting' && Date.now() - FATE_STAGE_AT > 75000){
+   388→      clearInterval(wd);
+   389→      FATE_JET_STATE = 'controller-failed'; FATE_JET_ERR = 'no boot progress for 75s \u2014 network or device too slow';
+   390→      FATE_JET_BOOTING = null; fateJetPaintStatus(); fateJetStage('stuck \u2014 tap to retry', 'err');
+   391→    }
+   392→    if (FATE_JET_STATE !== 'booting') clearInterval(wd);
+   393→  }, 5000);
+   394→  return FATE_JET_BOOTING;
+   395→}
+   396→
+   397→/* ---- SW health watcher (official recipe): periodic sw_alive probe, fresh port on
+   398→        controllerchange, pending-RPC cleanup on pagehide. Survives iPad tab freezing. ---- */
+   399→let fateWatchBusy = null;
+   400→async function fateSwWatch(){
+   401→  if (fateWatchBusy) return fateWatchBusy;
+   402→  fateWatchBusy = (async () => {
+   403→    try {
+   404→      if (!FATE_JET || !navigator.serviceWorker) return;
+   405→      const c = navigator.serviceWorker;
+   406→      if (c.controller && FATE_JET.serviceWorkerController !== c.controller){
+   407→        FATE_JET.serviceWorkerController = c.controller;
+   408→        try { FATE_JET.setupMessagePort(); } catch(e){}
+   409→      }
+   410→      /* light health check: probe failure alone never resets (churn destabilizes);
+   411→         the frame-level warming page handles genuine dead-SW recovery */
+   412→      const reg = await c.getRegistration().catch(() => null);
+   413→      if (reg && !await fateSwAlive(reg, 1)){
+   414→        console.warn('[FATE v8.2] sw_alive light probe failed \u2014 will re-check next tick');
+   415→      }
+   416→    } catch(e){} finally { fateWatchBusy = null; }
+   417→  })();
+   418→  return fateWatchBusy;
+   419→}
+   420→function fateStartJetWatch(){
+   421→  try {
+   422→    const c = navigator.serviceWorker;
+   423→    setInterval(fateSwWatch, 20000);
+   424→    addEventListener('focus', fateSwWatch);
+   425→    document.addEventListener('visibilitychange', () => {
+   426→      try { if (!document.hidden) { try { sessionStorage.removeItem('fateWarmingN'); } catch(e){} fateSwWatch(); } } catch(e){}
+   427→    });
+   428→    c.addEventListener('controllerchange', () => {
+   429→      if (c.controller && FATE_JET){
+   430→        FATE_JET.serviceWorkerController = c.controller;
+   431→        try { FATE_JET.setupMessagePort(); } catch(e){}
+   432→      }
+   433→    });
+   434→    /* pending-RPC cleanup on pagehide (zombie-promise guard, official recipe) */
+   435→    if (FATE_JET.rpc){
+   436→      const inflight = new Set();
+   437→      const { recieve, sendRaw } = FATE_JET.rpc;
+   438→      FATE_JET.rpc.recieve = function(e){
+   439→        if (e && e[this.id] && e[this.id].$type === 'request') inflight.add(e[this.id].$token);
+   440→        return recieve.call(this, e);
+   441→      };
+   442→      FATE_JET.rpc.sendRaw = function(e, t){
+   443→        if (e && e[this.id] && e[this.id].$type === 'response') inflight.delete(e[this.id].$token);
+   444→        return sendRaw.call(this, e, t);
+   445→      };
+   446→      addEventListener('pagehide', () => {
+   447→        for (const tok of Array.from(inflight)){
+   448→          try { sendRaw.call(FATE_JET.rpc, { [FATE_JET.rpc.id]: { $type: 'response', $token: tok, $error: 'page closed' } }, []); } catch(e){}
+   449→        }
+   450→        inflight.clear();
+   451→      });
+   452→    }
+   453→  } catch(e){ console.warn('[FATE v8.2] watcher setup failed:', e); }
+   454→}
+   455→
+   456→function fateSJEncode(url){
+   457→  if (!FATE_JET) return null;
+   458→  return location.origin + FATE_JET.prefix + FATE_JET.config.codec.encode(url);
+   459→}
+   460→function fateSJDecode(proxiedPath){
+   461→  try {
+   462→    if (!FATE_JET) return null;
+   463→    const p = new URL(proxiedPath, location.href).pathname;
+   464→    const prefixes = [];
+   465→    if (FATE_FRAME) prefixes.push(FATE_FRAME.prefix);
+   466→    prefixes.push(FATE_JET.prefix);
+   467→    for (const px of prefixes){
+   468→      if (p.startsWith(px)) return FATE_JET.config.codec.decode(p.slice(px.length));
+   469→    }
+   470→    return null;
+   471→  } catch(e){ return null; }
+   472→}
+   473→
+   474→/* ---------- apps modal + browse view UI (built here, FATE style) ---------- */
+   475→function fateJetEnsureUI(){
+   476→  if (document.getElementById('fateAppsModal')) return;
+   477→  const style = document.createElement('style');
+   478→  style.textContent = `
+   479→  .fate-modal{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);}
+   480→  .fate-modal.open{display:flex;}
+   481→  .fate-box{width:min(460px,94vw);max-height:88vh;overflow-y:auto;background:#0c0a09;border:1px solid rgba(245,158,11,.35);border-radius:18px;padding:1.2rem;box-shadow:0 0 40px rgba(245,158,11,.12);}
+   482→  .fate-box h3{color:#fff;font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:.5rem;margin-bottom:.2rem;}
+   483→  .fate-box .sub{color:#94a3b8;font-size:.75rem;margin-bottom:1rem;}
+   484→  .fate-apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:.7rem;}
+   485→  .fate-app{display:flex;flex-direction:column;align-items:center;gap:.45rem;background:rgba(255,255,255,.04);border:1px solid rgba(148,163,184,.22);border-radius:14px;padding:.85rem .3rem;cursor:pointer;transition:all .2s;}
+   486→  .fate-app:hover{border-color:rgba(245,158,11,.55);background:rgba(245,158,11,.08);transform:translateY(-2px);}
+   487→  .fate-app .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(0,0,0,.5);}
+   488→  .fate-app span{font-size:.66rem;font-weight:700;color:#e2e8f0;text-align:center;}
+   489→  .fate-status{margin-top:.9rem;font-size:.72rem;color:#94a3b8;line-height:1.5;background:rgba(0,0,0,.4);border:1px solid rgba(148,163,184,.2);border-radius:10px;padding:.55rem .7rem;word-break:break-all;}
+   490→  .fate-close{position:absolute;top:.7rem;right:.9rem;background:none;border:none;color:#94a3b8;font-size:1.2rem;cursor:pointer;}
+   491→  #fateBrowseView{position:fixed;inset:0;z-index:60;display:none;flex-direction:column;background:#050505;}
+   492→  #fateBrowseView.open{display:flex;}
+   493→  .fate-chrome{display:flex;align-items:center;gap:.5rem;padding:.55rem .7rem;background:rgba(12,10,9,.95);border-bottom:1px solid rgba(245,158,11,.3);}
+   494→  .fate-chrome button{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:#fcd34d;font-size:.75rem;font-weight:700;padding:.4rem .65rem;border-radius:9px;cursor:pointer;white-space:nowrap;}
+   495→  .fate-chrome button:hover{background:rgba(245,158,11,.25);}
+   496→  .fate-addr{flex:1;background:rgba(0,0,0,.55);border:1px solid rgba(148,163,184,.3);border-radius:9px;padding:.42rem .7rem;color:#e2e8f0;font-size:.78rem;outline:none;min-width:60px;}
+   497→  #fateBrowseFrame{flex:1;width:100%;border:none;background:#fff;}
+   498→  .fate-hint{font-size:.68rem;color:#64748b;padding:.35rem .7rem;background:#0c0a09;border-top:1px solid rgba(148,163,184,.18);}
+   499→  `;
+   500→  document.head.appendChild(style);
+   501→
+   502→  const modal = document.createElement('div');
+   503→  modal.className = 'fate-modal'; modal.id = 'fateAppsModal';
+   504→  modal.innerHTML = `<div class="fate-box" style="position:relative;">
+   505→    <button class="fate-close" onclick="fateToggleApps(false)">\u00d7</button>
+   506→    <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="#38bdf8"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg> FATE Apps</h3>
+   507→    <div class="sub">Real sites through the wisp tunnel \u2014 jet files load local-first, mirror fallback</div>
+   508→    <div class="fate-apps" id="fateAppsGrid"></div>
+   509→    <div class="fate-status" id="fateJetStatus">idle</div>
+   510→  </div>`;
+   511→  const grid = modal.querySelector('#fateAppsGrid');
+   512→  FATE_JET_APPS.forEach(a => {
+   513→    const d = document.createElement('div');
+   514→    d.className = 'fate-app';
+   515→    d.innerHTML = `<span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="${a.color}">${a.icon}</svg></span><span>${a.label}</span>`;
+   516→    d.onclick = () => { fateToggleApps(false); fateBrowseOpen(a.url); };
+   517→    grid.appendChild(d);
+   518→  });
+   519→  document.body.appendChild(modal);
+   520→  modal.addEventListener('click', e => { if (e.target === modal) fateToggleApps(false); });
+   521→
+   522→  const view = document.createElement('div');
+   523→  view.id = 'fateBrowseView';
+   524→  view.innerHTML = `
+   525→    <div class="fate-chrome">
+   526→      <button onclick="fateBrowseBack()" title="Back">\u2190</button>
+   527→      <button onclick="fateBrowseReload()" title="Reload">\u21bb</button>
+   528→      <input class="fate-addr" id="fateBrowseAddr" placeholder="https://" spellcheck="false"
+   529→             onkeydown="if(event.key==='Enter')fateBrowseGo(this.value)"/>
+   530→      <button onclick="fateBrowsePopout()" title="Open direct (no proxy)">\u2197</button>
+   531→      <button onclick="fateBrowseClose()" title="Close">\u00d7</button>
+   532→    </div>
+   533→    <iframe id="fateBrowseFrame" referrerpolicy="no-referrer"></iframe>
+   534→    <div class="fate-hint">Back / reload ride the proxied frame. \u21b7 opens the site directly (no proxy). Keep this tab OPEN and in the foreground \u2014 it powers the tunnel (iPad freezes background tabs).</div>`;
+   535→  document.body.appendChild(view);
+   536→  const frame = view.querySelector('#fateBrowseFrame');
+   537→  frame.addEventListener('load', () => {
+   538→    try {
+   539→      const real = fateSJDecode(frame.contentWindow.location.href);
+   540→      if (real) document.getElementById('fateBrowseAddr').value = real;
+   541→    } catch(e){}
+   542→  });
+   543→}
+   544→function fateToggleApps(force){
+   545→  fateJetEnsureUI();
+   546→  const m = document.getElementById('fateAppsModal');
+   547→  const open = force !== undefined ? force : !m.classList.contains('open');
+   548→  m.classList.toggle('open', open);
+   549→  if (open){ fateJetPaintStatus(); if (FATE_JET_STATE !== 'ready') fateJetBoot(); }
+   550→}
+   551→function fateJetPaintStatus(){
+   552→  const el = document.getElementById('fateJetStatus');
+   553→  if (!el) return;
+   554→  const map = {
+   555→    idle: ['idle \u2014 open an app to boot the proxy', '#94a3b8'],
+   556→    booting: ['booting proxy (service worker \u2192 jet files \u2192 wisp tunnel \u2192 controller)\u2026 progress shown at the top of the page', '#fbbf24'],
+   557→    ready: ['proxy READY \u2014 apps open through your wisp tunnel lane', '#4ade80'],
+   558→    'sw-failed': ['service worker problem \u2014 the page auto-recovers (soft reload \u2192 SW reset). If this stays red: deploy fate-sw.js next to test.html (same folder, https) and reload. ' + FATE_JET_ERR, '#f87171'],
+   559→    'transport-failed': ['wisp tunnel down \u2014 no alive lane right now. Cloud view may recover it. ' + FATE_JET_ERR, '#f87171'],
+   560→    'controller-failed': ['jet controller failed \u2014 tap the red pill at the top to retry (auto-retried the handshake 5 times first). ' + FATE_JET_ERR, '#f87171']
+   561→  };
+   562→  const [txt, col] = map[FATE_JET_STATE] || [FATE_JET_STATE, '#94a3b8'];
+   563→  let assets = '';
+   564→  const keys = Object.keys(FATE_ASSET_SRC);
+   565→  if (keys.length) assets = '<br><span style="color:#64748b;">assets:</span> ' +
+   566→    keys.map(k => k + ': <b style="color:#67e8f9;">' + FATE_ASSET_SRC[k] + '</b>').join(' \u00b7 ') +
+   567→    ' \u00b7 utils: <b style="color:' + (FATE_HAS_UTILS ? '#4ade80' : '#94a3b8') + ';">' + (FATE_HAS_UTILS ? 'on' : 'off') + '</b>';
+   568→  el.innerHTML = '<b style="color:' + col + ';">jet: ' + txt + '</b>' + assets +
+   569→    (FATE_JET_STATE !== 'ready' ? ' \u00b7 <a href="#" onclick="fateJetBoot();return false;" style="color:#67e8f9;">retry</a>' : '');
+   570→}
+   571→
+   572→/* ---------- browse view ---------- */
+   573→let fateBrowseStack = [], fateBrowseIdx = -1;
+   574→function fateBrowseOpen(url){
+   575→  fateJetEnsureUI();
+   576→  if (typeof stopTikTokPlayback === 'function') stopTikTokPlayback();
+   577→  if (!FATE_JET){
+   578→    FATE_JET_PENDING = url;
+   579→    try { sessionStorage.fateJetPending = url; } catch(e){} /* survives recovery reloads */
+   580→    fateToggleApps(true);
+   581→    return;
+   582→  }
+   583→  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+   584→  FATE_BROWSE_OPEN = true;
+   585→  const view = document.getElementById('fateBrowseView');
+   586→  const frame = document.getElementById('fateBrowseFrame');
+   587→  document.getElementById('fateBrowseAddr').value = url;
+   588→  view.classList.add('open');
+   589→  if (FATE_FRAME){ try { FATE_FRAME.go(url); } catch(e){ frame.src = fateSJEncode(url) || url; } }
+   590→  else frame.src = fateSJEncode(url) || url;
+   591→  fateBrowseStack = fateBrowseStack.slice(0, fateBrowseIdx + 1);
+   592→  fateBrowseStack.push(url); fateBrowseIdx = fateBrowseStack.length - 1;
+   593→}
+   594→function fateBrowseGo(input){
+   595→  let u = (input || '').trim();
+   596→  if (!u) return;
+   597→  if (!/^https?:\/\//i.test(u)) u = u.includes(' ') || !u.includes('.')
+   598→    ? 'https://www.google.com/search?q=' + encodeURIComponent(u) : 'https://' + u;
+   599→  fateBrowseOpen(u);
+   600→}
+   601→function fateBrowseBack(){
+   602→  if (FATE_FRAME){ try { FATE_FRAME.back(); return; } catch(e){} }
+   603→  const frame = document.getElementById('fateBrowseFrame');
+   604→  try { frame.contentWindow.history.back(); return; } catch(e){}
+   605→  if (fateBrowseIdx > 0){ fateBrowseIdx--; frame.src = fateSJEncode(fateBrowseStack[fateBrowseIdx]); }
+   606→}
+   607→function fateBrowseReload(){
+   608→  if (FATE_FRAME){ try { FATE_FRAME.reload(); return; } catch(e){} }
+   609→  const frame = document.getElementById('fateBrowseFrame');
+   610→  try { frame.contentWindow.location.reload(); } catch(e){ frame.src = frame.src; }
+   611→}
+   612→function fateBrowsePopout(){
+   613→  /* a popped-out proxied page has no live JetFrame; open the real URL instead */
+   614→  const cur = document.getElementById('fateBrowseAddr').value || fateBrowseStack[fateBrowseIdx];
+   615→  if (cur) window.open(cur, '_blank');
+   616→}
+   617→function fateBrowseClose(){
+   618→  FATE_BROWSE_OPEN = false;
+   619→  const view = document.getElementById('fateBrowseView');
+   620→  const frame = document.getElementById('fateBrowseFrame');
+   621→  view.classList.remove('open');
+   622→  try { frame.contentWindow.location.replace('about:blank'); } catch(e){ frame.src = 'about:blank'; }
+   623→}
+   624→
+   625→/* ---- auto-resume after recovery reloads (soft reload / SW reset):
+   626→        the user taps an app once; the page reloads transparently and the boot
+   627→        continues by itself instead of dying on a dead spinner ---- */
+   628→(function fateJetAutoResume(){
+   629→  let resume = false, pending = null;
+   630→  try { resume = sessionStorage.fateBootResume === '1'; pending = sessionStorage.fateJetPending || null; } catch(e){}
+   631→  if (!resume) return;
+   632→  try { sessionStorage.removeItem('fateBootResume'); } catch(e){}
+   633→  console.log('[FATE v8.2] auto-resuming jet boot after recovery reload');
+   634→  const start = () => {
+   635→    if (pending){ FATE_JET_PENDING = pending; }
+   636→    fateJetBoot();
+   637→  };
+   638→  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(start, 600), { once: true });
+   639→  else setTimeout(start, 600);
+   640→})();
+   641→/* ===== END FATE PORTAL v8.2 JET LANE ENGINE ===== */
+   642→
