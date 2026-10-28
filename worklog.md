@@ -360,3 +360,21 @@ Stage Summary:
 - FATE Movies is live: a dedicated FATE-styled movies-only page that rides the SAME 8-file v8.2 deploy (no new hosting burden — reuses fate-sw.js + jet.* + shared lane cache + shared login).
 - Deliverables: download/v8.2-deploy/ = 8 files (test.html, movies.html, fate-sw.js, jet.core.js, jet.api.js, jet.inject.js, jet.utils.js, jet.wasm); download/movies.html standalone copy.
 - Key files: scripts/movies-engine.js, scripts/build-movies.py, download/seed-auth.html (E2E helper, NOT for deploy).
+
+---
+Task ID: 18
+Agent: main (Z.ai)
+Task: "Now create a Fate style browser with the jet, make multiple tabs and stuff"
+
+Work Log:
+- Confirmed jet.api.js createFrame() is multi-frame by design: each call pushes a new frame (class v) with its own prefix = controller.prefix + frameId + "/"; fate-sw.js routes ANY /~/<id>/... path, so N tabs = N private tunnel lanes. Verified plugin exports in jet.utils.js.
+- Built scripts/browser-engine.js: tab model (stack/idx per tab, lazy iframe + lazy JetFrame binding per tab), per-tab plugins (EventHandler/LinkHandler->tab navigate/UrlWatcher->stack sync/HttpCache), stack-based Back/Forward (avoids the iframe's initial about:blank history trap) with redirect-variant collapse in load-sync, fbNormalize (words->Google udm=14, domain->https), start page per tab (search + 9 tiles no games + Movies tile -> movies.html + Recent chips deduped by origin+path + iPad foreground note), tab strip (titles/spinners/close/+/scroll-into-view), tunnel chip painter, boot watcher flushing pendingUrls, session save/restore via sessionStorage.fateBrowserTabs (per-tab semantics: same-tab reload restores, new visit fresh), ?open= deep link, Cmd/Ctrl+T/W/L.
+- Built scripts/build-browser.py: GATE (shared fate_v6_auth) + FATE CSS (nav-glass, gold tabs, app-frame fixed viewport, safe-area) + WISP lane host (same fate_wisp_lane_v6 cache) + jet-engine.js VERBATIM (proven v8.2 boot untouched; its hidden browse view stays dormant) + browser engine. Writes download/browser.html + v8.2-deploy/browser.html (md5-identical).
+- E2E bugs found+fixed: (1) fbNewTabBtn never bound -> + button dead; (2) frame.back() would walk into about:blank -> switched to stack-based; (3) redirect variants (example.com -> /) double-pushed -> replace-in-place on load-sync; (4) recents dupes from legacy entries -> normalized key compare; (5) session restore keyed off fateBootResume which engine auto-resume deletes at eval -> keyed off saved tabs instead (sessionStorage per-tab = correct semantics); (6) start overlay 98% alpha bled iframe through -> solid #0a0908.
+- E2E (agent-browser, :8902, download/ root): gate passes, READY ~2s warm (5/5 jet assets local, lane api.personalloanonline.net), example.com + wikipedia.org + reddit.com + tiktok.com/foryou + Google search all load through tunnel with real titles, 2 tabs live with private per-frame prefixes (/~/wz5myeos/anzcoimc/ vs u526r3lu/), tab switch preserves sites, close activates neighbor, back/forward stable stack, search normalization works, recents dedupe, session restore reconnects 2 tabs incl. TikTok after reload. node --check 4/4 blocks. Screenshots: verify-browser-home/-tab1-example/-wikipedia/-two-tabs/-back/-search/-home-recents/-restore/-final.png.
+- README.md updated: 9-file deploy table (+browser.html), FATE Browser section, FATE Browser verified section.
+
+Stage Summary:
+- FATE Browser is live: a real multi-tab tabbed browser (FATE style) riding the SAME jet stack — deploy set is now 9 files in v8.2-deploy/, no new service worker, no new deps.
+- Deliverables: download/v8.2-deploy/browser.html + download/browser.html (identical); scripts/browser-engine.js + scripts/build-browser.py for future edits.
+- Key decision: one createFrame() per tab (native multi-frame support) — each tab gets its own /~/{frameId}/ route; back/forward are stack-based for predictability.

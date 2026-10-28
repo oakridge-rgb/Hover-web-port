@@ -1,4 +1,4 @@
-# FATE Portal — v8.2 (jet proxy, self-healing boot) + FATE Movies page
+# FATE Portal — v8.2 (jet proxy, self-healing boot) + FATE Movies + FATE Browser
 
 ## "It just keeps booting and never starts" — FIXED
 
@@ -22,7 +22,7 @@ they solved every one of these already; v8.2 now runs their exact recipe):
 6. **iPad tab freezing** — SW health watcher every 20s + on focus/visibility; fresh
    MessageChannel port on controllerchange; pending requests resolved on pagehide.
 
-## Deploy — ONLY these 8 files (answers "do we need all of these files?")
+## Deploy — ONLY these 9 files (answers "do we need all of these files?")
 
 Upload the **contents** of `v8.2-deploy/` into ONE folder on your host, names exact:
 
@@ -30,6 +30,7 @@ Upload the **contents** of `v8.2-deploy/` into ONE folder on your host, names ex
 |---|---|---|
 | `test.html` | REQUIRED | the portal (v8.2, 205 KB) |
 | `movies.html` | REQUIRED | **FATE Movies** — dedicated movies-only page (no games) |
+| `browser.html` | REQUIRED | **FATE Browser** — multi-tab web browser over the jet tunnel |
 | `fate-sw.js` | REQUIRED | service worker (jet.sw.js already baked in — self-contained) |
 | `jet.core.js` | REQUIRED | jet rewriter engine |
 | `jet.api.js` | REQUIRED | jet controller ($jetController) |
@@ -56,6 +57,26 @@ Three ways to watch:
 The tunnel auto-boots when the page loads (chip in the nav shows the lane). If direct
 playlist downloads are blocked on your network, the vault automatically re-fetches them
 through the jet tunnel. Keep the tab in the FOREGROUND on iPad during first boot.
+
+## FATE Browser (`browser.html`)
+
+A real multi-tab web browser in the FATE style — every tab is its own jet-tunnel frame
+(one `createFrame()` per tab, each with a private `/~/{frameId}/` route through the same
+service worker). Same login as the portal; the tunnel auto-boots on page load.
+
+- **Tab strip** — chips with live titles + spinners, `×` to close, `+` for a new tab;
+  switching tabs keeps every site loaded (background tabs stay alive).
+- **Toolbar** — Back / Forward (full per-tab history, SPA pushState tracked), Reload,
+  Home, address bar (decodes the REAL url of the proxied page as you browse), Go, and
+  `↗` pop-out (opens the site direct, no proxy).
+- **Start page** — Google-or-URL search box, 9 shortcut tiles (TikTok / YouTube /
+  Snapchat / Instagram / Discord / Twitch / Reddit / Wikipedia / Google — no games), a
+  **FATE Movies** tile (opens `movies.html`), and **Recent** chips from your browsing.
+- **Search box semantics** — type words → Google search through the tunnel; type a
+  domain → goes straight to it.
+- **Session restore** — reload the page (or a self-heal reload fires) and your tabs come
+  back and reconnect through the tunnel by themselves.
+- Keep this tab in the FOREGROUND on iPad — it powers the tunnel (same rule as always).
 
 ## How to use (portal)
 
@@ -92,6 +113,25 @@ through the jet tunnel. Keep the tab in the FOREGROUND on iPad during first boot
   Retry/Next flows verified on dead IPTV streams; search "Pluto" → 164 hits.
 - **Zero game code on the page** (only the login fallback + the words "no games").
 - node syntax clean on all 5 script blocks. Evidence: `scripts/verify-movies-*.png`.
+
+## FATE Browser — verified (agent-browser E2E)
+
+- Boot: READY in ~2s warm (all 5 jet assets `local`, lane `api.personalloanonline.net`).
+- Real sites through the tunnel with real titles: **example.com** ("Example Domain"),
+  **wikipedia.org** ("Wikipedia"), **reddit.com** (renders its real challenge page),
+  **tiktok.com/foryou** ("TikTok - Make Your Day"), **Google search** ("cute cats" →
+  real results page).
+- Multi-tab: 2 tabs live at once with **private per-frame prefixes** (`/~/wz5myeos/anzcoimc/`
+  vs `/~/wz5myeos/u526r3lu/`); switching tabs preserves each site; closing a tab
+  activates its neighbor; closing the last tab opens a fresh one.
+- Back / Forward verified across example.com ↔ wikipedia with a stable 2-entry stack
+  (redirect variants collapse in place — Back never looks like a no-op).
+- Address bar syncs to the decoded real URL on every load; tab titles come from the
+  page's own `<title>`.
+- Start page: 9 tiles, Movies tile, **Recent** chips (deduped by origin+path).
+- **Session restore**: 2 tabs (incl. TikTok) survive a page reload and reconnect
+  through the tunnel automatically.
+- node syntax clean on all 4 script blocks. Evidence: `scripts/verify-browser-*.png`.
 
 ## For debugging (only if something still fails)
 
