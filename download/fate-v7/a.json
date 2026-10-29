@@ -1,0 +1,35 @@
+{
+  "changelog": [
+    {
+      "version": "V7.0.0",
+      "date": "2026-10-30",
+      "changes": [
+        "NEW: Themes — PS3 XMB, Xbox 360, GameCube, Vaporwave & Matrix",
+        "Pick your theme in Settings > Themes — it applies across FATE, Home included",
+        "Full theme engine: colors, glows, particles & panels all follow your theme",
+        "Theme syncs live across tabs — switch once, everywhere",
+        "Rebranded to FATE V7 across the site"
+      ]
+    },
+    {
+      "version": "V6.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "FATE OS 2.0 — boot screen, windows, taskbar & start menu",
+        "Cloud gaming + massive game vault",
+        "Music, Live TV, AI chat & proxy browser",
+        "Tab cloak, panic key & seasonal themes"
+      ]
+    }
+  ],
+  "announcement": {
+    "id": "v7-themes-launch",
+    "badge": "New Update",
+    "subtitle": "FATE V7",
+    "title": "Themes Have Landed",
+    "message": "FATE V7 brings full themes — PS3 XMB, Xbox 360, GameCube, Vaporwave and Matrix. Open Settings > Themes, pick your vibe and it follows you across the whole site, Home included.",
+    "link": "settings.html",
+    "linkText": "Pick a Theme",
+    "dismissText": "Later"
+  }
+}
