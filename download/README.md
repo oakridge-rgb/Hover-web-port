@@ -220,3 +220,30 @@ top shows live boot progress and turns into a red tap-to-retry pill on failure.
 - Verified E2E: grid + pills + 208 cloud games merged, CDN picker → Direct → Bowmasters playable,
   cloud view renders 208 cards with Reload/Check-mirrors. Evidence: `scripts/verify-v82-games-portal-1..3.png`.
 - Deploy: re-upload **`games.html`** only (catalog file unchanged from v3).
+
+
+## Cloud Moon lane — CloudMoon as a second cloud backend (2026-10-30)
+
+**test.html now has a ☾ Moon toggle next to Cloud/TikTok. It streams CloudMoon's cloud phones
+(web.cloudmoonapp.com) — a completely separate backend from the Stratus mirrors, so it works
+even when the mirrors read "0 idle accounts".**
+
+- Catalog: 237 games fetched client-side from `api.prod.cloudmoonapp.com/game/guest_list`
+  (open CORS, guest-readable, device_id UUID stored in localStorage, 30-min cache, saved copy
+  shown offline). Roblox, Fortnite, Genshin, CoD Mobile, Roblox, TikTok/Chrome/YouTube apps etc.
+- Launch: card click → CloudMoon's own game page inside the game popup iframe (their site sets
+  NO X-Frame-Options, verified). "Open in New Tab" stays available as fallback.
+- First use: CloudMoon asks for a one-time sign-in (Google / Apple / email) with a server
+  picker — that modal works in-frame; if Google blocks the popup, use Open in New Tab.
+- Free tier: limited minutes per session, ~3-minute cooldown between launches, queue at peak.
+  Cards tagged `G` (9/237) want their own game login once the stream starts.
+- Keyboard: `M` toggles the Moon view.
+- Verified E2E: catalog loads (237), moon grid renders with MOON badges, Roblox page opens
+  in-frame, sign-in modal renders with server picker. Evidence: `scripts/verify-moon-*.png`.
+- Why Stratus said "0 idle accounts" at school: (1) most cdn.* mirrors are filter-blocked at
+  school and the public CORS proxies are GET-only — they can carry /status and /games but NOT
+  the POST /stratus/session, and when /status fails the UI falls back to `0 idle accounts`;
+  (2) at lunch-peak the 20-account pool is genuinely drained (sessions linger up to 19 min
+  after tabs close). Backend itself is healthy off-peak (idle 7–9 verified). One mirror
+  (cdn.northstreetumc.org) is now Cloudflare bot-gated and can be ignored.
+- Deploy: re-upload **`test.html`** only.

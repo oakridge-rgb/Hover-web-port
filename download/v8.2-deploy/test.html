@@ -111,6 +111,8 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
 .badge-exp{background:linear-gradient(135deg,rgba(245,158,11,0.9),rgba(217,119,6,0.9));color:white}
 .badge-upd{background:linear-gradient(135deg,rgba(6,182,212,0.9),rgba(8,145,178,0.9));color:white}
 .badge-cloud{background:linear-gradient(135deg,rgba(139,92,246,0.9),rgba(99,102,241,0.9));color:white}
+.badge-moon{background:linear-gradient(135deg,rgba(167,139,250,0.95),rgba(124,58,237,0.95));color:white}
+.badge-moog{background:linear-gradient(135deg,rgba(251,191,36,0.95),rgba(245,158,11,0.95));color:#1f2937}
 .cloud-toggle{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:20px;cursor:pointer;font-family:inherit;font-size:.875rem;color:var(--text-muted);transition:all .3s ease;display:flex;align-items:center;gap:6px;padding:8px 16px}
 .cloud-toggle:hover{background:rgba(139,92,246,0.12);border-color:rgba(139,92,246,0.4);color:#fff}
 .cloud-toggle.active{background:linear-gradient(135deg,rgba(139,92,246,0.25),rgba(99,102,241,0.25));border-color:rgba(139,92,246,0.5);color:#c4b5fd}
@@ -437,7 +439,7 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
         </div>
         <div id="cloudRelockHint">Click to lock mouse & play</div>
       </div>
-      <iframe id="gameFrame" allowfullscreen sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads" referrerpolicy="no-referrer" loading="eager" style="position:relative;z-index:1;"></iframe>
+      <iframe id="gameFrame" allow="autoplay; fullscreen; gamepad; microphone; clipboard-write" allowfullscreen sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads" referrerpolicy="no-referrer" loading="eager" style="position:relative;z-index:1;"></iframe>
     </div>
   </div>
 </div>
@@ -512,6 +514,10 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
       <svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
       <span id="cloudLabel">Cloud</span>
     </button>
+    <button class="cloud-toggle" id="moonToggle" onclick="toggleMoonView()" title="CloudMoon games (M) — second cloud lane on CloudMoon's cloud phones">
+      <svg viewBox="0 0 24 24" style="fill:#a78bfa;"><path d="M12.3 2a9.9 9.9 0 0 0-2 .2 10 10 0 0 1 0 19.6A10 10 0 1 0 12.3 2z"/></svg>
+      <span id="moonLabel">Moon</span>
+    </button>
     <button class="cloud-toggle" id="tiktokToggle" onclick="toggleTikTokView()" title="TikTok feed (T)">
       <svg viewBox="0 0 24 24" style="fill:#25f4ee;"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
       <span id="tiktokLabel">TikTok</span>
@@ -571,6 +577,11 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
       <span class="cloud-live"><span class="cloud-live-dot"></span>Cloud Streaming</span>
     </div>
     <p class="cloud-sub">Streamed live from the <b>cloud</b> — no downloads, no installs. Click any card and a session boots instantly.</p>
+    <div id="moonBar" style="display:none;margin:.8rem 0 .2rem;background:linear-gradient(135deg,rgba(124,58,237,.16),rgba(139,92,246,.08));border:1px solid rgba(167,139,250,.4);border-radius:14px;padding:.85rem 1rem;font-size:.78rem;color:#ddd6fe;line-height:1.55;">
+      <b style="color:#c4b5fd;">☾ Cloud Moon lane</b> — games stream from CloudMoon's cloud phones (22 edge regions), fully independent of the Stratus mirrors, so it still works when the mirrors read <i>0 idle accounts</i>.
+      <b style="color:#c4b5fd;">First use:</b> one-time CloudMoon sign-in (Google / Apple / email) inside the player — if Google blocks the popup in-frame, tap <b>Open in new tab</b>.
+      Free tier = limited minutes per session, a ~3-minute cooldown between launches, and a queue at peak. Cards tagged <span class="badge badge-moog" style="font-size:.6rem;padding:1px 5px;">G</span> want their own game login once the stream starts.
+    </div>
     <div id="selfTestPanel" style="display:none;margin:.9rem 0 .4rem;background:rgba(0,0,0,.35);border:1px solid rgba(148,163,184,.25);border-radius:14px;padding:.9rem 1rem;overflow-x:auto;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;gap:.75rem;flex-wrap:wrap;">
         <b style="font-size:.85rem;color:#e2e8f0;">Mirror self-test <span id="selfTestPhase" style="color:#94a3b8;font-weight:500;"></span></b>
@@ -696,6 +707,8 @@ const LS = {
 };
 
 let allGames = [];
+let moonGames = [];          /* FATE MOON LANE — CloudMoon catalog */
+let showMoonOnly = false;    /* CloudMoon view toggle */
 let filteredGames = [];
 let visibleGames = [];
 let favorites = [];
@@ -808,6 +821,7 @@ async function init(){
   setupIframeHandlers();
   loadSettings();
   renderRecent();
+  loadMoonGames();   /* FATE MOON LANE — preload CloudMoon catalog in background */
 
   let merged = [];
 
@@ -2396,7 +2410,9 @@ function applyFilters(){
   if(typeof showTikTokOnly !== 'undefined' && showTikTokOnly){ if(typeof syncTikTokViewUI === 'function') syncTikTokViewUI(); return; }
   let list = allGames;
 
-  if(showCloudOnly){
+  if(showMoonOnly){
+    list = moonGames;
+  } else if(showCloudOnly){
     list = list.filter(g => g.cloud === true);
   } else if(showFavoritesOnly){
     list = list.filter(g => favorites.includes(g.id));
@@ -2430,12 +2446,12 @@ function updateVisible(){
   visibleGames = filteredGames.slice(0, end);
   renderGrid();
   const hasMore = end < filteredGames.length;
-  $('loadMoreWrap').style.display = (!showCloudOnly && hasMore) ? 'block' : 'none';
-  $('cloudLoadMoreWrap').style.display = (showCloudOnly && hasMore) ? 'block' : 'none';
+  $('loadMoreWrap').style.display = (!showCloudOnly && !showMoonOnly && hasMore) ? 'block' : 'none';
+  $('cloudLoadMoreWrap').style.display = ((showCloudOnly || showMoonOnly) && hasMore) ? 'block' : 'none';
 }
 
 function renderGrid(){
-  const cloudView = showCloudOnly;
+  const cloudView = showCloudOnly || showMoonOnly;
   const grid = $(cloudView ? 'cloudGrid' : 'gamesGrid');
   const emptyEl = $(cloudView ? 'cloudEmpty' : 'emptyState');
   if(filteredGames.length === 0){
@@ -2466,6 +2482,8 @@ function renderGrid(){
           ${g.exp?'<span class="badge badge-exp">EXP</span>':''}
           ${g.updated?'<span class="badge badge-upd">UPD</span>':''}
           ${g.cloud?'<span class="badge badge-cloud">CLOUD</span>':''}
+          ${g.moon?'<span class="badge badge-moon">MOON</span>':''}
+          ${g.needGoogle?'<span class="badge badge-moog" title="Needs its own game login inside the stream">G</span>':''}
         </div>
       </div>
       <div class="game-info">
@@ -2505,23 +2523,29 @@ function togglePopupFav(){
 
 function updateStats(){
   const n = filteredGames.length;
-  $('gameCount').textContent = n + ' game' + (n!==1?'s':'') + (showCloudOnly ? ' in cloud' : '');
+  $('gameCount').textContent = n + ' game' + (n!==1?'s':'') + (showMoonOnly ? ' on moon' : (showCloudOnly ? ' in cloud' : ''));
   $('favCount').textContent = favorites.length + ' favorite' + (favorites.length!==1?'s':'');
   $('favStat').style.display = favorites.length > 0 ? 'flex' : 'none';
   const cc = $('cloudCount');
   if(cc){
-    const total = showCloudOnly ? n : allGames.filter(g=>g.cloud).length;
-    cc.textContent = total + ' cloud game' + (total!==1?'s':'');
+    const total = showMoonOnly ? moonGames.length : (showCloudOnly ? n : allGames.filter(g=>g.cloud).length);
+    cc.textContent = showMoonOnly
+      ? (total + ' moon games')
+      : (total + ' cloud game' + (total!==1?'s':''));
   }
+  const mc = $('moonCount');
+  if(mc) mc.textContent = moonGames.length + ' moon games';
 }
 
 function setFilter(f){
   activeFilter = f;
   showFavoritesOnly = false;
   showCloudOnly = false;
+  showMoonOnly = false;
   document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('active', p.dataset.filter===f));
   $('favToggle').classList.remove('active');
   $('favLabel').textContent = 'Favorites';
+  syncMoonViewUI();
   syncCloudViewUI();
   applyFilters();
 }
@@ -2530,11 +2554,13 @@ function toggleFavoritesView(){
   if(typeof ttCloseView === 'function') ttCloseView();
   showFavoritesOnly = !showFavoritesOnly;
   showCloudOnly = false;
+  showMoonOnly = false;
   activeFilter = 'all';
   document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
   document.querySelector('.pill[data-filter="all"]').classList.add('active');
   $('favToggle').classList.toggle('active', showFavoritesOnly);
   $('favLabel').textContent = showFavoritesOnly ? 'Show All' : 'Favorites';
+  syncMoonViewUI();
   syncCloudViewUI();
   applyFilters();
 }
@@ -2543,6 +2569,7 @@ function toggleFavoritesView(){
 function toggleCloudView(){
   if(typeof ttCloseView === 'function') ttCloseView();
   showCloudOnly = !showCloudOnly;
+  showMoonOnly = false;
   if(showCloudOnly){
     showFavoritesOnly = false;
     activeFilter = 'all';
@@ -2561,17 +2588,113 @@ function syncCloudViewUI(){
   const label = $('cloudLabel');
   if(label) label.textContent = showCloudOnly ? 'Show All' : 'Cloud';
   const section = $('cloudSection');
-  if(section) section.style.display = showCloudOnly ? 'block' : 'none';
+  if(section) section.style.display = (showCloudOnly || showMoonOnly) ? 'block' : 'none';
   const pills = $('pills');
-  if(pills) pills.style.display = showCloudOnly ? 'none' : 'flex';
+  if(pills) pills.style.display = (showCloudOnly || showMoonOnly) ? 'none' : 'flex';
   const recent = $('recentSection');
-  if(recent) recent.style.display = showCloudOnly ? 'none' : (recentGames.length ? 'block' : 'none');
-  if(showCloudOnly){
+  if(recent) recent.style.display = (showCloudOnly || showMoonOnly) ? 'none' : (recentGames.length ? 'block' : 'none');
+  if(showCloudOnly || showMoonOnly){
     $('gamesGrid').style.display = 'none';
     $('emptyState').style.display = 'none';
     $('loadMoreWrap').style.display = 'none';
   }
+  const bar = $('moonBar');
+  if(bar) bar.style.display = showMoonOnly ? 'block' : 'none';
+  const mbtn = $('moonToggle');
+  if(mbtn) mbtn.classList.toggle('active', showMoonOnly);
+  const mlabel = $('moonLabel');
+  if(mlabel) mlabel.textContent = showMoonOnly ? 'Show All' : 'Moon';
 }
+
+/* ===== FATE MOON LANE — CloudMoon (web.cloudmoonapp.com) =====
+   Second cloud lane, fully independent of the Stratus mirrors.
+   CloudMoon streams cloud ANDROID phones from their GPU edge servers
+   (22 regions). Catalog is guest-readable from api.prod.cloudmoonapp.com
+   (open CORS); playing needs a one-time CloudMoon sign-in inside the
+   player (Google / Apple / email). Free tier: limited minutes per
+   session + ~3-min cooldown between launches + queue at peak. */
+const FATE_MOON_API = 'https://api.prod.cloudmoonapp.com';
+const FATE_MOON_GAMES_KEY = 'fate_moon_games_v1';
+const FATE_MOON_DEV_KEY = 'fate_moon_device_v1';
+const FATE_MOON_TTL = 30 * 60 * 1000;
+let _moonLoading = false;
+
+function _moonDeviceId(){
+  let id = null;
+  try{ id = localStorage.getItem(FATE_MOON_DEV_KEY); }catch(e){}
+  if(!id){
+    id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('d' + Date.now() + Math.random().toString(16).slice(2));
+    try{ localStorage.setItem(FATE_MOON_DEV_KEY, id); }catch(e){}
+  }
+  return id;
+}
+
+function _moonGuestUrl(){
+  const q = crypto.randomUUID ? crypto.randomUUID() : _moonDeviceId();
+  return FATE_MOON_API + '/game/guest_list?device_type=web&site=cm&device_id=' + encodeURIComponent(_moonDeviceId()) + '&query_uuid=' + q;
+}
+
+async function loadMoonGames(force){
+  if(_moonLoading) return moonGames;
+  _moonLoading = true;
+  const cached = _lsGet(FATE_MOON_GAMES_KEY);
+  if(!force && cached && Array.isArray(cached.games) && cached.games.length && Date.now() - cached.t < FATE_MOON_TTL){
+    moonGames = cached.games;
+    _moonLoading = false;
+    if(showMoonOnly) applyFilters();
+    updateStats();
+    return moonGames;
+  }
+  try{
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 12000);
+    const res = await fetch(_moonGuestUrl(), { credentials: 'omit', signal: ctrl.signal });
+    clearTimeout(t);
+    const data = await res.json();
+    const raw = (data && data.data && data.data.list) || [];
+    if(raw.length){
+      moonGames = raw.filter(g => g.status === 1 && g.package_name).map(g => ({
+        id: 'moon/' + g.package_name,
+        name: g.title || g.package_name,
+        url: 'moon://' + g.package_name,
+        moon: true,
+        image: g.icon_url || '',
+        needGoogle: !!g.need_login_google,
+        isPc: !!g.is_pc
+      }));
+      _lsSet(FATE_MOON_GAMES_KEY, { t: Date.now(), games: moonGames });
+      console.log('[FATE MOON] catalog loaded: ' + moonGames.length + ' games');
+    }
+  }catch(e){
+    console.warn('[FATE MOON] catalog fetch failed:', e && e.message || e);
+    if(cached && Array.isArray(cached.games) && cached.games.length && !moonGames.length){
+      moonGames = cached.games;
+      console.log('[FATE MOON] using saved catalog (' + moonGames.length + ' games)');
+    }
+  }
+  _moonLoading = false;
+  if(showMoonOnly) applyFilters();
+  updateStats();
+  return moonGames;
+}
+
+function toggleMoonView(){
+  if(typeof ttCloseView === 'function') ttCloseView();
+  showMoonOnly = !showMoonOnly;
+  showCloudOnly = false;
+  if(showMoonOnly){
+    showFavoritesOnly = false;
+    activeFilter = 'all';
+    $('favToggle').classList.remove('active');
+    $('favLabel').textContent = 'Favorites';
+    document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+    document.querySelector('.pill[data-filter="all"]').classList.add('active');
+    if(!moonGames.length) loadMoonGames();
+  }
+  syncCloudViewUI();
+  applyFilters();
+}
+/* ===== END FATE MOON LANE ===== */
 
 function debounceSearch(){
   clearTimeout(searchTimeout);
@@ -2587,7 +2710,7 @@ function loadMore(){
 }
 
 function openGame(id){
-  const g = allGames.find(x=>x.id===id);
+  const g = allGames.find(x=>x.id===id) || (typeof moonGames !== 'undefined' ? moonGames.find(x=>x.id===id) : null);
   if(!g) return;
   stopCloudIfActive();
   currentGame = g;
@@ -2599,6 +2722,21 @@ function openGame(id){
   toggleKeysBar(('ontouchstart' in window) || ((navigator.maxTouchPoints || 0) > 0));
 
   // Real cloud-streaming games skip the iframe + CDN picker entirely
+  if(g.url && g.url.indexOf('moon://') === 0){
+    /* FATE MOON LANE: CloudMoon game — stream their cloud phone in the iframe.
+       First-ever use asks for a CloudMoon sign-in inside the frame; if the
+       Google popup is blocked, the user taps the visible Open-in-new-tab. */
+    $('cdnBtn').style.display = 'none';
+    $('newTabBtn').style.display = '';
+    const loader = $('gameLoader'), errEl = $('gameError'), frame = $('gameFrame');
+    if(frame._loadTimeout) clearTimeout(frame._loadTimeout);
+    errEl.style.display = 'none';
+    loader.style.display = 'flex';
+    frame.style.opacity = '0';
+    $('gamePopup').classList.add('open');
+    frame.src = 'https://web.cloudmoonapp.com/game/' + g.url.slice(7) + '/';
+    return;
+  }
   if(g.url && g.url.indexOf('stratus://') === 0){
     $('cdnBtn').style.display = 'none';
     $('newTabBtn').style.display = 'none';
@@ -2640,6 +2778,10 @@ function setupIframeHandlers(){
 
 async function openGameInNewTab(){
   if(!currentGame) return;
+  if(currentGame.url && currentGame.url.indexOf('moon://') === 0){
+    window.open('https://web.cloudmoonapp.com/game/' + currentGame.url.slice(7) + '/', '_blank');
+    return;
+  }
   if(currentGame.url && currentGame.url.indexOf('stratus://') === 0) return;
   const target = getGameUrlByProvider(currentGame, getCdnPref() || 'direct');
   if(!isGhFamilyUrl(target) || !window.fetch){
@@ -2836,6 +2978,7 @@ function initKeyboard(){
       case 'r': case 'R': randomGame(); break;
       case 'l': case 'L': toggleFavoritesView(); break;
       case 'c': case 'C': toggleCloudView(); break;
+      case 'm': case 'M': toggleMoonView(); break;
       case 't': case 'T': toggleTikTokView(); break;
       case 'a': case 'A': fateToggleApps(); break;
       case '?': toggleShortcuts(); break;
