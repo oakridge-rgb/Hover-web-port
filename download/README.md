@@ -203,3 +203,20 @@ top shows live boot progress and turns into a red tap-to-retry pill on failure.
   cdn → fastly → gcore → testingcf → quantil, race + ladder) → `<base>` injected → runs from a
   local blob. This kills text/plain, X-Frame-Options and mixed-content issues in one move.
 - Files to upload: same two — `games.html`, `fate-games-cat.js`. Nothing else changed.
+
+### v3.1 — portal reskin (2026-10-29)
+
+**`games.html` rebuilt as a clone of the portal's Games page — with cloud games, WITHOUT the Apps section.**
+
+- Identical portal look: PANIC nav, "FATE V6 Games" hero, Favorites/Random/Shortcuts quick-actions,
+  All/Arcade/Emulator/Flash pills (Hot/New/Experimental replaced with the vault's real kinds),
+  stats bar with the **Cloud** + **TikTok** toggles, skeletons, infinite scroll, game popup with
+  the CDN picker (9 providers incl. 5 jsDelivr edges) and the v5 smart player (fetch+blob).
+- **Removed**: the Apps quick-action button, the FATE Apps modal, the `A` keyboard shortcut.
+  TikTok toggle + jet browse view stay (TikTok uses them).
+- Arcade grid = the 22,727-game jsDelivr-only vault (portal name-dedupe collapses cross-library
+  clones → **10,032 unique arcade games**); Stratus cloud games merge in live (non-blocking sweep).
+- Favorites/recents share the portal's storage keys (`fate_v5_favorites` / `fate_v5_recent`).
+- Verified E2E: grid + pills + 208 cloud games merged, CDN picker → Direct → Bowmasters playable,
+  cloud view renders 208 cards with Reload/Check-mirrors. Evidence: `scripts/verify-v82-games-portal-1..3.png`.
+- Deploy: re-upload **`games.html`** only (catalog file unchanged from v3).
