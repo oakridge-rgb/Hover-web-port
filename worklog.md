@@ -399,3 +399,13 @@ Stage Summary:
 - The vault is ours: 35,310 games from 69 libraries live in FATE style at games.html, three verified play paths (fetch+blob / direct embed / wisp tunnel), zero new service worker, zero CDN deps.
 - Deliverables: download/v8.2-deploy/games.html + fate-games-cat.js; scripts/make_games_catalog.py + scripts/out/stormos/ (catalog_full.json + extracted blobs) for future re-dumps.
 - Note: 44 'extra' entries dropped (embedded Storm0S extras carry no URL); catalog regenerable anytime via make_games_catalog.py.
+
+## 2026-10-29 — Arcade v2: 31,615 games, direct CDN, jet removed from games
+- Decoded Storm0S (17.7MB single-file site) embedded catalog: 35,354 games / 72 libraries (base64+gzip in #catalog script tag).
+- Probed all 130+ game hosts: content-type, X-Frame-Options, CORS. jsDelivr serves .html as text/plain -> must fetch+blob (Storm's fetchGame trick).
+- Host probe script: scripts/probe-hosts.py; catalog build: scripts/build-catalog-v2.py.
+- Rebuilt v8.2-deploy/fate-games-cat.js: 31,615 games / 67 libraries (dropped GhostProxy 760 dead, 67 dead-host entries, 2,868 URL dupes; raw.githubusercontent -> cdn.jsdelivr.net rewrite).
+- Rebuilt games.html play engine: removed wisp sweep + jet boot entirely (page now loads instantly); new CDN engine with 5-mirror jsDelivr racing + raw fallback, 14s timeouts, in-memory code cache; per-host auto mode (direct embed vs fetch+blob); manual "Code" recovery button; 7s black-screen hint; FATE_NO_EMBED hard-error only when host blocks both paths.
+- E2E (:8902): grid 31,615/67 in 0.2s; GN-Math fetch+blob games render (10 Minutes Till Dawn, OvO); gamemonetize direct embed bootstraps (headless GL black only); search/facets/recent/favorites verified; zero jet refs remain (grep clean); node --check on all inline blocks OK.
+- Created v8.2-deploy/pass.js (was referenced by all pages but missing).
+- Artifacts: scripts/verify-gx-1-grid.png .. verify-gx-7-recent.png; decoded catalog saved at download/storm-catalog-35k.json.

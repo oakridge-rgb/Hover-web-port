@@ -162,3 +162,21 @@ top shows live boot progress and turns into a red tap-to-retry pill on failure.
   `scripts/verify-games-1..5.png`.
 - Deploy: add **`games.html`** + **`fate-games-cat.js`** to the same folder as the
   other files (deploy set is now **11 files**) — no new service worker, no CDN deps.
+
+
+## FATE Arcade v2 — direct CDN games (2026-10-29)
+
+**`games.html` + `fate-games-cat.js` rebuilt: 31,615 games, 67 libraries, ZERO jet.**
+
+- Games load straight from their CDNs in your browser — no wisp tunnel, no jet boot, no proxy lag.
+  The page opens instantly (catalog unpacks in ~0.2s).
+- Two play modes, chosen automatically per host:
+  * **Direct embed** — for hosts that allow framing (gamemonetize, github.io, githack, custom sites).
+  * **Code fetch** — for jsDelivr/raw hosts that serve HTML as text/plain: the page fetches the game
+    code from the fastest of 5 jsDelivr mirrors + raw fallback, injects `<base>`, and runs it locally
+    in a blob (kills X-Frame-Options and text/plain issues — same technique Storm 0S uses).
+- Black screen on a game? Tap **⤓ Code** in the player bar — it re-loads that game via code fetch.
+- Catalog was cleaned before shipping: dead hosts removed (404/410/XFO-locked), GhostProxy's 760
+  dead games dropped, 2,868 duplicate URLs merged, raw.githubusercontent URLs rewritten to jsDelivr.
+- Files to upload for this feature: `games.html`, `fate-games-cat.js`, plus the existing
+  `pass.js` (new, include it) — everything else stays as-is.

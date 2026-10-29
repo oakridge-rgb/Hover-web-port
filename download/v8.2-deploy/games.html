@@ -157,7 +157,7 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
     <div class="nav-title">FATE Arcade</div>
   </div>
   <div class="nav-links">
-    <span class="fm-chip" id="fateGxJetChip">tunnel: idle</span>
+    <span class="fm-chip" id="fateGxMode" title="Games load straight from their CDN — no tunnel involved">direct CDN ⚡</span>
     <a class="nav-link" href="browser.html" title="FATE Browser">Browser</a>
     <a class="nav-link" href="movies.html" title="Dedicated FATE movies page">Movies</a>
     <a class="nav-link" href="test.html" title="Back to the FATE portal">Portal</a>
@@ -208,21 +208,20 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
       <div class="fp-name" id="fatePName">—</div>
       <div class="fp-status" id="fatePStatus">idle</div>
     </div>
-    <button class="fp-btn hot" id="fatePTunnel" title="Retry through the FATE wisp tunnel (jet)">⚡<span class="blabel">Tunnel</span></button>
+    <button class="fp-btn" id="fatePCode" title="Fetch the game's code over the CDN and run it locally — fixes blocked embeds">⤓<span class="blabel">Code</span></button>
     <button class="fp-btn" id="fatePReload" title="Reload">⟳</button>
     <button class="fp-btn" id="fatePNewtab" title="Open in a new tab">↗</button>
     <button class="fp-btn" id="fatePFull" title="Fullscreen">⛶</button>
   </div>
   <div class="fp-wrap" id="fatePWrap">
     <iframe id="fateFrameDirect" title="FATE game" allow="fullscreen; autoplay; gamepad; clipboard-write" allowfullscreen referrerpolicy="no-referrer"></iframe>
-    <iframe id="fateFrameJet" title="FATE game (tunnel)" class="hidden" allow="fullscreen; autoplay; gamepad; clipboard-write" allowfullscreen referrerpolicy="no-referrer"></iframe>
-    <div class="fp-spin" id="fatePSpin"><div class="fp-ring"></div><b id="fatePSpinTitle">Loading…</b><span id="fatePSpinSub">fetching the game through the fastest route</span></div>
+    <div class="fp-spin" id="fatePSpin"><div class="fp-ring"></div><b id="fatePSpinTitle">Loading…</b><span id="fatePSpinSub">loading from the fastest CDN mirror</span></div>
     <div class="fp-err" id="fatePErr">
       <b id="fatePErrTitle">This game would not load</b>
       <p id="fatePErrMsg"></p>
       <div class="row">
         <button id="fatePErrRetry">⟳ Retry</button>
-        <button id="fatePErrTunnel">⚡ Try the tunnel</button>
+        <button id="fatePErrCode">⤓ Load code directly</button>
         <button id="fatePErrNewtab">↗ New tab</button>
         <button id="fatePErrClose">← Back to library</button>
       </div>
@@ -231,551 +230,124 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
 </div>
 
 <script>
-/* ===== FATE ARCADE WISP LANE HOST (shared fate_wisp_lane_v6 cache with the portal) ===== */
+/* ===== FATE ARCADE SHARED HELPERS ===== */
 function _lsGet(k){ try{ return JSON.parse(localStorage.getItem(k) || 'null'); }catch(e){ return null; } }
 function _lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 
-const FATE_WISP_SERVERS = [
-  'cdn.northstreetumc.org','cdn.vipersfutbol.com','cdn.pcesc.org','cdn.kcchallengevbc.com',
-  'cdn.slcbmooc.org','cdn.topstargym.net','cdn.goaplytexas.org','cdn.clearfieldswimming.com',
-  'cdn.richardacademy.cfd','wss://athollcottage.com/connection/','wss://api.personalloanonline.net/ws/'
+/* ===== FATE ARCADE CDN ENGINE v2 — straight browser→CDN, zero proxy, zero tunnel ===== */
+console.log('%c[FATE ARCADE] direct CDN engine v2 loaded (no proxy, no jet)', 'color:#4ade80;font-weight:bold;');
+
+/* jsDelivr edges to rotate through (same trick the big sites use) */
+const FATE_CDN_MIRRORS = ['cdn.jsdelivr.net', 'fastly.jsdelivr.net', 'gcore.jsdelivr.net', 'testingcf.jsdelivr.net', 'quantil.jsdelivr.net'];
+
+/* hosts that serve game HTML as text/plain (would show raw code in an iframe)
+   -> always fetch the code and render it locally as a blob */
+const FATE_FETCH_HOSTS = [
+  /(^|\.)cdn\.jsdelivr\.net$/i, /(^|\.)fastly\.jsdelivr\.net$/i, /(^|\.)gcore\.jsdelivr\.net$/i,
+  /(^|\.)testingcf\.jsdelivr\.net$/i, /(^|\.)quantil\.jsdelivr\.net$/i, /(^|\.)originfastly\.jsdelivr\.net$/i,
+  /(^|\.)raw\.githubusercontent\.com$/i, /(^|\.)rawcdn\.githack\.com$/i, /(^|\.)raw\.githack\.com$/i,
+  /(^|\.)cdn\.statically\.io$/i, /(^|\.)uploads\.ungrounded\.net$/i
 ];
-const FATE_ASSET_BASES = [
-  'https://cdn.jsdelivr.net/gh/%54ongSherbet/storage@main/',
-  'https://quantil.jsdelivr.net/gh/%54ongSherbet/storage@main/',
-  'https://fastly.jsdelivr.net/gh/%54ongSherbet/storage@main/',
-  'https://testingcf.jsdelivr.net/gh/%54ongSherbet/storage@main/',
-  'https://gcore.jsdelivr.net/gh/%54ongSherbet/storage@main/',
-  'https://originfastly.jsdelivr.net/gh/%54ongSherbet/storage@main/',
-  'https://cdn.jsdelivr.net/gh/TongSherbet/storage@main/',
-  'https://fastly.jsdelivr.net/gh/TongSherbet/storage@main/',
-  'https://gcore.jsdelivr.net/gh/TongSherbet/storage@main/',
-  'https://cdn.statically.io/gh/TongSherbet/storage/main/',
-  'https://rawcdn.githack.com/TongSherbet/storage/main/',
-  'https://raw.githack.com/TongSherbet/storage/main/',
-  'https://raw.githubusercontent.com/TongSherbet/storage/main/',
-  'https://cdn.staticdeliver.com/gh/TongSherbet/storage@main/'
-];
-const FATE_WISP_LANE_KEY = 'fate_wisp_lane_v6';
-window.FATE_WISP_RESULTS = [];
-
-function fateWispUrl(s){ return s.includes('://') ? s : ('wss://' + s + '/'); }
-
-/* exact port of the working portal's testWlspDomain() — binary wisp handshake */
-function fateTestWlsp(server, timeoutMs){
-  return new Promise(resolve => {
-    let ws;
-    try{ ws = new WebSocket(fateWispUrl(server)); }catch(e){ return resolve(null); }
-    ws.binaryType = 'arraybuffer';
-    const id = (Math.floor(4294967294 * Math.random()) + 1) >>> 0;
-    let gotEcho = false, t0 = 0;
-    const finish = v => {
-      clearTimeout(timer);
-      try{ ws.onmessage = ws.onerror = ws.onclose = null; ws.close(); }catch(e){}
-      resolve(v);
-    };
-    const timer = setTimeout(() => finish(null), timeoutMs || 4500);
-    ws.onerror = () => finish(null);
-    ws.onclose = () => { if(!gotEcho) finish(null); };
-    ws.onmessage = evt => {
-      const d = evt.data;
-      if(!(d instanceof ArrayBuffer) || d.byteLength < 5) return finish(null);
-      const dv = new DataView(d);
-      const type = dv.getUint8(0), sid = dv.getUint32(1, true);
-      if(gotEcho){ if(sid === id) finish(Math.round(performance.now() - t0)); return; }
-      if(sid === 0){
-        if(type === 5) ws.send(new Uint8Array([5,0,0,0,0,2,1]));
-        else if(type === 3){
-          const host = '127.0.0.1';
-          const hb = new TextEncoder().encode(host);
-          const frame = new Uint8Array([1,0,0,0,0,1,69,0,...hb]);
-          new DataView(frame.buffer).setUint32(1, id, true);
-          gotEcho = true; t0 = performance.now();
-          try{ ws.send(frame); }catch(e){ return finish(null); }
-        }
-      }
-    };
-  });
-}
-
-async function fateWispSweep(){
-  const cached = _lsGet(FATE_WISP_LANE_KEY);
-  if(cached && cached.url && Date.now() - cached.t < 10 * 60 * 1000){
-    window.wlspServer = cached.url; /* trust briefly; still re-verify below */
-  }
-  const probes = FATE_WISP_SERVERS.map(async s => ({ server: s, rtt: await fateTestWlsp(s, 4500) }));
-  window.FATE_WISP_RESULTS = await Promise.all(probes);
-  const alive = window.FATE_WISP_RESULTS.filter(r => r.rtt !== null).sort((a, b) => a.rtt - b.rtt);
-  if(alive.length){
-    window.wlspServer = fateWispUrl(alive[0].server);
-    window.WlspPing = alive[0].rtt;
-    window.WlspIsBackup = alive[0].server.includes('://');
-    _lsSet(FATE_WISP_LANE_KEY, { url: window.wlspServer, t: Date.now() });
-  }
-  return window.FATE_WISP_RESULTS;
-}
-
-/* curl-transport (libcurl-wasm) over the winning wisp lane */
-async function fateLoadTransport(){
-  if(window.FATE_TRANSPORT) return window.FATE_TRANSPORT;
-  if(!window.wlspServer || !window.FATE_WISP_RESULTS.some(r => r.rtt !== null)) await fateWispSweep();
-  if(!window.wlspServer) return null;
-  for(const base of FATE_ASSET_BASES){
-    try{
-      const mod = await import(base + 'curl/index.mjs');
-      const C = mod.default || mod.LibcurlClient;
-      if(!C) continue;
-      const t = new C({ wisp: window.wlspServer });
-      for (let _ti = 0; _ti < 150; _ti++){
-        try { await t.init(); break; }
-        catch (_e){
-          if (!String(_e).includes('wasm not loaded') || _ti === 149) throw _e;
-          await new Promise(_r => setTimeout(_r, 20));
-        }
-      }
-      window.FATE_TRANSPORT = t;
-      window.FATE_ASSETS_BASE_USED = base;
-      console.log('[FATE ARCADE] wisp transport READY - lane', window.wlspServer);
-      return t;
-    }catch(e){ console.warn('[FATE ARCADE] transport base failed:', base, (e && e.message) || e); }
-  }
-  console.warn('[FATE ARCADE] no asset base could serve curl/index.mjs');
-  return null;
-}
-/* ===== END WISP LANE HOST ===== */
-</script>
-<script>
-/* ===== FATE PORTAL v8.2 JET LANE ENGINE (self-healing boot, reference recipe) ===== */
-console.log('%c[FATE ARCADE] jet proxy engine loaded (self-healing boot)', 'color:#38bdf8;font-weight:bold;');
-
-/* ---- jet asset edges (CDN fallback; local files win when hosted next to the portal) ---- */
-const FATE_JET_EDGES = [
-  'https://cdn.jsdelivr.net/gh/TongSherbet/storage@main/',
-  'https://fastly.jsdelivr.net/gh/TongSherbet/storage@main/',
-  'https://gcore.jsdelivr.net/gh/TongSherbet/storage@main/',
-  'https://testingcf.jsdelivr.net/gh/TongSherbet/storage@main/',
-  'https://quantil.jsdelivr.net/gh/TongSherbet/storage@main/',
-  'https://cdn.statically.io/gh/TongSherbet/storage/main/',
-  'https://raw.githack.com/TongSherbet/storage/main/'
+/* hosts probed to refuse embedding AND cross-origin reads — code fetch is the only chance */
+const FATE_NO_EMBED = [
+  /(^|\.)8ballpool\.com$/i, /(^|\.)humanornot\.so$/i, /(^|\.)now\.gg$/i, /(^|\.)totaljerkface\.com$/i,
+  /(^|\.)coolmathgames\.com$/i, /(^|\.)mathplayground\.com$/i, /(^|\.)silvergames\.com$/i, /(^|\.)itch\.io$/i
 ];
 
-let FATE_JET = null;
-let FATE_FRAME = null; /* JetFrame wrapper around the tunnel iframe */
-let FATE_JET_STATE = 'idle'; /* idle | booting | ready | sw-failed | transport-failed | controller-failed */
-let FATE_JET_ERR = '';
-let FATE_JET_BOOTING = null;
-let FATE_HAS_UTILS = false;
-const FATE_ASSET_SRC = {}; /* file -> 'local' | 'local/sj' | 'mirror n' */
-const fateSleep = ms => new Promise(r => setTimeout(r, ms));
+const fateHost = u => { try { return new URL(u).hostname; } catch (e) { return ''; } };
+const fateNeedsFetch = u => FATE_FETCH_HOSTS.some(rx => rx.test(fateHost(u))) || FATE_NO_EMBED.some(rx => rx.test(fateHost(u)));
 
-/* ---- boot stage pill (visible at top of page during boot — no silent spinners) ---- */
-let FATE_STAGE_AT = 0, FATE_STAGE_HINTED = false;
-function fateJetStage(msg, kind){
+/* expand one game URL into every CDN route we can try */
+function fateMirrors(u){
+  const list = [];
   try {
-    FATE_STAGE_AT = Date.now(); /* progress marker for the boot watchdog */
-    let p = document.getElementById('fateJetStage');
-    if (!p){
-      p = document.createElement('div'); p.id = 'fateJetStage';
-      p.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:2147483000;background:rgba(12,10,9,.93);border:1px solid rgba(245,158,11,.45);color:#fcd34d;font:600 12px/1.35 system-ui,sans-serif;padding:.5rem .85rem;border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.5);max-width:92vw;text-align:center;display:none;cursor:pointer;';
-      document.body.appendChild(p);
-    }
-    if (!msg){ p.style.display = 'none'; p.onclick = null; return; }
-    FATE_STAGE_AT = Date.now(); FATE_STAGE_HINTED = false;
-    p.style.display = 'block';
-    p.style.borderColor = kind === 'err' ? 'rgba(248,113,113,.65)' : kind === 'ok' ? 'rgba(74,222,128,.55)' : 'rgba(245,158,11,.45)';
-    p.style.color = kind === 'err' ? '#f87171' : kind === 'ok' ? '#4ade80' : '#fcd34d';
-    p.textContent = 'jet \u25b8 ' + msg;
-    p.onclick = kind === 'err' ? () => { try { fateJetBoot(); } catch(e){} } : null;
-    if (kind !== 'err'){
-      setTimeout(() => {
-        if (!FATE_STAGE_HINTED && Date.now() - FATE_STAGE_AT >= 7800 && p.style.display === 'block' && !FATE_STAGE_HINTED){
-          FATE_STAGE_HINTED = true;
-          p.textContent += ' \u2014 slow network/device, still working\u2026 (stuck over 30s? tap retry)';
-        }
-      }, 8000);
-    }
-  } catch(e){}
+    const url = new URL(u);
+    let m = url.href.match(/^https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^/@]+)@([^/]+)\/(.+)$/);
+    if (m){
+      const [, user, repo, ref, path] = m;
+      for (const host of FATE_CDN_MIRRORS) list.push('https://' + host + '/gh/' + user + '/' + repo + '@' + ref + '/' + path);
+      list.push('https://raw.githubusercontent.com/' + user + '/' + repo + '/' + ref + '/' + path);
+    } else if (url.hostname === 'raw.githubusercontent.com'){
+      const seg = url.pathname.split('/').filter(Boolean);
+      if (seg.length >= 4){
+        const [user, repo, ref] = seg, path = seg.slice(3).join('/');
+        for (const host of FATE_CDN_MIRRORS) list.push('https://' + host + '/gh/' + user + '/' + repo + '@' + ref + '/' + path);
+      }
+      list.push(url.href);
+    } else list.push(url.href);
+  } catch (e) { list.push(u); }
+  return [...new Set(list)];
 }
 
-/* ---- device-fingerprint codec (verbatim port of the official portal's) ---- */
-function fateJetFingerprint(){
-  return [location.origin.replace(/^\w+:\/\/|:\d+$/g, ''), (new Date).getUTCMonth(),
-    navigator.hardwareConcurrency, navigator.deviceMemory, navigator.platform,
-    navigator.userAgent.replace(/[\d.]+/g, ''), (new Date).getTimezoneOffset()]
-    .join().split('').reduce(((e, t) => Math.imul(e ^ t.charCodeAt(), 16777619)), 2166136261);
-}
-const FATE_JET_CODEC = {
-  encode: e => {
-    if (!e) return e;
-    let t = globalThis.__jck ?? Object.defineProperty(globalThis, '__jck', { value: fateJetFingerprint() }).__jck;
-    const r = e.startsWith('https://') && e.length > 8, o = (new TextEncoder).encode(r ? e.slice(8) : e);
-    for (let e, r = 0; r < o.length; r++, e >>>= 8) 3 & r || (t ^= t << 13, t ^= t >>> 17, t ^= t << 5, e = t), o[r] ^= e;
-    let n = '';
-    for (let e = 0; e < o.length; e += 8192) n += String.fromCharCode.apply(null, o.subarray(e, e + 8192));
-    return (r ? '' : 'Z0') + btoa(n).slice(0, (4 * o.length + 2) / 3 | 0).replace(/Z/g, 'Zz').replace(/\+/g, 'Zp').replace(/\//g, 'Zs');
-  },
-  decode: e => {
-    if (!e) return e;
-    let t = globalThis.__jck ?? Object.defineProperty(globalThis, '__jck', { value: fateJetFingerprint() }).__jck;
-    const r = e.startsWith('Z0'), o = atob(e.slice(2 * r).replace(/Zp/g, '+').replace(/Zs/g, '/').replace(/Zz/g, 'Z')), n = new Uint8Array(o.length);
-    for (let e, r = 0; r < n.length; r++, e >>>= 8) 3 & r || (t ^= t << 13, t ^= t >>> 17, t ^= t << 5, e = t), n[r] = o.charCodeAt(r) ^ e;
-    return (r ? '' : 'https://') + new TextDecoder('utf-8', { ignoreBOM: true }).decode(n);
-  }
-};
-
-/* ---- asset resolution: local flat -> local /sj/ -> CDN mirror ladder ---- */
-function fateJetCandidates(file){
-  const list = [new URL(file, location.href).href];
-  try { list.push(new URL('sj/' + file, location.href).href); } catch(e){}
-  for (const b of FATE_JET_EDGES) list.push(b + 'sj/' + file);
-  return list;
-}
-function fateJetLabel(i){ return i === 0 ? 'local' : i === 1 ? 'local/sj' : 'mirror ' + (i - 1); }
-async function fateJetProbe(url){
-  try {
+/* fetch one route, validate it looks like a game page */
+function fateFetchOne(url, timeoutMs){
+  return new Promise((resolve, reject) => {
     const ac = new AbortController();
-    const t = setTimeout(() => ac.abort(), 5000);
-    const r = await fetch(url, { cache: 'no-store', signal: ac.signal });
-    clearTimeout(t);
-    if (!r.ok) return false;
-    const ct = (r.headers.get('content-type') || '').toLowerCase();
-    if (ct.includes('text/html')) return false; /* soft-404 guard */
-    if (r.body && r.body.getReader){ try { const rd = r.body.getReader(); await rd.read(); await rd.cancel(); } catch(e){} }
-    return true;
-  } catch(e){ return false; }
-}
-async function fateLoadScript(url){
-  return new Promise((res, rej) => {
-    const s = document.createElement('script');
-    const to = setTimeout(() => rej(new Error('timeout loading ' + url)), 15000);
-    s.src = url; s.async = false;
-    s.onload = () => { clearTimeout(to); res(); };
-    s.onerror = () => { clearTimeout(to); rej(new Error('failed to load ' + url)); };
-    document.head.appendChild(s);
+    const to = setTimeout(() => ac.abort(), timeoutMs || 14000);
+    fetch(url, { signal: ac.signal, redirect: 'follow' }).then(async r => {
+      clearTimeout(to);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const t = await r.text();
+      if (!/<html|<!doctype|<script|<canvas|<iframe/i.test(t)) throw new Error('not a game page');
+      resolve({ text: t, url: r.url || url });
+    }).catch(e => { clearTimeout(to); reject(e); });
   });
 }
-async function fateJetLoadJs(file){
-  const cands = fateJetCandidates(file);
-  /* local-first fast path: when hosted next to the portal, skip the mirror fan-out */
-  for (let i = 0; i < Math.min(2, cands.length); i++){
-    if (await fateJetProbe(cands[i])){
-      try { await fateLoadScript(cands[i]); FATE_ASSET_SRC[file] = fateJetLabel(i); return cands[i]; }
-      catch(e){ /* local file broken — fall through to mirror ladder */ }
+/* resolve when the first promise fulfills (Promise.any with a manual fallback) */
+function fateRace(ps){
+  return new Promise((resolve, reject) => {
+    let pending = ps.length, done = false;
+    if (!pending) return reject(new Error('no routes'));
+    ps.forEach(p => p.then(v => { if (!done){ done = true; resolve(v); } })
+      .catch(() => { if (--pending === 0 && !done){ done = true; reject(new Error('all routes failed')); } }));
+  });
+}
+
+/* in-memory code cache: reopening a game is instant */
+const FATE_GAME_CACHE = new Map();
+async function fateRetrieve(u){
+  if (FATE_GAME_CACHE.has(u)) return FATE_GAME_CACHE.get(u);
+  const mirrors = fateMirrors(u);
+  let got = null;
+  try { got = await fateRace(mirrors.slice(0, 3).map(mi => fateFetchOne(mi, 14000))); }
+  catch (e1) {
+    for (const mi of mirrors.slice(3)){
+      try { got = await fateFetchOne(mi, 14000); break; } catch (e2) {}
     }
   }
-  const probes = await Promise.all(cands.map(u => fateJetProbe(u)));
-  const order = cands.map((u, i) => [u, probes[i], i]).sort((a, b) => (b[1] - a[1]) || (a[2] - b[2])).map(x => x[0]);
-  for (const u of order){
-    try { await fateLoadScript(u); FATE_ASSET_SRC[file] = fateJetLabel(cands.indexOf(u)); return u; }
-    catch(e){ /* next candidate */ }
-  }
-  throw new Error('could not load ' + file + ' from any source');
-}
-async function fateJetResolveUrl(file){
-  const cands = fateJetCandidates(file);
-  for (let i = 0; i < Math.min(2, cands.length); i++){
-    if (await fateJetProbe(cands[i])){ FATE_ASSET_SRC[file] = fateJetLabel(i); return cands[i]; }
-  }
-  const probes = await Promise.all(cands.map(u => fateJetProbe(u)));
-  for (let i = 0; i < cands.length; i++){
-    if (probes[i]){ FATE_ASSET_SRC[file] = fateJetLabel(i); return cands[i]; }
-  }
-  FATE_ASSET_SRC[file] = 'unprobed';
-  return cands[0]; /* last resort guess */
+  if (!got) throw new Error('every CDN route failed (' + mirrors.length + ' tried)');
+  FATE_GAME_CACHE.set(u, got);
+  return got;
 }
 
-/* ---- SW recovery toolkit (ported from the official portal's loader) ---- */
-function fateSwSoftReload(){
-  try { if (sessionStorage.fateJetSoft) return false; sessionStorage.fateJetSoft = '1'; } catch(e){ return false; }
-  location.reload(); return true;
-}
-async function fateSwReset(){
-  try { if (sessionStorage.fateJetReset) return false; sessionStorage.fateJetReset = '1'; } catch(e){ return false; }
-  console.warn('[FATE ARCADE] resetting service workers (unregister all + reload)');
-  try { const regs = await Promise.race([
-    navigator.serviceWorker.getRegistrations().then(rs => Promise.all(rs.map(r => r.unregister()))),
-    fateSleep(2000)
-  ]); } catch(e){}
-  location.reload();
-  return true;
-}
-async function fateSwAlive(reg, rounds){
-  const n = rounds || 3;
-  for (let i = 0; i < n; i++){
-    const ac = new AbortController(); const t = setTimeout(() => ac.abort(), 1500);
-    try {
-      const r = await fetch(new URL('__sw_alive', reg.scope), { cache: 'no-store', signal: ac.signal });
-      if ((await r.text()) === 'true') return true;
-    } catch(e){} finally { clearTimeout(t); }
-    await fateSleep(150);
+function fateWithBase(text, url){
+  const doc = new DOMParser().parseFromString(text, 'text/html');
+  if (!doc.querySelector('base')){
+    const b = doc.createElement('base'); b.href = url;
+    (doc.head || doc.documentElement).prepend(b);
   }
-  return false;
+  return '<!doctype html>\n' + doc.documentElement.outerHTML;
 }
-
-async function fateJetSwStart(){
-  if (!('serviceWorker' in navigator)) throw new Error('service workers unsupported');
-  if (location.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(location.hostname)) throw new Error('https required (service workers)');
-  const swUrl = new URL('fate-sw.js', location.href).href;
-  /* FAST PATH: page already controlled by our SW — no register()/update() churn */
-  const ctl = navigator.serviceWorker.controller;
-  if (ctl && /fate-sw\.js$/.test(ctl.scriptURL)){
-    fateJetStage('checking service worker\u2026');
-    const reg = await navigator.serviceWorker.getRegistration().catch(() => null);
-    if (reg){
-      if (await fateSwAlive(reg)) { try { delete sessionStorage.fateJetSoft; } catch(e){} return ctl; }
-      fateJetStage('sw slow to answer \u2014 continuing (routing self-heals)\u2026');
-      try { delete sessionStorage.fateJetSoft; } catch(e){}
-      return ctl; /* NON-FATAL: handshake + warming retries cover the gap */
+async function fatePlayableHTML(g, onStage){
+  let r = await fateRetrieve(g.url);
+  if (onStage) onStage('code loaded — ' + Math.round(r.text.length / 1024) + ' KB, preparing…');
+  if (g.source === 'Lumin'){
+    /* peel single-iframe jsdelivr wrappers (up to 3 deep) */
+    const visited = new Set([r.url]);
+    for (let depth = 0; depth < 3; depth++){
+      const doc = new DOMParser().parseFromString(r.text, 'text/html');
+      const frames = doc.querySelectorAll('iframe[src]');
+      if (frames.length !== 1 || doc.querySelector('canvas')) break;
+      const raw = frames[0].getAttribute('src');
+      const base = doc.querySelector('base[href]')?.getAttribute('href');
+      const url = new URL(raw, base ? new URL(base, r.url).href : r.url).href;
+      if (!/^https?:/.test(url) || !url.includes('jsdelivr.net/') || visited.has(url)) break;
+      visited.add(url);
+      if (onStage) onStage('unwrapping layer ' + (depth + 2) + '…');
+      r = await fateRetrieve(url);
     }
   }
-  fateJetStage('registering service worker\u2026');
-  let reg;
-  try {
-    reg = await Promise.race([
-      navigator.serviceWorker.register(swUrl, { scope: './', updateViaCache: 'none' }),
-      new Promise((_, rej) => setTimeout(() => rej(new Error('registration timed out')), 20000))
-    ]);
-  } catch(e){ throw new Error('sw register failed: ' + (e.message || e)); }
-  if (!reg.active){
-    fateJetStage('activating service worker\u2026');
-    await Promise.race([
-      new Promise(res => {
-        const w = reg.installing || reg.waiting;
-        if (w) w.addEventListener('statechange', function(){ if (this.state === 'activated') res(); });
-        reg.addEventListener('updatefound', () => { const nw = reg.installing; nw && nw.addEventListener('statechange', function(){ if (this.state === 'activated') res(); }); });
-      }),
-      new Promise((res, rej) => setTimeout(() => rej(new Error('activate timeout')), 15000))
-    ]).catch(e => { throw new Error('sw not active: ' + (e.message || e)); });
-  }
-  if (!navigator.serviceWorker.controller){
-    fateJetStage('claiming the page\u2026');
-    try { (reg.active || reg.waiting || reg.installing).postMessage({ type: 'FATE:claim' }); } catch(e){}
-    const changed = new Promise(r => navigator.serviceWorker.addEventListener('controllerchange', r, { once: true }));
-    const redundant = new Promise(r => {
-      const w = reg.installing || reg.waiting;
-      if (w) w.addEventListener('statechange', function(){ if (this.state === 'redundant') r(); });
-    });
-    await Promise.race([changed, redundant, fateSleep(8000)]);
-  }
-  if (!navigator.serviceWorker.controller){
-    const stillInstalling = !!(reg.installing || reg.waiting);
-    if (stillInstalling) throw new Error('service worker is still installing (slow network) \u2014 wait a moment, then tap retry');
-    if (fateSwSoftReload()) return new Promise(() => {});
-    if (await fateSwReset()) return new Promise(() => {});
-    throw new Error('page never came under service worker control \u2014 reload the page once more');
-  }
-  fateJetStage('checking service worker\u2026');
-  if (!await fateSwAlive(reg)){
-    console.warn('[FATE ARCADE] sw_alive probe failed \u2014 continuing; routing self-heals');
-    fateJetStage('sw warming \u2014 continuing\u2026');
-  }
-  try { delete sessionStorage.fateJetSoft; } catch(e){}
-  return navigator.serviceWorker.controller;
-}
-
-function fateJetMakePlugins(){
-  const plugs = [];
-  if (!FATE_HAS_UTILS || !window.$jetUtils) return plugs;
-  try {
-    plugs.push(new $jetUtils.EventHandlerPlugin());
-    plugs.push(new $jetUtils.LinkHandlerPlugin(href => {
-      try { if (href && /^https?:/i.test(href)) window.open(href, '_blank', 'noopener'); } catch(e){}
-    }));
-    plugs.push(new $jetUtils.UrlWatcherPlugin(href => {
-      try {
-        const st = document.getElementById('fatePStatus');
-        if (st && href && document.getElementById('fateFrameJet') && !document.getElementById('fateFrameJet').classList.contains('hidden')){
-          st.textContent = 'tunnel \u25b8 ' + href;
-        }
-      } catch(e){}
-    }));
-    plugs.push(new $jetUtils.HttpCachePlugin());
-  } catch(e){ console.warn('[FATE ARCADE] utils plugins unavailable:', e); }
-  return plugs;
-}
-
-/* memoized transport getter — avoids duplicate concurrent wisp sweeps */
-async function fateGetTransport(){
-  if (window.FATE_TRANSPORT) return window.FATE_TRANSPORT;
-  if (fateGetTransport._p) return fateGetTransport._p;
-  fateGetTransport._p = (async () => {
-    try { return await fateLoadTransport(); }
-    finally { delete fateGetTransport._p; }
-  })();
-  return fateGetTransport._p;
-}
-
-async function fateJetBoot(){
-  if (FATE_JET_STATE === 'ready') return FATE_JET;
-  if (FATE_JET_BOOTING) return FATE_JET_BOOTING;
-  FATE_JET_STATE = 'booting'; FATE_JET_ERR = '';
-  fatePaintChip(); fateJetStage('starting boot\u2026');
-  FATE_JET_BOOTING = (async () => {
-    try {
-      await fateJetSwStart();
-      if (!navigator.serviceWorker.controller) return null; /* page reloading */
-    } catch(e){
-      FATE_JET_STATE = 'sw-failed'; FATE_JET_ERR = String(e.message || e);
-      FATE_JET_BOOTING = null; fatePaintChip(); fateJetStage('service worker failed \u2014 tap to retry', 'err'); return null;
-    }
-    let coreUrl = null;
-    try {
-      fateJetStage('loading jet files\u2026');
-      fateJetStage('loading jet.core.js\u2026');
-      coreUrl = await fateJetLoadJs('jet.core.js');   /* defines $jet (must load first) */
-      const apiP = fateJetLoadJs('jet.api.js');       /* defines $jetController (needs $jet) */
-      fateJetStage('loading jet.api.js\u2026');
-      /* utils MUST load after api: it destructures globalThis.$jetController at eval time */
-      const utilsP = apiP.then(() => fateJetLoadJs('jet.utils.js')).catch(() => {}); /* optional */
-      await apiP;
-      if (typeof $jetController === 'undefined') throw new Error('jet.api.js did not define $jetController');
-      const [injectUrl, wasmUrl] = await Promise.all([
-        fateJetResolveUrl('jet.inject.js'),
-        fateJetResolveUrl('jet.wasm')
-      ]);
-      try { await utilsP; } catch(e){}
-      FATE_HAS_UTILS = typeof window.$jetUtils !== 'undefined';
-      fateJetStage('connecting wisp tunnel\u2026');
-      const transport = await fateGetTransport();
-      if (!transport){
-        FATE_JET_STATE = 'transport-failed'; FATE_JET_ERR = 'wisp tunnel transport unavailable (no alive lane)';
-        FATE_JET_BOOTING = null; fatePaintChip(); fateJetStage('wisp tunnel down \u2014 tap to retry', 'err'); return null;
-      }
-      fateJetStage('starting jet controller\u2026');
-      const prefix = new URL('./~/', location.href).pathname;
-      FATE_JET = new $jetController.Controller({
-        serviceworker: navigator.serviceWorker.controller,
-        transport: transport,
-        jetConfig: { maskedfiles: ['jet.inject.js', 'jet.wasm.js'], flags: { syncxhr: false, disableComputedWrap: false, rewriterLogs: false, captureErrors: false, cleanErrors: false, scramitize: false, sourcemaps: false, destructureRewrites: true, allowInvalidJs: true, debugTrampolines: false, debugSourceURL: false, allowFailedIntercepts: true, encapsulateWorkers: true } },
-        config: { jetPath: coreUrl, wasmPath: wasmUrl, injectPath: injectUrl, virtualWasmPath: 'jet.wasm.js', codec: FATE_JET_CODEC, prefix: prefix }
-      });
-      /* ---- jet handshake: retry loop with FRESH port each round (official recipe) ---- */
-      let hsResolve;
-      const hsPromise = new Promise(r => { hsResolve = r; });
-      const __origResolve = FATE_JET.readyResolve;
-      FATE_JET.readyResolve = function(){ try { hsResolve(true); } catch(e){} return __origResolve.apply(FATE_JET, arguments); };
-      let handshook = await Promise.race([hsPromise, fateSleep(4000)]);
-      for (let i = 0; !handshook; i++){
-        if (i >= 5){
-          if (await fateSwReset()) return null;   /* unregister all SWs + reload */
-          throw new Error('the service worker never answered the jet handshake');
-        }
-        fateJetStage('retrying jet handshake (' + (i + 1) + '/5)\u2026');
-        FATE_JET.serviceWorkerController = navigator.serviceWorker.controller || FATE_JET.serviceWorkerController;
-        try { FATE_JET.setupMessagePort(); } catch(e){}
-        handshook = await Promise.race([hsPromise, fateSleep(4000)]);
-      }
-      await FATE_JET.ready;
-      FATE_JET.guardServiceWorkerRevive = false;
-      FATE_JET_STATE = 'ready'; FATE_JET_ERR = '';
-      try { FATE_FRAME = FATE_JET.createFrame(document.getElementById('fateFrameJet'), { plugins: fateJetMakePlugins() }); }
-      catch(e){ console.warn('[FATE ARCADE] createFrame failed:', e); }
-      try { sessionStorage.removeItem('fateWarmingN'); } catch(e){}
-      console.log('%c[FATE ARCADE] jet proxy READY - prefix ' + FATE_JET.prefix + ' - assets: ' + JSON.stringify(FATE_ASSET_SRC), 'color:#38bdf8;font-weight:bold;');
-      fateJetStage('ready', 'ok');
-      setTimeout(() => { if (FATE_JET_STATE === 'ready') fateJetStage(null); }, 2500);
-      fatePaintChip();
-      fateStartJetWatch();
-      return FATE_JET;
-    } catch(e){
-      if (String(e.message || e).includes('wisp tunnel')){
-        FATE_JET_STATE = 'transport-failed';
-      } else {
-        FATE_JET_STATE = 'controller-failed'; FATE_JET_ERR = String(e.message || e);
-      }
-      FATE_JET_BOOTING = null; fatePaintChip(); fateJetStage('boot failed \u2014 tap to retry', 'err'); return null;
-    }
-  })();
-  /* boot watchdog: fires only when NO stage progress for 75s */
-  const wd = setInterval(() => {
-    if (FATE_JET_STATE === 'booting' && Date.now() - FATE_STAGE_AT > 75000){
-      clearInterval(wd);
-      FATE_JET_STATE = 'controller-failed'; FATE_JET_ERR = 'no boot progress for 75s \u2014 network or device too slow';
-      FATE_JET_BOOTING = null; fatePaintChip(); fateJetStage('stuck \u2014 tap to retry', 'err');
-    }
-    if (FATE_JET_STATE !== 'booting') clearInterval(wd);
-  }, 5000);
-  return FATE_JET_BOOTING;
-}
-
-/* ---- SW health watcher (official recipe): periodic sw_alive probe, fresh port on
-        controllerchange, pending-RPC cleanup on pagehide. Survives iPad tab freezing. ---- */
-let fateWatchBusy = null;
-async function fateSwWatch(){
-  if (fateWatchBusy) return fateWatchBusy;
-  fateWatchBusy = (async () => {
-    try {
-      if (!FATE_JET || !navigator.serviceWorker) return;
-      const c = navigator.serviceWorker;
-      if (c.controller && FATE_JET.serviceWorkerController !== c.controller){
-        FATE_JET.serviceWorkerController = c.controller;
-        try { FATE_JET.setupMessagePort(); } catch(e){}
-      }
-      const reg = await c.getRegistration().catch(() => null);
-      if (reg && !await fateSwAlive(reg, 1)){
-        console.warn('[FATE ARCADE] sw_alive light probe failed \u2014 will re-check next tick');
-      }
-    } catch(e){} finally { fateWatchBusy = null; }
-  })();
-  return fateWatchBusy;
-}
-function fateStartJetWatch(){
-  try {
-    const c = navigator.serviceWorker;
-    setInterval(fateSwWatch, 20000);
-    addEventListener('focus', fateSwWatch);
-    document.addEventListener('visibilitychange', () => {
-      try { if (!document.hidden) { try { sessionStorage.removeItem('fateWarmingN'); } catch(e){} fateSwWatch(); } } catch(e){}
-    });
-    c.addEventListener('controllerchange', () => {
-      if (c.controller && FATE_JET){
-        FATE_JET.serviceWorkerController = c.controller;
-        try { FATE_JET.setupMessagePort(); } catch(e){}
-      }
-    });
-    /* pending-RPC cleanup on pagehide (zombie-promise guard, official recipe) */
-    if (FATE_JET.rpc){
-      const inflight = new Set();
-      const { recieve, sendRaw } = FATE_JET.rpc;
-      FATE_JET.rpc.recieve = function(e){
-        if (e && e[this.id] && e[this.id].$type === 'request') inflight.add(e[this.id].$token);
-        return recieve.call(this, e);
-      };
-      FATE_JET.rpc.sendRaw = function(e, t){
-        if (e && e[this.id] && e[this.id].$type === 'response') inflight.delete(e[this.id].$token);
-        return sendRaw.call(this, e, t);
-      };
-      addEventListener('pagehide', () => {
-        for (const tok of Array.from(inflight)){
-          try { sendRaw.call(FATE_JET.rpc, { [FATE_JET.rpc.id]: { $type: 'response', $token: tok, $error: 'page closed' } }, []); } catch(e){}
-        }
-        inflight.clear();
-      });
-    }
-  } catch(e){ console.warn('[FATE ARCADE] watcher setup failed:', e); }
-}
-
-function fateSJEncode(url){
-  if (!FATE_JET) return null;
-  return location.origin + FATE_JET.prefix + FATE_JET.config.codec.encode(url);
-}
-
-/* ---- nav chip painter ---- */
-function fatePaintChip(){
-  const el = document.getElementById('fateGxJetChip');
-  if (!el) return;
-  const map = {
-    idle: ['tunnel: idle', '#94a3b8'],
-    booting: ['tunnel: booting\u2026', '#fbbf24'],
-    ready: ['tunnel: ready', '#4ade80'],
-    'sw-failed': ['tunnel: sw problem', '#f87171'],
-    'transport-failed': ['tunnel: down', '#f87171'],
-    'controller-failed': ['tunnel: failed', '#f87171']
-  };
-  const [txt, col] = map[FATE_JET_STATE] || [FATE_JET_STATE, '#94a3b8'];
-  el.textContent = txt;
-  el.style.color = col;
-  el.style.borderColor = FATE_JET_STATE === 'ready' ? 'rgba(74,222,128,.45)' : 'rgba(148,163,184,.25)';
+  return fateWithBase(r.text, r.url);
 }
 </script>
 <script>
@@ -827,52 +399,7 @@ async function fateDecodeCatalog(){
   })).filter(g => g.url);
 }
 
-/* ---------- Storm0S play pipeline: retrieve -> withBase -> blob ---------- */
-async function fateRetrieve(url){
-  const list = [url];
-  const m = url.match(/^https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^/@]+)@([^/]+)\/(.*)$/);
-  if (m) list.push('https://raw.githubusercontent.com/' + m[1] + '/' + m[2] + '/' + m[3] + '/' + m[4]);
-  for (const u of list){
-    try {
-      const ac = new AbortController(); const to = setTimeout(() => ac.abort(), 18000);
-      const r = await fetch(u, { signal: ac.signal }); clearTimeout(to);
-      if (!r.ok) continue;
-      const t = await r.text();
-      if (!/<html|<!doctype|<script|<iframe/i.test(t)) continue;
-      return { text: t, url: r.url };
-    } catch(e){}
-  }
-  throw Error('the host would not serve this game\u2019s HTML');
-}
-function fateWithBase(text, url){
-  const doc = new DOMParser().parseFromString(text, 'text/html');
-  if (!doc.querySelector('base')){
-    const b = doc.createElement('base'); b.href = url;
-    doc.head.prepend(b);
-  }
-  return '<!doctype html>\n' + doc.documentElement.outerHTML;
-}
-async function fatePlayableHTML(g, onStage){
-  let r = await fateRetrieve(g.url);
-  if (onStage) onStage('fetched ' + Math.round(r.text.length / 1024) + ' KB — preparing\u2026');
-  if (g.source === 'Lumin'){
-    /* peel single-iframe jsdelivr wrappers (up to 3 deep) */
-    const visited = new Set([r.url]);
-    for (let depth = 0; depth < 3; depth++){
-      const doc = new DOMParser().parseFromString(r.text, 'text/html');
-      const frames = doc.querySelectorAll('iframe[src]');
-      if (frames.length !== 1 || doc.querySelector('canvas')) break;
-      const raw = frames[0].getAttribute('src');
-      const base = doc.querySelector('base[href]')?.getAttribute('href');
-      const url = new URL(raw, base ? new URL(base, r.url).href : r.url).href;
-      if (!/^https?:/.test(url) || !url.includes('jsdelivr.net/') || visited.has(url)) break;
-      visited.add(url);
-      if (onStage) onStage('unwrapping layer ' + (depth + 2) + '\u2026');
-      r = await fateRetrieve(url);
-    }
-  }
-  return fateWithBase(r.text, r.url);
-}
+/* ---------- play pipeline (fateRetrieve / fateWithBase / fatePlayableHTML) now lives in the CDN engine block above ---------- */
 
 /* ---------- filtering / rendering ---------- */
 function gxFilters(){
@@ -990,7 +517,7 @@ function checkScrollLoad(){
 }
 
 /* ---------- player ---------- */
-let FATE_ACTIVE_BLOB = null, FATE_CURRENT = null, FATE_PLAY_SEQ = 0, FATE_MODE = 'direct';
+let FATE_ACTIVE_BLOB = null, FATE_CURRENT = null, FATE_PLAY_SEQ = 0, FATE_HINT_TIMER = null;
 const $id = id => document.getElementById(id);
 function fateShowSpin(show, title, sub){
   const sp = $id('fatePSpin');
@@ -1011,104 +538,80 @@ function fateShowErr(show, title, msg){
     $id('fatePErrMsg').textContent = msg || '';
   }
 }
-function fateSetMode(mode){
-  FATE_MODE = mode;
-  $id('fateFrameDirect').classList.toggle('hidden', mode !== 'direct');
-  $id('fateFrameJet').classList.toggle('hidden', mode !== 'jet');
+function fateArmHint(seq){
+  clearTimeout(FATE_HINT_TIMER);
+  FATE_HINT_TIMER = setTimeout(() => {
+    if (seq === FATE_PLAY_SEQ) fatePStatus('black screen? tap \u24e3 Code \u2014 loads the game over the CDN instead', '');
+  }, 7000);
 }
 function fateRevokeBlob(){
   if (FATE_ACTIVE_BLOB){ try { URL.revokeObjectURL(FATE_ACTIVE_BLOB); } catch(e){} FATE_ACTIVE_BLOB = null; }
 }
-async function fatePlay(g){
+/* play a game: direct CDN embed, or fetch-the-code+blob for hosts that need it */
+async function fatePlay(g, forceCode){
   const seq = ++FATE_PLAY_SEQ;
   FATE_CURRENT = g;
   fateShowErr(false);
-  $id('fateFrameJet').src = 'about:blank'; /* stop any tunnel game first */
-  fateSetMode('direct');
+  clearTimeout(FATE_HINT_TIMER);
   fateRevokeBlob();
   $id('fatePlayer').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   $id('fatePName').textContent = g.name;
-  $id('fatePTunnel').disabled = false;
-  fateShowSpin(true, 'Loading ' + g.name + '\u2026', g.source + ' \u00b7 picking the fastest route');
+  $id('fatePCode').disabled = false;
   fatePStatus('loading\u2026');
   const frame = $id('fateFrameDirect');
   frame.src = 'about:blank';
-  try {
-    let url = g.url;
-    if (g.fetchGame === true){
-      /* Storm0S technique: fetch HTML -> inject <base> -> same-origin blob (kills X-Frame-Options) */
-      try {
-        const html = await fatePlayableHTML(g, s => { if (seq === FATE_PLAY_SEQ) fateShowSpin(true, 'Loading ' + g.name + '\u2026', s); });
-        if (seq !== FATE_PLAY_SEQ) return;
-        const blob = new Blob([html], { type: 'text/html' });
-        FATE_ACTIVE_BLOB = URL.createObjectURL(blob);
-        url = FATE_ACTIVE_BLOB;
-        fatePStatus('opened locally (fetch + blob \u2014 embed blocks bypassed)', 'ok');
-      } catch(err){
-        if (seq !== FATE_PLAY_SEQ) return;
-        if (!g.frameFallback){
-          fateShowSpin(false);
-          fatePStatus('fetch failed \u2014 ' + (err.message || err), 'err');
-          fateShowErr(true, 'Could not fetch this game\u2019s code', (err.message || err) + '. The library host may be down or blocked. Try the wisp tunnel, a new tab, or pick another game.');
-          fateBumpRecent(g);
-          return;
-        }
-        /* frameFallback: fall through to direct embed */
-        fatePStatus('fetch failed \u2014 trying direct embed\u2026');
+  const needCode = forceCode || fateNeedsFetch(g.url);
+  if (needCode){
+    /* fetch game code -> inject <base> -> local blob (fixes text/plain hosts + X-Frame-Options) */
+    try {
+      fateShowSpin(true, 'Loading ' + g.name + '\u2026', 'fetching game code from the fastest CDN mirror\u2026');
+      const html = await fatePlayableHTML(g, s => { if (seq === FATE_PLAY_SEQ) fateShowSpin(true, 'Loading ' + g.name + '\u2026', s); });
+      if (seq !== FATE_PLAY_SEQ) return;
+      const blob = new Blob([html], { type: 'text/html' });
+      fateRevokeBlob();
+      FATE_ACTIVE_BLOB = URL.createObjectURL(blob);
+      fateShowSpin(false);
+      frame.src = FATE_ACTIVE_BLOB;
+      fatePStatus('running on local code \u2014 straight from the CDN', 'ok');
+      fateBumpRecent(g);
+      return;
+    } catch(err){
+      if (seq !== FATE_PLAY_SEQ) return;
+      /* host refuses embedding AND code download -> hard error; otherwise fall through to direct embed */
+      if (FATE_NO_EMBED.some(rx => rx.test(fateHost(g.url))) && !g.frameFallback){
+        fateShowSpin(false);
+        fatePStatus('failed \u2014 ' + (err.message || err), 'err');
+        fateShowErr(true, 'This game\u2019s host blocks everything', (err.message || err) + '. This library hosts the game on a site that refuses both embedding and code download \u2014 no player can fix that. Pick another game.');
+        fateBumpRecent(g);
+        return;
       }
-    } else {
-      fatePStatus('direct embed\u2026');
+      fatePStatus('code fetch failed \u2014 trying direct embed\u2026');
     }
-    if (seq !== FATE_PLAY_SEQ) return;
-    fateShowSpin(false);
-    frame.src = url;
-    $id('fatePNewtab').disabled = false;
-    if (g.fetchGame !== true) fatePStatus('direct embed \u00b7 blank screen? tap \u26a1Tunnel', '');
-    fateBumpRecent(g);
-  } catch(e){
-    if (seq !== FATE_PLAY_SEQ) return;
-    fateShowSpin(false);
-    fatePStatus('failed \u2014 ' + (e.message || e), 'err');
-    fateShowErr(true, 'Could not open this game', String(e.message || e));
+  } else {
+    fateShowSpin(true, 'Loading ' + g.name + '\u2026', g.source + ' \u00b7 direct CDN embed');
   }
+  /* direct embed */
+  if (seq !== FATE_PLAY_SEQ) return;
+  fateShowSpin(false);
+  frame.src = g.url;
+  fatePStatus('direct CDN embed \u00b7 black screen? tap \u24e3 Code', '');
+  fateArmHint(seq);
+  fateBumpRecent(g);
+}
+function fatePlayCode(){
+  if (FATE_CURRENT) fatePlay(FATE_CURRENT, true);
 }
 function fateBumpRecent(g){
   const k = gxKey(g);
   recent = [k, ...recent.filter(x => x !== k)].slice(0, 60);
   _lsSet(GX_RECENT_KEY, recent);
 }
-async function fatePlayViaJet(){
-  if (!FATE_CURRENT) return;
-  const g = FATE_CURRENT;
-  $id('fatePTunnel').disabled = true;
-  fateShowErr(false);
-  fatePStatus('waking the tunnel\u2026');
-  fateShowSpin(true, 'Opening through the tunnel\u2026', 'jet proxy \u00b7 your wisp lane carries the game');
-  try {
-    if (FATE_JET_STATE !== 'ready') await fateJetBoot();
-    if (FATE_JET_STATE !== 'ready' || !FATE_FRAME) throw new Error(FATE_JET_ERR || 'tunnel unavailable right now');
-    $id('fateFrameDirect').src = 'about:blank'; /* stop the old game FIRST — revoking a blob that is still in use crashes the tab */
-    fateRevokeBlob();
-    fateSetMode('jet');
-    $id('fateFrameJet').src = 'about:blank';
-    await fateSleep(30);
-    FATE_FRAME.go(g.url);
-    fateShowSpin(false);
-    fatePStatus('running through the wisp tunnel \u26a1', 'ok');
-    $id('fatePTunnel').disabled = false;
-  } catch(e){
-    fateShowSpin(false);
-    fatePStatus('tunnel failed \u2014 ' + (e.message || e), 'err');
-    fateShowErr(true, 'The tunnel is not available', (e.message || e) + '. Keep this tab in the foreground (iPads freeze background tabs), then retry. Or try a new tab / another game.');
-    $id('fatePTunnel').disabled = false;
-  }
-}
 function fateClosePlayer(){
   FATE_PLAY_SEQ++;
+  clearTimeout(FATE_HINT_TIMER);
   $id('fatePlayer').classList.add('hidden');
   $id('fateFrameDirect').src = 'about:blank';
-  $id('fateFrameJet').src = 'about:blank';
   fateRevokeBlob();
   FATE_CURRENT = null;
   document.body.style.overflow = '';
@@ -1116,8 +619,7 @@ function fateClosePlayer(){
 }
 function fateReloadGame(){
   if (!FATE_CURRENT) return;
-  if (FATE_MODE === 'jet' && FATE_FRAME){ try { FATE_FRAME.reload(); return; } catch(e){} }
-  fatePlay(FATE_CURRENT);
+  fatePlay(FATE_CURRENT, FATE_NEED_CODE);
 }
 async function fateNewtabGame(){
   if (!FATE_CURRENT) return;
@@ -1130,10 +632,10 @@ async function fateNewtabGame(){
   tab.document.body.textContent = 'Loading game HTML\u2026';
   try {
     let blob;
-    if (FATE_ACTIVE_BLOB && FATE_MODE === 'direct' && g.fetchGame === true){
+    if (FATE_ACTIVE_BLOB && (FATE_NEED_CODE || fateNeedsFetch(g.url))){
       const res = await fetch(FATE_ACTIVE_BLOB);
       blob = new Blob([await res.text()], { type: 'text/html' });
-    } else if (g.fetchGame === true){
+    } else if (fateNeedsFetch(g.url)){
       blob = new Blob([await fatePlayableHTML(g)], { type: 'text/html' });
     } else {
       return tab.location.replace(g.url);
@@ -1190,7 +692,6 @@ function fateBuildFacets(){
 /* ---------- boot ---------- */
 async function fateArcadeStart(){
   try {
-    fateJetStage('unpacking the vault\u2026');
     $id('fateHeroSub').innerHTML = 'unpacking <b>' + (window.FATE_GAMES_META ? window.FATE_GAMES_META.count.toLocaleString() : '35,000+') + '</b> games\u2026';
     const t0 = performance.now();
     GAMES = await fateDecodeCatalog();
@@ -1200,11 +701,7 @@ async function fateArcadeStart(){
     document.querySelector('#fateSearch').placeholder = 'Search ' + GAMES.length.toLocaleString() + ' games\u2026';
     fateBuildFacets();
     renderGrid(true);
-    fateJetStage(null);
-    /* warm the tunnel in the background (non-fatal — most games load direct) */
-    setTimeout(() => { try { if (FATE_JET_STATE === 'idle') fateJetBoot(); } catch(e){} }, 1200);
   } catch(e){
-    fateJetStage('catalog problem \u2014 ' + (e.message || e), 'err');
     $id('fateCount').textContent = 'catalog failed to unpack: ' + (e.message || e);
     $id('fateHeroSub').textContent = 'make sure fate-games-cat.js sits in the same folder as games.html';
   }
@@ -1237,11 +734,11 @@ $id('fateRandom').onclick = () => {
 };
 $id('fatePBack').onclick = fateClosePlayer;
 $id('fatePReload').onclick = fateReloadGame;
-$id('fatePTunnel').onclick = fatePlayViaJet;
+$id('fatePCode').onclick = fatePlayCode;
 $id('fatePNewtab').onclick = fateNewtabGame;
 $id('fatePFull').onclick = fateFullscreenGame;
 $id('fatePErrRetry').onclick = () => FATE_CURRENT && fatePlay(FATE_CURRENT);
-$id('fatePErrTunnel').onclick = fatePlayViaJet;
+$id('fatePErrCode').onclick = fatePlayCode;
 $id('fatePErrNewtab').onclick = fateNewtabGame;
 $id('fatePErrClose').onclick = fateClosePlayer;
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$id('fatePlayer').classList.contains('hidden')) fateClosePlayer(); });
