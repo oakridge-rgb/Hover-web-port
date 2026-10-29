@@ -180,3 +180,26 @@ top shows live boot progress and turns into a red tap-to-retry pill on failure.
   dead games dropped, 2,868 duplicate URLs merged, raw.githubusercontent URLs rewritten to jsDelivr.
 - Files to upload for this feature: `games.html`, `fate-games-cat.js`, plus the existing
   `pass.js` (new, include it) — everything else stays as-is.
+
+
+## FATE Arcade v3 — jsDelivr-ONLY catalog (2026-10-29)
+
+**Rebuilt: 22,727 games / 58 libraries — every single URL now lives on `*.jsdelivr.net`. Zero jet, zero proxy, zero other hosts.**
+
+- Why: non-jsDelivr hosts (gamemonetize, github.io, crazygames, gamedistribution, itch.zone, custom
+  sites…) get blocked on locked-down networks. jsDelivr is the one game CDN already proven working
+  on the iPad, so the catalog now ships **only** what it can guarantee.
+- What got cut vs v2 (31,615): **5,000 gamemonetize** games (the old "Unb Games" library), ~1,150
+  github.io pages, ~1,000 other-host games, **892 dead URLs** (every rewritten raw/githack link was
+  probed — 404s purged), 3,676 duplicate URLs merged.
+- Rescued in: `raw.githubusercontent.com` / `rawcdn.githack.com` links rewritten to
+  `cdn.jsdelivr.net/gh/...` — then **probed one by one**; survivors only (GN-Math lost ~40 dead,
+  CCPorted kept 142 live, GhostLink 849 live).
+- Images: only jsDelivr-hosted thumbnails kept (12,836); the rest render as clean letter tiles.
+- Catalog file is now **0.48 MB** (was 2.37 MB) — faster to fetch, still unpacks via
+  `DecompressionStream('gzip')`.
+- Loader behavior (unchanged pipeline, proven on device): jsDelivr serves game HTML as
+  `text/plain` + `nosniff`, so every game is **fetched** (fastest of 5 jsDelivr mirrors:
+  cdn → fastly → gcore → testingcf → quantil, race + ladder) → `<base>` injected → runs from a
+  local blob. This kills text/plain, X-Frame-Options and mixed-content issues in one move.
+- Files to upload: same two — `games.html`, `fate-games-cat.js`. Nothing else changed.

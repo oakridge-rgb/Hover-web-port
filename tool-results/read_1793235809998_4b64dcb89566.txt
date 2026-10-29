@@ -1,0 +1,757 @@
+     1→<!DOCTYPE html>
+     2→<html lang="en">
+     3→<head>
+     4→<meta charset="UTF-8" />
+     5→<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+     6→<meta name="theme-color" content="#0c0a09" />
+     7→<title>FATE Arcade</title>
+     8→<link rel="shortcut icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f59e0b'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='800' text-anchor='middle' fill='%23050505'%3EF%3C/text%3E%3C/svg%3E" type="image/x-icon" />
+     9→<script src="pass.js"></script>
+    10→<script>
+    11→/* ===== V6 ACCESS GATE (same auth as the portal — opens straight through if you're logged in) ===== */
+    12→(function(){
+    13→  var AUTH_KEY='fate_v6_auth';
+    14→  function passes(){
+    15→    if(typeof FATE_PASS==='undefined')return['fate2026'];
+    16→    return Array.isArray(FATE_PASS)?FATE_PASS.map(String):[String(FATE_PASS)];
+    17→  }
+    18→  function hash(s){
+    19→    var h=5381;
+    20→    for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;
+    21→    return h.toString(36);
+    22→  }
+    23→  function isAuthed(){
+    24→    try{
+    25→      var v=localStorage.getItem(AUTH_KEY);
+    26→      return !!v&&passes().map(hash).indexOf(v)>-1;
+    27→    }catch(e){return false}
+    28→  }
+    29→  if(!isAuthed()){
+    30→    location.replace('index.html');
+    31→  }
+    32→})();
+    33→</script>
+    34→<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    35→<script src="fate-games-cat.js" defer></script>
+    36→<style>
+    37→:root{--primary:#f59e0b;--secondary:#ef4444;--accent:#10b981;--bg-deep:#050505;--glass:rgba(0,0,0,0.55);--glass-border:rgba(255,255,255,0.1);--text:#f8fafc;--text-muted:#cbd5e1}
+    38→*{box-sizing:border-box;margin:0;padding:0}
+    39→html{scroll-behavior:smooth}
+    40→body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;min-height:100vh;overflow-x:hidden;padding-top:calc(60px + env(safe-area-inset-top,0px));-webkit-tap-highlight-color:transparent}
+    41→.bg-image{position:fixed;inset:0;z-index:0;background:url("/img/background.png") center center/cover no-repeat}
+    42→.bg-overlay{position:fixed;inset:0;z-index:1;background:rgba(5,5,5,0.55);backdrop-filter:blur(4px)}
+    43→/* ---- top nav ---- */
+    44→.nav-glass{position:fixed;top:0;left:0;right:0;z-index:50;height:calc(60px + env(safe-area-inset-top,0px));padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:rgba(5,5,5,0.6);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--glass-border)}
+    45→.nav-inner{height:100%;max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px}
+    46→.nav-brand{display:flex;align-items:center;gap:11px;min-width:0}
+    47→.nav-logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(245,158,11,0.4);flex-shrink:0}
+    48→.nav-logo span{font-weight:800;font-size:16px;color:white;font-family:"Space Grotesk",sans-serif}
+    49→.nav-title{font-family:"Space Grotesk",sans-serif;font-size:1.05rem;font-weight:700;background:linear-gradient(135deg,#fff,#fcd34d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap}
+    50→.nav-links{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}
+    51→.nav-link{padding:8px 14px;border-radius:11px;font-weight:500;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:7px;transition:all .3s cubic-bezier(.4,0,.2,1);background:none;border:none;cursor:pointer;font-family:inherit;font-size:.82rem;white-space:nowrap}
+    52→.nav-link:hover{background:rgba(245,158,11,0.1);color:#fff}
+    53→.fm-chip{padding:7px 12px;border-radius:11px;font-size:.68rem;font-weight:700;border:1px solid rgba(148,163,184,.25);white-space:nowrap;background:rgba(0,0,0,0.4);color:#94a3b8}
+    54→.panic-btn{padding:8px 14px;border-radius:11px;background:linear-gradient(135deg,#dc2626,#991b1b);color:white;font-weight:700;font-size:.78rem;border:none;cursor:pointer;display:flex;align-items:center;gap:7px;box-shadow:0 4px 18px rgba(220,38,38,0.4);transition:all .3s ease;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+    55→.panic-btn:hover{transform:scale(1.05);box-shadow:0 8px 28px rgba(220,38,38,0.6)}
+    56→/* ---- hero ---- */
+    57→.main{position:relative;z-index:4;max-width:1200px;margin:0 auto;padding:26px 20px 60px}
+    58→.page-header{text-align:center;margin-bottom:1.4rem}
+    59→.page-header h1{font-family:"Space Grotesk",sans-serif;font-size:clamp(2rem,7vw,3.2rem);font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#fff 0%,#fcd34d 50%,#f59e0b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    60→.page-header p{color:var(--text-muted);margin-top:.4rem;font-size:.92rem}
+    61→.page-header p b{color:#fcd34d}
+    62→.search-wrap{max-width:640px;margin:0 auto 1.1rem;position:relative}
+    63→.search-input{width:100%;padding:15px 44px 15px 22px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;color:var(--text);font-size:1rem;outline:none;transition:all .3s ease;font-family:inherit}
+    64→.search-input:focus{border-color:rgba(245,158,11,0.4);box-shadow:0 0 0 3px rgba(245,158,11,0.1),0 10px 40px rgba(245,158,11,0.1)}
+    65→.search-input::placeholder{color:#64748b}
+    66→.search-icon{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:#64748b;pointer-events:none;font-size:1rem}
+    67→/* ---- toolbar ---- */
+    68→.toolbar{display:flex;gap:.55rem;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:1rem}
+    69→.tb-chip{padding:9px 16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .25s ease;font-family:inherit;display:flex;align-items:center;gap:7px}
+    70→.tb-chip:hover{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#fff}
+    71→.tb-chip.active{background:linear-gradient(135deg,var(--primary),var(--secondary));border-color:transparent;color:white;box-shadow:0 4px 15px rgba(245,158,11,0.3)}
+    72→.tb-select{padding:9px 13px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;outline:none}
+    73→.tb-select:focus{border-color:rgba(245,158,11,0.4)}
+    74→/* ---- pills ---- */
+    75→.pills{display:flex;gap:.5rem;overflow-x:auto;padding:.5rem 2px;margin-bottom:.55rem;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch}
+    76→.pills::-webkit-scrollbar{display:none}
+    77→.pill{padding:8px 16px;border-radius:30px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);font-size:.8rem;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .3s ease;font-family:inherit}
+    78→.pill:hover{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#fff}
+    79→.pill.active{background:linear-gradient(135deg,var(--primary),var(--secondary));border-color:transparent;color:white;box-shadow:0 4px 15px rgba(245,158,11,0.3)}
+    80→.pill small{opacity:.65;font-weight:700;margin-left:4px}
+    81→.kinds{display:flex;gap:.45rem;overflow-x:auto;padding:.15rem 2px .5rem;margin-bottom:.9rem;scrollbar-width:none}
+    82→.kinds::-webkit-scrollbar{display:none}
+    83→.kind{padding:6px 13px;border-radius:20px;font-size:.72rem;font-weight:700;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);cursor:pointer;white-space:nowrap;font-family:inherit;text-transform:uppercase;letter-spacing:.5px}
+    84→.kind.active{background:rgba(16,185,129,0.18);border-color:rgba(16,185,129,0.5);color:#6ee7b7}
+    85→/* ---- count + grid ---- */
+    86→.count-line{text-align:center;color:var(--text-muted);font-size:.8rem;margin-bottom:1rem}
+    87→.count-line b{color:#fcd34d}
+    88→.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:1rem}
+    89→@media(min-width:640px){.game-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}}
+    90→@media(min-width:1024px){.game-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
+    91→.game-card{position:relative;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:18px;overflow:hidden;transition:all .35s cubic-bezier(.4,0,.2,1)}
+    92→.game-card:hover{transform:translateY(-6px) scale(1.02);border-color:rgba(245,158,11,0.35);box-shadow:0 18px 36px rgba(0,0,0,0.45),0 0 34px rgba(245,158,11,0.1)}
+    93→.launch{display:block;width:100%;background:none;border:none;padding:0;cursor:pointer;text-align:left;font-family:inherit;color:inherit}
+    94→.img-wrap{position:relative;aspect-ratio:1;overflow:hidden;background:linear-gradient(135deg,#15131f,#0a0912)}
+    95→.game-img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.4,0,.2,1);display:block}
+    96→.game-card:hover .game-img{transform:scale(1.08)}
+    97→.img-fallback{position:absolute;inset:0;display:grid;place-items:center;font:800 2rem "Space Grotesk",sans-serif;color:rgba(245,158,11,0.5);background:linear-gradient(135deg,#15131f,#0a0912)}
+    98→.src-badge{position:absolute;top:8px;left:8px;padding:3px 9px;border-radius:20px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;background:rgba(5,5,5,0.72);border:1px solid rgba(255,255,255,0.12);color:#fcd34d;backdrop-filter:blur(8px);max-width:calc(100% - 52px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    99→.play-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,5,5,0.85) 0%,transparent 55%);opacity:0;transition:opacity .3s ease;display:flex;align-items:flex-end;justify-content:center;padding-bottom:.8rem}
+   100→.game-card:hover .play-overlay{opacity:1}
+   101→.play-btn{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;color:white;font-size:1rem;box-shadow:0 8px 25px rgba(245,158,11,0.4)}
+   102→.fav-btn{position:absolute;top:7px;right:7px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s ease;z-index:3;backdrop-filter:blur(10px);font-size:.85rem}
+   103→.fav-btn:hover{background:rgba(239,68,68,0.25);border-color:rgba(239,68,68,0.4);color:#ef4444;transform:scale(1.12)}
+   104→.fav-btn.active{background:rgba(239,68,68,0.3);border-color:rgba(239,68,68,0.5);color:#ef4444}
+   105→.game-info{padding:10px 12px;background:rgba(0,0,0,0.3)}
+   106→.game-name{font-weight:600;font-size:.82rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+   107→.game-src{font-size:.64rem;text-align:center;color:#64748b;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+   108→/* ---- load more / empty ---- */
+   109→.load-more-wrap{text-align:center;padding:2.2rem 1rem;display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
+   110→.load-more-btn,.auto-btn{padding:13px 28px;border-radius:30px;background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(239,68,68,0.2));border:1px solid rgba(245,158,11,0.3);color:var(--text);font-weight:600;cursor:pointer;transition:all .3s ease;font-family:inherit;font-size:.85rem}
+   111→.load-more-btn:hover,.auto-btn:hover{background:linear-gradient(135deg,rgba(245,158,11,0.3),rgba(239,68,68,0.3));transform:translateY(-2px)}
+   112→.auto-btn[aria-pressed="true"]{background:linear-gradient(135deg,rgba(16,185,129,0.25),rgba(5,150,105,0.25));border-color:rgba(16,185,129,0.5);color:#6ee7b7}
+   113→.empty{text-align:center;padding:4rem 2rem;color:var(--text-muted)}
+   114→.empty b{display:block;font-size:1.1rem;color:#fcd34d;margin-bottom:.5rem;font-family:"Space Grotesk",sans-serif}
+   115→/* ---- player overlay ---- */
+   116→.hidden{display:none!important}
+   117→#fatePlayer{position:fixed;inset:0;z-index:9998;display:flex;flex-direction:column;background:#050505}
+   118→.fp-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(12,10,9,0.96);border-bottom:1px solid rgba(245,158,11,0.3);padding-top:calc(10px + env(safe-area-inset-top,0px));flex-shrink:0}
+   119→.fp-btn{min-width:40px;height:40px;padding:0 12px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s ease;font-size:.95rem;font-family:inherit;white-space:nowrap}
+   120→.fp-btn:hover{background:rgba(245,158,11,0.18);border-color:rgba(245,158,11,0.45);color:#fcd34d}
+   121→.fp-btn.hot{background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.4);color:#fcd34d;font-weight:800}
+   122→.fp-btn:disabled{opacity:.4;cursor:wait}
+   123→.fp-title{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+   124→.fp-name{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+   125→.fp-status{font-size:.66rem;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+   126→.fp-status.err{color:#f87171}
+   127→.fp-status.ok{color:#4ade80}
+   128→.fp-wrap{flex:1;position:relative;background:#000;min-height:0}
+   129→.fp-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;background:#000}
+   130→.fp-spin{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(5,5,5,0.96)}
+   131→.fp-spin.hide{display:none}
+   132→.fp-ring{width:44px;height:44px;border:3px solid rgba(245,158,11,0.2);border-top-color:#f59e0b;border-radius:50%;animation:fspin 1s linear infinite}
+   133→@keyframes fspin{to{transform:rotate(360deg)}}
+   134→.fp-spin b{font-family:"Space Grotesk",sans-serif;color:#fcd34d;font-size:.95rem}
+   135→.fp-spin span{color:#94a3b8;font-size:.75rem;max-width:420px;text-align:center;line-height:1.5}
+   136→.fp-err{position:absolute;inset:0;z-index:6;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(5,5,5,0.97);padding:2rem;text-align:center}
+   137→.fp-err.show{display:flex}
+   138→.fp-err b{color:#f87171;font-family:"Space Grotesk",sans-serif;font-size:1.05rem}
+   139→.fp-err p{color:#94a3b8;font-size:.8rem;max-width:460px;line-height:1.55}
+   140→.fp-err .row{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;margin-top:.4rem}
+   141→.fp-err button{padding:11px 20px;border-radius:12px;border:1px solid rgba(245,158,11,0.4);background:rgba(245,158,11,0.12);color:#fcd34d;font-weight:700;font-size:.82rem;cursor:pointer;font-family:inherit}
+   142→.fp-err button:hover{background:rgba(245,158,11,0.25)}
+   143→@media(max-width:640px){
+   144→  .fp-btn span.blabel{display:none}
+   145→  .fp-btn{padding:0 10px}
+   146→  .main{padding:20px 14px 50px}
+   147→}
+   148→</style>
+   149→</head>
+   150→<body>
+   151→<div class="bg-image"></div>
+   152→<div class="bg-overlay"></div>
+   153→
+   154→<nav class="nav-glass"><div class="nav-inner">
+   155→  <div class="nav-brand">
+   156→    <div class="nav-logo"><span>F</span></div>
+   157→    <div class="nav-title">FATE Arcade</div>
+   158→  </div>
+   159→  <div class="nav-links">
+   160→    <span class="fm-chip" id="fateGxMode" title="Games load straight from their CDN — no tunnel involved">direct CDN ⚡</span>
+   161→    <a class="nav-link" href="browser.html" title="FATE Browser">Browser</a>
+   162→    <a class="nav-link" href="movies.html" title="Dedicated FATE movies page">Movies</a>
+   163→    <a class="nav-link" href="test.html" title="Back to the FATE portal">Portal</a>
+   164→    <button class="panic-btn" onclick="location.replace('index.html')" title="Emergency exit"><span>Panic</span></button>
+   165→  </div>
+   166→</div></nav>
+   167→
+   168→<main class="main">
+   169→  <div class="page-header">
+   170→    <h1>FATE Arcade</h1>
+   171→    <p id="fateHeroSub">Loading the vault…</p>
+   172→  </div>
+   173→
+   174→  <div class="search-wrap">
+   175→    <input id="fateSearch" class="search-input" type="search" placeholder="Search 35,000+ games…" autocomplete="off" spellcheck="false" />
+   176→    <span class="search-icon">⌕</span>
+   177→  </div>
+   178→
+   179→  <div class="toolbar">
+   180→    <button class="tb-chip active" data-view="all" id="fateViewAll">All games</button>
+   181→    <button class="tb-chip" data-view="favorites" id="fateViewFav">♥ Favorites</button>
+   182→    <button class="tb-chip" data-view="recent" id="fateViewRecent">⟲ Recent</button>
+   183→    <button class="tb-chip" id="fateRandom">⚄ Random</button>
+   184→    <select class="tb-select" id="fateSort" title="Sort">
+   185→      <option value="az">A → Z</option>
+   186→      <option value="za">Z → A</option>
+   187→      <option value="source">By library</option>
+   188→    </select>
+   189→  </div>
+   190→
+   191→  <div class="pills" id="fateSources"></div>
+   192→  <div class="kinds" id="fateKinds"></div>
+   193→
+   194→  <div class="count-line" id="fateCount">waking up…</div>
+   195→  <div class="game-grid" id="fateGrid"></div>
+   196→  <div class="empty hidden" id="fateEmpty"></div>
+   197→  <div class="load-more-wrap">
+   198→    <button class="load-more-btn hidden" id="fateMore">Load more</button>
+   199→    <button class="auto-btn" id="fateAuto" aria-pressed="true" title="Keep loading as you scroll">Auto-load: on</button>
+   200→  </div>
+   201→</main>
+   202→
+   203→<!-- ===== PLAYER OVERLAY ===== -->
+   204→<div id="fatePlayer" class="hidden">
+   205→  <div class="fp-bar">
+   206→    <button class="fp-btn" id="fatePBack" title="Back to library">←</button>
+   207→    <div class="fp-title">
+   208→      <div class="fp-name" id="fatePName">—</div>
+   209→      <div class="fp-status" id="fatePStatus">idle</div>
+   210→    </div>
+   211→    <button class="fp-btn" id="fatePCode" title="Fetch the game's code over the CDN and run it locally — fixes blocked embeds">⤓<span class="blabel">Code</span></button>
+   212→    <button class="fp-btn" id="fatePReload" title="Reload">⟳</button>
+   213→    <button class="fp-btn" id="fatePNewtab" title="Open in a new tab">↗</button>
+   214→    <button class="fp-btn" id="fatePFull" title="Fullscreen">⛶</button>
+   215→  </div>
+   216→  <div class="fp-wrap" id="fatePWrap">
+   217→    <iframe id="fateFrameDirect" title="FATE game" allow="fullscreen; autoplay; gamepad; clipboard-write" allowfullscreen referrerpolicy="no-referrer"></iframe>
+   218→    <div class="fp-spin" id="fatePSpin"><div class="fp-ring"></div><b id="fatePSpinTitle">Loading…</b><span id="fatePSpinSub">loading from the fastest CDN mirror</span></div>
+   219→    <div class="fp-err" id="fatePErr">
+   220→      <b id="fatePErrTitle">This game would not load</b>
+   221→      <p id="fatePErrMsg"></p>
+   222→      <div class="row">
+   223→        <button id="fatePErrRetry">⟳ Retry</button>
+   224→        <button id="fatePErrCode">⤓ Load code directly</button>
+   225→        <button id="fatePErrNewtab">↗ New tab</button>
+   226→        <button id="fatePErrClose">← Back to library</button>
+   227→      </div>
+   228→    </div>
+   229→  </div>
+   230→</div>
+   231→
+   232→<script>
+   233→/* ===== FATE ARCADE SHARED HELPERS ===== */
+   234→function _lsGet(k){ try{ return JSON.parse(localStorage.getItem(k) || 'null'); }catch(e){ return null; } }
+   235→function _lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+   236→
+   237→/* ===== FATE ARCADE CDN ENGINE v2 — straight browser→CDN, zero proxy, zero tunnel ===== */
+   238→console.log('%c[FATE ARCADE] direct CDN engine v2 loaded (no proxy, no jet)', 'color:#4ade80;font-weight:bold;');
+   239→
+   240→/* jsDelivr edges to rotate through (same trick the big sites use) */
+   241→const FATE_CDN_MIRRORS = ['cdn.jsdelivr.net', 'fastly.jsdelivr.net', 'gcore.jsdelivr.net', 'testingcf.jsdelivr.net', 'quantil.jsdelivr.net'];
+   242→
+   243→/* hosts that serve game HTML as text/plain (would show raw code in an iframe)
+   244→   -> always fetch the code and render it locally as a blob */
+   245→const FATE_FETCH_HOSTS = [
+   246→  /(^|\.)cdn\.jsdelivr\.net$/i, /(^|\.)fastly\.jsdelivr\.net$/i, /(^|\.)gcore\.jsdelivr\.net$/i,
+   247→  /(^|\.)testingcf\.jsdelivr\.net$/i, /(^|\.)quantil\.jsdelivr\.net$/i, /(^|\.)originfastly\.jsdelivr\.net$/i,
+   248→  /(^|\.)raw\.githubusercontent\.com$/i, /(^|\.)rawcdn\.githack\.com$/i, /(^|\.)raw\.githack\.com$/i,
+   249→  /(^|\.)cdn\.statically\.io$/i, /(^|\.)uploads\.ungrounded\.net$/i
+   250→];
+   251→/* hosts probed to refuse embedding AND cross-origin reads — code fetch is the only chance */
+   252→const FATE_NO_EMBED = [
+   253→  /(^|\.)8ballpool\.com$/i, /(^|\.)humanornot\.so$/i, /(^|\.)now\.gg$/i, /(^|\.)totaljerkface\.com$/i,
+   254→  /(^|\.)coolmathgames\.com$/i, /(^|\.)mathplayground\.com$/i, /(^|\.)silvergames\.com$/i, /(^|\.)itch\.io$/i
+   255→];
+   256→
+   257→const fateHost = u => { try { return new URL(u).hostname; } catch (e) { return ''; } };
+   258→const fateNeedsFetch = u => FATE_FETCH_HOSTS.some(rx => rx.test(fateHost(u))) || FATE_NO_EMBED.some(rx => rx.test(fateHost(u)));
+   259→
+   260→/* expand one game URL into every CDN route we can try */
+   261→function fateMirrors(u){
+   262→  const list = [];
+   263→  try {
+   264→    const url = new URL(u);
+   265→    let m = url.href.match(/^https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^/@]+)@([^/]+)\/(.+)$/);
+   266→    if (m){
+   267→      const [, user, repo, ref, path] = m;
+   268→      for (const host of FATE_CDN_MIRRORS) list.push('https://' + host + '/gh/' + user + '/' + repo + '@' + ref + '/' + path);
+   269→      list.push('https://raw.githubusercontent.com/' + user + '/' + repo + '/' + ref + '/' + path);
+   270→    } else if (url.hostname === 'raw.githubusercontent.com'){
+   271→      const seg = url.pathname.split('/').filter(Boolean);
+   272→      if (seg.length >= 4){
+   273→        const [user, repo, ref] = seg, path = seg.slice(3).join('/');
+   274→        for (const host of FATE_CDN_MIRRORS) list.push('https://' + host + '/gh/' + user + '/' + repo + '@' + ref + '/' + path);
+   275→      }
+   276→      list.push(url.href);
+   277→    } else list.push(url.href);
+   278→  } catch (e) { list.push(u); }
+   279→  return [...new Set(list)];
+   280→}
+   281→
+   282→/* fetch one route, validate it looks like a game page */
+   283→function fateFetchOne(url, timeoutMs){
+   284→  return new Promise((resolve, reject) => {
+   285→    const ac = new AbortController();
+   286→    const to = setTimeout(() => ac.abort(), timeoutMs || 14000);
+   287→    fetch(url, { signal: ac.signal, redirect: 'follow' }).then(async r => {
+   288→      clearTimeout(to);
+   289→      if (!r.ok) throw new Error('HTTP ' + r.status);
+   290→      const t = await r.text();
+   291→      if (!/<html|<!doctype|<script|<canvas|<iframe/i.test(t)) throw new Error('not a game page');
+   292→      resolve({ text: t, url: r.url || url });
+   293→    }).catch(e => { clearTimeout(to); reject(e); });
+   294→  });
+   295→}
+   296→/* resolve when the first promise fulfills (Promise.any with a manual fallback) */
+   297→function fateRace(ps){
+   298→  return new Promise((resolve, reject) => {
+   299→    let pending = ps.length, done = false;
+   300→    if (!pending) return reject(new Error('no routes'));
+   301→    ps.forEach(p => p.then(v => { if (!done){ done = true; resolve(v); } })
+   302→      .catch(() => { if (--pending === 0 && !done){ done = true; reject(new Error('all routes failed')); } }));
+   303→  });
+   304→}
+   305→
+   306→/* in-memory code cache: reopening a game is instant */
+   307→const FATE_GAME_CACHE = new Map();
+   308→async function fateRetrieve(u){
+   309→  if (FATE_GAME_CACHE.has(u)) return FATE_GAME_CACHE.get(u);
+   310→  const mirrors = fateMirrors(u);
+   311→  let got = null;
+   312→  try { got = await fateRace(mirrors.slice(0, 3).map(mi => fateFetchOne(mi, 14000))); }
+   313→  catch (e1) {
+   314→    for (const mi of mirrors.slice(3)){
+   315→      try { got = await fateFetchOne(mi, 14000); break; } catch (e2) {}
+   316→    }
+   317→  }
+   318→  if (!got) throw new Error('every CDN route failed (' + mirrors.length + ' tried)');
+   319→  FATE_GAME_CACHE.set(u, got);
+   320→  return got;
+   321→}
+   322→
+   323→function fateWithBase(text, url){
+   324→  const doc = new DOMParser().parseFromString(text, 'text/html');
+   325→  if (!doc.querySelector('base')){
+   326→    const b = doc.createElement('base'); b.href = url;
+   327→    (doc.head || doc.documentElement).prepend(b);
+   328→  }
+   329→  return '<!doctype html>\n' + doc.documentElement.outerHTML;
+   330→}
+   331→async function fatePlayableHTML(g, onStage){
+   332→  let r = await fateRetrieve(g.url);
+   333→  if (onStage) onStage('code loaded — ' + Math.round(r.text.length / 1024) + ' KB, preparing…');
+   334→  if (g.source === 'Lumin'){
+   335→    /* peel single-iframe jsdelivr wrappers (up to 3 deep) */
+   336→    const visited = new Set([r.url]);
+   337→    for (let depth = 0; depth < 3; depth++){
+   338→      const doc = new DOMParser().parseFromString(r.text, 'text/html');
+   339→      const frames = doc.querySelectorAll('iframe[src]');
+   340→      if (frames.length !== 1 || doc.querySelector('canvas')) break;
+   341→      const raw = frames[0].getAttribute('src');
+   342→      const base = doc.querySelector('base[href]')?.getAttribute('href');
+   343→      const url = new URL(raw, base ? new URL(base, r.url).href : r.url).href;
+   344→      if (!/^https?:/.test(url) || !url.includes('jsdelivr.net/') || visited.has(url)) break;
+   345→      visited.add(url);
+   346→      if (onStage) onStage('unwrapping layer ' + (depth + 2) + '…');
+   347→      r = await fateRetrieve(url);
+   348→    }
+   349→  }
+   350→  return fateWithBase(r.text, r.url);
+   351→}
+   352→</script>
+   353→<script>
+   354→/* ===== FATE ARCADE ENGINE — 35k game vault (Storm0S fetch+blob technique + FATE tunnel fallback) ===== */
+   355→console.log('%c[FATE ARCADE] arcade engine loaded', 'color:#f59e0b;font-weight:bold;');
+   356→
+   357→/* ---------- state ---------- */
+   358→const GX_FAVS_KEY = 'fate_gx_favs';
+   359→const GX_RECENT_KEY = 'fate_gx_recent';
+   360→let GAMES = [];                 /* all entries: {name,url,image,source,kind,fetchGame,frameFallback} */
+   361→let favorites = new Set(_lsGet(GX_FAVS_KEY) || []);
+   362→let recent = _lsGet(GX_RECENT_KEY) || []; /* most-recent-first keys */
+   363→let gxSource = 'All libraries';
+   364→let gxKind = 'all';
+   365→let gxView = 'all';
+   366→let gxSort = 'az';
+   367→let gxLimit = 80;
+   368→let gxAutoLoad = true;
+   369→let gxQuery = '';
+   370→const searchText = new WeakMap();
+   371→const nameCollator = new Intl.Collator();
+   372→const gxKey = g => g.source + '|' + g.url;
+   373→const FALLBACK_ICON = "data:image/svg+xml," + encodeURIComponent(
+   374→  "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%2315131f'/><text x='32' y='41' font-family='Arial' font-size='26' font-weight='800' text-anchor='middle' fill='%23f59e0b' opacity='0.55'>F</text></svg>");
+   375→
+   376→/* ---------- catalog decode (gzip+base64, same technique as Storm0S) ---------- */
+   377→async function fateDecodeCatalog(){
+   378→  const b64 = window.FATE_GAMES_B64;
+   379→  if (!b64 || !b64.length) throw new Error('catalog file fate-games-cat.js is missing next to games.html');
+   380→  if (typeof DecompressionStream === 'undefined') throw new Error('this browser is too old — update iOS/Safari (needs 16.4+)');
+   381→  const parts = [];
+   382→  for (let i = 0; i < b64.length; i += 65536){
+   383→    const s = atob(b64.slice(i, i + 65536));
+   384→    const u = new Uint8Array(s.length);
+   385→    for (let j = 0; j < s.length; j++) u[j] = s.charCodeAt(j);
+   386→    parts.push(u);
+   387→  }
+   388→  const blob = new Blob(parts);
+   389→  const out = await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+   390→  const arr = JSON.parse(new TextDecoder().decode(out));
+   391→  return arr.map(e => ({
+   392→    name: String(e.n || 'Untitled'),
+   393→    url: String(e.u || ''),
+   394→    image: e.i ? String(e.i) : '',
+   395→    source: String(e.s || 'Vault'),
+   396→    kind: e.k ? String(e.k) : 'arcade',
+   397→    fetchGame: e.f === 1 ? true : e.f === 0 ? false : undefined,
+   398→    frameFallback: e.F === 1
+   399→  })).filter(g => g.url);
+   400→}
+   401→
+   402→/* ---------- play pipeline (fateRetrieve / fateWithBase / fatePlayableHTML) now lives in the CDN engine block above ---------- */
+   403→
+   404→/* ---------- filtering / rendering ---------- */
+   405→function gxFilters(){
+   406→  const q = gxQuery.trim().toLowerCase();
+   407→  const recentOrder = new Map(recent.map((k, i) => [k, i]));
+   408→  const a = GAMES.filter(g => {
+   409→    let text = searchText.get(g);
+   410→    if (text === undefined){
+   411→      text = (g.name + ' ' + g.source + ' ' + g.kind).toLowerCase();
+   412→      searchText.set(g, text);
+   413→    }
+   414→    return (gxKind === 'all' || g.kind === gxKind)
+   415→      && (gxSource === 'All libraries' || g.source === gxSource)
+   416→      && (!q || text.includes(q))
+   417→      && (gxView !== 'favorites' || favorites.has(gxKey(g)))
+   418→      && (gxView !== 'recent' || recentOrder.has(gxKey(g)));
+   419→  });
+   420→  if (gxView === 'recent') a.sort((x, y) => recentOrder.get(gxKey(x)) - recentOrder.get(gxKey(y)));
+   421→  else if (gxSort === 'source') a.sort((x, y) => nameCollator.compare(x.source, y.source) || nameCollator.compare(x.name, y.name));
+   422→  else a.sort((x, y) => (gxSort === 'za' ? -1 : 1) * nameCollator.compare(x.name, y.name));
+   423→  return a;
+   424→}
+   425→let gxRendered = [], gxAppendPending = false;
+   426→function fateCard(g){
+   427→  const box = document.createElement('article');
+   428→  box.className = 'game-card';
+   429→  const b = document.createElement('button');
+   430→  b.className = 'launch';
+   431→  b.setAttribute('aria-label', 'Play ' + g.name + ' from ' + g.source);
+   432→  const art = document.createElement('div');
+   433→  art.className = 'img-wrap';
+   434→  const fb = document.createElement('div');
+   435→  fb.className = 'img-fallback';
+   436→  fb.textContent = g.name.slice(0, 2).toUpperCase();
+   437→  art.appendChild(fb);
+   438→  if (g.image){
+   439→    const im = document.createElement('img');
+   440→    im.className = 'game-img'; im.src = g.image; im.alt = '';
+   441→    im.loading = 'lazy'; im.decoding = 'async';
+   442→    im.onload = () => fb.remove();
+   443→    im.onerror = () => { im.remove(); };
+   444→    art.appendChild(im);
+   445→  }
+   446→  const badge = document.createElement('span');
+   447→  badge.className = 'src-badge'; badge.textContent = g.source;
+   448→  art.appendChild(badge);
+   449→  const ov = document.createElement('div');
+   450→  ov.className = 'play-overlay';
+   451→  const pb = document.createElement('div');
+   452→  pb.className = 'play-btn'; pb.textContent = '\u25b6';
+   453→  ov.appendChild(pb);
+   454→  art.appendChild(ov);
+   455→  const cap = document.createElement('div');
+   456→  cap.className = 'game-info';
+   457→  const title = document.createElement('div');
+   458→  title.className = 'game-name'; title.textContent = g.name; title.title = g.name;
+   459→  const src = document.createElement('div');
+   460→  src.className = 'game-src'; src.textContent = g.source + (g.kind !== 'arcade' ? ' \u00b7 ' + g.kind : '');
+   461→  cap.append(title, src);
+   462→  b.append(art, cap);
+   463→  b.onclick = () => fatePlay(g);
+   464→  const fav = document.createElement('button');
+   465→  fav.className = 'fav-btn' + (favorites.has(gxKey(g)) ? ' active' : '');
+   466→  fav.textContent = favorites.has(gxKey(g)) ? '\u2665' : '\u2661';
+   467→  fav.setAttribute('aria-label', (favorites.has(gxKey(g)) ? 'Unfavorite ' : 'Favorite ') + g.name);
+   468→  fav.onclick = ev => {
+   469→    ev.stopPropagation();
+   470→    const k = gxKey(g);
+   471→    if (favorites.has(k)) favorites.delete(k); else favorites.add(k);
+   472→    _lsSet(GX_FAVS_KEY, [...favorites]);
+   473→    renderGrid(true);
+   474→  };
+   475→  box.append(b, fav);
+   476→  return box;
+   477→}
+   478→function renderGrid(resetLimit){
+   479→  if (resetLimit) gxLimit = 80;
+   480→  const a = gxFilters();
+   481→  gxRendered = a;
+   482→  const count = document.getElementById('fateCount');
+   483→  const viewLabel = gxView === 'favorites' ? 'your favorites' : gxView === 'recent' ? 'recently played' : (gxSource === 'All libraries' ? 'all libraries' : gxSource);
+   484→  count.innerHTML = '<b>' + a.length.toLocaleString() + '</b> games \u00b7 ' + viewLabel + (gxQuery ? ' \u00b7 \u201c' + gxQuery.replace(/</g, '&lt;') + '\u201d' : '');
+   485→  const grid = document.getElementById('fateGrid');
+   486→  grid.replaceChildren(...a.slice(0, gxLimit).map(fateCard));
+   487→  const remaining = gxLimit < a.length;
+   488→  document.getElementById('fateMore').classList.toggle('hidden', !remaining);
+   489→  document.getElementById('fateMore').textContent = 'Load ' + Math.min(80, a.length - gxLimit).toLocaleString() + ' more';
+   490→  const empty = document.getElementById('fateEmpty');
+   491→  if (!a.length){
+   492→    empty.classList.remove('hidden');
+   493→    empty.innerHTML = gxView === 'favorites'
+   494→      ? '<b>No favorites yet</b>Tap the \u2661 on any game to keep it here.'
+   495→      : gxView === 'recent'
+   496→        ? '<b>Nothing here yet</b>Games you open will show up in this row.'
+   497→        : '<b>No matches</b>Try another search, library or kind.';
+   498→  } else empty.classList.add('hidden');
+   499→}
+   500→function appendGames(){
+   501→  if (gxAppendPending || gxLimit >= gxRendered.length) return;
+   502→  gxAppendPending = true;
+   503→  requestAnimationFrame(() => {
+   504→    const next = Math.min(gxLimit + 80, gxRendered.length);
+   505→    document.getElementById('fateGrid').append(...gxRendered.slice(gxLimit, next).map(fateCard));
+   506→    gxLimit = next;
+   507→    gxAppendPending = false;
+   508→    document.getElementById('fateMore').classList.toggle('hidden', gxLimit >= gxRendered.length);
+   509→  });
+   510→}
+   511→const scrollSentinel = document.createElement('div');
+   512→scrollSentinel.style.height = '1px';
+   513→function checkScrollLoad(){
+   514→  if (!gxAutoLoad || gxLimit >= gxRendered.length) return;
+   515→  const r = scrollSentinel.getBoundingClientRect();
+   516→  if (r.top < innerHeight + 600 && r.bottom >= 0) appendGames();
+   517→}
+   518→
+   519→/* ---------- player ---------- */
+   520→let FATE_ACTIVE_BLOB = null, FATE_CURRENT = null, FATE_PLAY_SEQ = 0, FATE_HINT_TIMER = null;
+   521→const $id = id => document.getElementById(id);
+   522→function fateShowSpin(show, title, sub){
+   523→  const sp = $id('fatePSpin');
+   524→  sp.classList.toggle('hide', !show);
+   525→  if (title) $id('fatePSpinTitle').textContent = title;
+   526→  if (sub !== undefined) $id('fatePSpinSub').textContent = sub || '';
+   527→}
+   528→function fatePStatus(msg, kind){
+   529→  const st = $id('fatePStatus');
+   530→  st.textContent = msg;
+   531→  st.className = 'fp-status' + (kind ? ' ' + kind : '');
+   532→}
+   533→function fateShowErr(show, title, msg){
+   534→  const e = $id('fatePErr');
+   535→  e.classList.toggle('show', !!show);
+   536→  if (show){
+   537→    $id('fatePErrTitle').textContent = title || 'This game would not load';
+   538→    $id('fatePErrMsg').textContent = msg || '';
+   539→  }
+   540→}
+   541→function fateArmHint(seq){
+   542→  clearTimeout(FATE_HINT_TIMER);
+   543→  FATE_HINT_TIMER = setTimeout(() => {
+   544→    if (seq === FATE_PLAY_SEQ) fatePStatus('black screen? tap \u24e3 Code \u2014 loads the game over the CDN instead', '');
+   545→  }, 7000);
+   546→}
+   547→function fateRevokeBlob(){
+   548→  if (FATE_ACTIVE_BLOB){ try { URL.revokeObjectURL(FATE_ACTIVE_BLOB); } catch(e){} FATE_ACTIVE_BLOB = null; }
+   549→}
+   550→/* play a game: direct CDN embed, or fetch-the-code+blob for hosts that need it */
+   551→async function fatePlay(g, forceCode){
+   552→  const seq = ++FATE_PLAY_SEQ;
+   553→  FATE_CURRENT = g;
+   554→  fateShowErr(false);
+   555→  clearTimeout(FATE_HINT_TIMER);
+   556→  fateRevokeBlob();
+   557→  $id('fatePlayer').classList.remove('hidden');
+   558→  document.body.style.overflow = 'hidden';
+   559→  $id('fatePName').textContent = g.name;
+   560→  $id('fatePCode').disabled = false;
+   561→  fatePStatus('loading\u2026');
+   562→  const frame = $id('fateFrameDirect');
+   563→  frame.src = 'about:blank';
+   564→  const needCode = forceCode || fateNeedsFetch(g.url);
+   565→  if (needCode){
+   566→    /* fetch game code -> inject <base> -> local blob (fixes text/plain hosts + X-Frame-Options) */
+   567→    try {
+   568→      fateShowSpin(true, 'Loading ' + g.name + '\u2026', 'fetching game code from the fastest CDN mirror\u2026');
+   569→      const html = await fatePlayableHTML(g, s => { if (seq === FATE_PLAY_SEQ) fateShowSpin(true, 'Loading ' + g.name + '\u2026', s); });
+   570→      if (seq !== FATE_PLAY_SEQ) return;
+   571→      const blob = new Blob([html], { type: 'text/html' });
+   572→      fateRevokeBlob();
+   573→      FATE_ACTIVE_BLOB = URL.createObjectURL(blob);
+   574→      fateShowSpin(false);
+   575→      frame.src = FATE_ACTIVE_BLOB;
+   576→      fatePStatus('running on local code \u2014 straight from the CDN', 'ok');
+   577→      fateBumpRecent(g);
+   578→      return;
+   579→    } catch(err){
+   580→      if (seq !== FATE_PLAY_SEQ) return;
+   581→      /* host refuses embedding AND code download -> hard error; otherwise fall through to direct embed */
+   582→      if (FATE_NO_EMBED.some(rx => rx.test(fateHost(g.url))) && !g.frameFallback){
+   583→        fateShowSpin(false);
+   584→        fatePStatus('failed \u2014 ' + (err.message || err), 'err');
+   585→        fateShowErr(true, 'This game\u2019s host blocks everything', (err.message || err) + '. This library hosts the game on a site that refuses both embedding and code download \u2014 no player can fix that. Pick another game.');
+   586→        fateBumpRecent(g);
+   587→        return;
+   588→      }
+   589→      fatePStatus('code fetch failed \u2014 trying direct embed\u2026');
+   590→    }
+   591→  } else {
+   592→    fateShowSpin(true, 'Loading ' + g.name + '\u2026', g.source + ' \u00b7 direct CDN embed');
+   593→  }
+   594→  /* direct embed */
+   595→  if (seq !== FATE_PLAY_SEQ) return;
+   596→  fateShowSpin(false);
+   597→  frame.src = g.url;
+   598→  fatePStatus('direct CDN embed \u00b7 black screen? tap \u24e3 Code', '');
+   599→  fateArmHint(seq);
+   600→  fateBumpRecent(g);
+   601→}
+   602→function fatePlayCode(){
+   603→  if (FATE_CURRENT) fatePlay(FATE_CURRENT, true);
+   604→}
+   605→function fateBumpRecent(g){
+   606→  const k = gxKey(g);
+   607→  recent = [k, ...recent.filter(x => x !== k)].slice(0, 60);
+   608→  _lsSet(GX_RECENT_KEY, recent);
+   609→}
+   610→function fateClosePlayer(){
+   611→  FATE_PLAY_SEQ++;
+   612→  clearTimeout(FATE_HINT_TIMER);
+   613→  $id('fatePlayer').classList.add('hidden');
+   614→  $id('fateFrameDirect').src = 'about:blank';
+   615→  fateRevokeBlob();
+   616→  FATE_CURRENT = null;
+   617→  document.body.style.overflow = '';
+   618→  if (gxView === 'recent') renderGrid(true);
+   619→}
+   620→function fateReloadGame(){
+   621→  if (!FATE_CURRENT) return;
+   622→  fatePlay(FATE_CURRENT, FATE_NEED_CODE);
+   623→}
+   624→async function fateNewtabGame(){
+   625→  if (!FATE_CURRENT) return;
+   626→  const g = FATE_CURRENT;
+   627→  const tab = window.open('about:blank', '_blank');
+   628→  if (!tab){ alert('Allow popups to open the game in a new tab.'); return; }
+   629→  tab.opener = null;
+   630→  tab.document.title = 'Loading game HTML';
+   631→  tab.document.body.style.cssText = 'font:15px system-ui;background:#050505;color:#fcd34d;display:grid;place-items:center;height:100vh;margin:0';
+   632→  tab.document.body.textContent = 'Loading game HTML\u2026';
+   633→  try {
+   634→    let blob;
+   635→    if (FATE_ACTIVE_BLOB && (FATE_NEED_CODE || fateNeedsFetch(g.url))){
+   636→      const res = await fetch(FATE_ACTIVE_BLOB);
+   637→      blob = new Blob([await res.text()], { type: 'text/html' });
+   638→    } else if (fateNeedsFetch(g.url)){
+   639→      blob = new Blob([await fatePlayableHTML(g)], { type: 'text/html' });
+   640→    } else {
+   641→      return tab.location.replace(g.url);
+   642→    }
+   643→    if (tab.closed) return;
+   644→    const url = URL.createObjectURL(blob);
+   645→    tab.location.replace(url);
+   646→    const cleanup = setInterval(() => { if (tab.closed){ clearInterval(cleanup); URL.revokeObjectURL(url); } }, 10000);
+   647→  } catch(e){
+   648→    if (!tab.closed){
+   649→      tab.document.title = 'Game HTML unavailable';
+   650→      tab.document.body.textContent = 'Could not fetch this game\u2019s HTML. The host may block downloading its code.';
+   651→    }
+   652→  }
+   653→}
+   654→function fateFullscreenGame(){
+   655→  const w = $id('fatePWrap');
+   656→  if (w.requestFullscreen) w.requestFullscreen().catch(() => {});
+   657→  else if (w.webkitRequestFullscreen) w.webkitRequestFullscreen();
+   658→}
+   659→
+   660→/* ---------- build pills / kinds ---------- */
+   661→function fateBuildFacets(){
+   662→  const srcCount = new Map();
+   663→  const kindCount = new Map();
+   664→  for (const g of GAMES){
+   665→    srcCount.set(g.source, (srcCount.get(g.source) || 0) + 1);
+   666→    kindCount.set(g.kind, (kindCount.get(g.kind) || 0) + 1);
+   667→  }
+   668→  const srcs = [...srcCount.entries()].sort((a, b) => b[1] - a[1]);
+   669→  const pills = $id('fateSources');
+   670→  pills.replaceChildren();
+   671→  const mkPill = (label, val, cnt) => {
+   672→    const p = document.createElement('button');
+   673→    p.className = 'pill' + (gxSource === val ? ' active' : '');
+   674→    p.innerHTML = label.replace(/</g, '&lt;') + ' <small>' + cnt.toLocaleString() + '</small>';
+   675→    p.onclick = () => { gxSource = val; fateBuildFacets(); renderGrid(true); pills.scrollLeft = 0; };
+   676→    return p;
+   677→  };
+   678→  pills.appendChild(mkPill('All libraries', 'All libraries', GAMES.length));
+   679→  for (const [s, c] of srcs) pills.appendChild(mkPill(s, s, c));
+   680→  const kinds = $id('fateKinds');
+   681→  kinds.replaceChildren();
+   682→  const kk = [['all', 'All kinds'], ['arcade', 'Arcade'], ...[...kindCount.entries()].filter(k => k[0] !== 'arcade').sort((a, b) => b[1] - a[1]).map(([k, c]) => [k, k + ' (' + c + ')'])];
+   683→  for (const [val, label] of kk){
+   684→    const b = document.createElement('button');
+   685→    b.className = 'kind' + (gxKind === val ? ' active' : '');
+   686→    b.textContent = label;
+   687→    b.onclick = () => { gxKind = val; fateBuildFacets(); renderGrid(true); };
+   688→    kinds.appendChild(b);
+   689→  }
+   690→}
+   691→
+   692→/* ---------- boot ---------- */
+   693→async function fateArcadeStart(){
+   694→  try {
+   695→    $id('fateHeroSub').innerHTML = 'unpacking <b>' + (window.FATE_GAMES_META ? window.FATE_GAMES_META.count.toLocaleString() : '35,000+') + '</b> games\u2026';
+   696→    const t0 = performance.now();
+   697→    GAMES = await fateDecodeCatalog();
+   698→    const secs = ((performance.now() - t0) / 1000).toFixed(1);
+   699→    const libs = new Set(GAMES.map(g => g.source)).size;
+   700→    $id('fateHeroSub').innerHTML = '<b>' + GAMES.length.toLocaleString() + ' games</b> \u00b7 ' + libs + ' libraries \u00b7 loaded in ' + secs + 's \u00b7 tap any card to play';
+   701→    document.querySelector('#fateSearch').placeholder = 'Search ' + GAMES.length.toLocaleString() + ' games\u2026';
+   702→    fateBuildFacets();
+   703→    renderGrid(true);
+   704→  } catch(e){
+   705→    $id('fateCount').textContent = 'catalog failed to unpack: ' + (e.message || e);
+   706→    $id('fateHeroSub').textContent = 'make sure fate-games-cat.js sits in the same folder as games.html';
+   707→  }
+   708→}
+   709→
+   710→/* ---------- wiring ---------- */
+   711→let searchDebounce;
+   712→$id('fateSearch').addEventListener('input', function(){
+   713→  clearTimeout(searchDebounce);
+   714→  searchDebounce = setTimeout(() => { gxQuery = this.value; renderGrid(true); }, 130);
+   715→});
+   716→document.querySelectorAll('[data-view]').forEach(b => {
+   717→  b.onclick = () => {
+   718→    gxView = b.dataset.view;
+   719→    document.querySelectorAll('[data-view]').forEach(x => x.classList.toggle('active', x === b));
+   720→    renderGrid(true);
+   721→  };
+   722→});
+   723→$id('fateSort').onchange = function(){ gxSort = this.value; renderGrid(true); };
+   724→$id('fateMore').onclick = appendGames;
+   725→$id('fateAuto').onclick = function(){
+   726→  gxAutoLoad = !gxAutoLoad;
+   727→  this.setAttribute('aria-pressed', String(gxAutoLoad));
+   728→  this.textContent = 'Auto-load: ' + (gxAutoLoad ? 'on' : 'off');
+   729→  if (gxAutoLoad) checkScrollLoad();
+   730→};
+   731→$id('fateRandom').onclick = () => {
+   732→  const a = gxFilters();
+   733→  if (a.length) fatePlay(a[Math.floor(Math.random() * a.length)]);
+   734→};
+   735→$id('fatePBack').onclick = fateClosePlayer;
+   736→$id('fatePReload').onclick = fateReloadGame;
+   737→$id('fatePCode').onclick = fatePlayCode;
+   738→$id('fatePNewtab').onclick = fateNewtabGame;
+   739→$id('fatePFull').onclick = fateFullscreenGame;
+   740→$id('fatePErrRetry').onclick = () => FATE_CURRENT && fatePlay(FATE_CURRENT);
+   741→$id('fatePErrCode').onclick = fatePlayCode;
+   742→$id('fatePErrNewtab').onclick = fateNewtabGame;
+   743→$id('fatePErrClose').onclick = fateClosePlayer;
+   744→document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$id('fatePlayer').classList.contains('hidden')) fateClosePlayer(); });
+   745→/* infinite scroll (Storm recipe) */
+   746→document.querySelector('.main').insertBefore(scrollSentinel, document.querySelector('.load-more-wrap'));
+   747→const pagingObserver = new IntersectionObserver(checkScrollLoad, { rootMargin: '600px' });
+   748→pagingObserver.observe(scrollSentinel);
+   749→addEventListener('scroll', checkScrollLoad, { passive: true });
+   750→
+   751→if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fateArcadeStart, { once: true });
+   752→else fateArcadeStart();
+   753→/* ===== END FATE ARCADE ENGINE ===== */
+   754→</script>
+   755→</body>
+   756→</html>
+   757→

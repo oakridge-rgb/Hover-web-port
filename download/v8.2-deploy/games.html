@@ -157,7 +157,7 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
     <div class="nav-title">FATE Arcade</div>
   </div>
   <div class="nav-links">
-    <span class="fm-chip" id="fateGxMode" title="Games load straight from their CDN — no tunnel involved">direct CDN ⚡</span>
+    <span class="fm-chip" id="fateGxMode" title="Every game is served straight from jsDelivr's global CDN — no jet, no tunnel, no proxy">jsDelivr CDN ⚡</span>
     <a class="nav-link" href="browser.html" title="FATE Browser">Browser</a>
     <a class="nav-link" href="movies.html" title="Dedicated FATE movies page">Movies</a>
     <a class="nav-link" href="test.html" title="Back to the FATE portal">Portal</a>
@@ -172,7 +172,7 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
   </div>
 
   <div class="search-wrap">
-    <input id="fateSearch" class="search-input" type="search" placeholder="Search 35,000+ games…" autocomplete="off" spellcheck="false" />
+    <input id="fateSearch" class="search-input" type="search" placeholder="Search games…" autocomplete="off" spellcheck="false" />
     <span class="search-icon">⌕</span>
   </div>
 
@@ -351,7 +351,7 @@ async function fatePlayableHTML(g, onStage){
 }
 </script>
 <script>
-/* ===== FATE ARCADE ENGINE — 35k game vault (Storm0S fetch+blob technique + FATE tunnel fallback) ===== */
+/* ===== FATE ARCADE ENGINE — 22.7k game vault, 100% jsDelivr (Storm0S fetch+blob technique, zero jet) ===== */
 console.log('%c[FATE ARCADE] arcade engine loaded', 'color:#f59e0b;font-weight:bold;');
 
 /* ---------- state ---------- */
@@ -692,12 +692,12 @@ function fateBuildFacets(){
 /* ---------- boot ---------- */
 async function fateArcadeStart(){
   try {
-    $id('fateHeroSub').innerHTML = 'unpacking <b>' + (window.FATE_GAMES_META ? window.FATE_GAMES_META.count.toLocaleString() : '35,000+') + '</b> games\u2026';
+    $id('fateHeroSub').innerHTML = 'unpacking <b>' + (window.FATE_GAMES_META ? window.FATE_GAMES_META.count.toLocaleString() : '22,000+') + '</b> games\u2026';
     const t0 = performance.now();
     GAMES = await fateDecodeCatalog();
     const secs = ((performance.now() - t0) / 1000).toFixed(1);
     const libs = new Set(GAMES.map(g => g.source)).size;
-    $id('fateHeroSub').innerHTML = '<b>' + GAMES.length.toLocaleString() + ' games</b> \u00b7 ' + libs + ' libraries \u00b7 loaded in ' + secs + 's \u00b7 tap any card to play';
+    $id('fateHeroSub').innerHTML = '<b>' + GAMES.length.toLocaleString() + ' games</b> \u00b7 ' + libs + ' libraries \u00b7 100% jsDelivr \u00b7 loaded in ' + secs + 's \u00b7 tap any card to play';
     document.querySelector('#fateSearch').placeholder = 'Search ' + GAMES.length.toLocaleString() + ' games\u2026';
     fateBuildFacets();
     renderGrid(true);
