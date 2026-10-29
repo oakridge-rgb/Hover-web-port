@@ -247,3 +247,37 @@ even when the mirrors read "0 idle accounts".**
   after tabs close). Backend itself is healthy off-peak (idle 7–9 verified). One mirror
   (cdn.northstreetumc.org) is now Cloudflare bot-gated and can be ignored.
 - Deploy: re-upload **`test.html`** only.
+
+## FATE v8.3 — Storm-parity Feature Pack (2026-10-30)
+
+**One new shared file — `fate-extras.js` — injected into BOTH `games.html` and `test.html`
+via a single `<script defer>` tag. 100% offline, zero network, school-proof. It closes every
+gap with Storm 0S:**
+
+- **Theme engine**: 18 preset themes (Default Amber, Hot Pink, Midnight Mint, Daylight, Ocean,
+  Sunset, Ember, Forest, Gold, Ice, Mono, Matrix, Cyberpunk, Matcha, Lavender, Cherry, Deep
+  Space, Vaporwave) — live-recolors accent/header/glass/text/bg via CSS vars, incl. the mouse
+  glow and bg overlay. Persisted in `fate_v5_theme`.
+- **Background FX**: 7 modes — particles (original), starfield, matrix rain, waves, aurora,
+  perspective grid, none. Canvas painter on `#fateFxCanvas` (fps-capped, pauses when tab hidden).
+- **Fonts**: 6 — Modern (Inter), System, Rounded, Classic Serif, Retro Terminal, Comic.
+- **FATE Tools** (FAB ▸ Tools, all offline): Calculator (keyboard-ready, live preview),
+  Notes (autosave `fate_v5_notes`), Timer (countdown presets + stopwatch + beep), Drawing Pad
+  (colors/brush/eraser/save PNG), Morse translator (live, both ways), JSON Formatter
+  (format/minify/validate), HTML Playground (sandboxed srcdoc live preview), Bookmarklets
+  (edit page / reveal passwords / dark mode / sticky note — copy-to-clipboard), Random Game
+  (rolls the whole vault).
+- **Sort**: select next to search — ✦ Featured (original order), Name A–Z, Name Z–A,
+  ♥ Favorites first. Patches `renderGrid` (sorts `visibleGames` before paint), persisted.
+- **Featured picks**: curated row (Bowmasters, Slope, Geometry Dash, Cookie Clicker, 2048,
+  Retro Bowl, Drift Boss…) above the search bar using the real game-card markup + lazy images.
+  Hides while searching.
+- **Backup & Restore** (Settings): Export/Import all `fate_v5_*` keys + CTRLLERMAP as one JSON
+  file (favorites, recents, cloak, panic, theme, notes, controller map). Import merges + reloads.
+- **Confirm before leaving**: optional beforeunload guard (Settings toggle).
+- **What's new**: changelog modal (v8.3 + v8.2) from Settings + one-time toast on first visit.
+- **Download button**: in the game popup — saves the currently loaded blob HTML as
+  `<game>.html` (fetch → blob → download; falls back to direct open for non-blob frames).
+- Storage keys added: `fate_v5_theme`, `fate_v5_sort`, `fate_v5_notes`, `fate_v5_confirmleave`,
+  `fate_v5_seen_83`. All are covered by the backup regex.
+- Deploy: re-upload **`games.html` + `test.html` + `fate-extras.js`** (everything else unchanged).
