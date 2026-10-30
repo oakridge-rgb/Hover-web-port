@@ -1,8 +1,9 @@
 FATE V7 — THEMES UPDATE (upload list)
 =====================================
 
-UPLOAD THESE 4 FILES (same folder as your site root):
+UPLOAD THESE 5 FILES (same folder as your site root):
   index.html      — FATE V7 branding + theme engine wired in
+  games.html      — FATE V7 branding + theme engine wired in
   settings.html   — new "Themes" picker card + V7 branding
   theme.js        — NEW: the site-wide theme engine
   a.json          — changelog with the V7.0.0 entry + launch announcement
@@ -23,18 +24,20 @@ WHAT YOU GET:
     - Matrix         (digital rain green)
   - Theme applies to the whole page: buttons, sidebar, glows, orbs,
     particles, modals, changelog, gate screen — everything.
-  - Works on index.html (Home) too, exactly like you asked.
+  - Works on index.html (Home) AND games.html, exactly like you asked.
   - Saved in localStorage (fate_v7_theme), synced live across tabs.
-  - Particles recolor instantly when you switch themes.
+  - Particles recolor instantly when you switch themes (canvas too —
+    the games page's connected-dot particles follow the theme).
 
-WANT THEMES ON MORE PAGES (games.html, s.html, tv.html, os.html...)?
+WANT THEMES ON MORE PAGES (s.html, tv.html, os.html, w.html...)?
   Add one line to that page's <head>:
     <script src="theme.js"></script>
   and (for full recoloring) move its hardcoded colors to the CSS
   variables theme.js uses: --primary, --primary-rgb, --primary-hot-rgb,
   --grad-a/--grad-b, --panel-rgb, --panel2-rgb, --bg-deep, --text,
-  --text-muted, --particle-rgb. index.html/settings.html are done
-  already — copy the same pattern.
+  --text-muted, --particle-rgb. index.html / settings.html / games.html
+  are done already — copy the same pattern. (Keep semantic colors like
+  danger reds / panic buttons hardcoded so they stay red in every theme.)
 
 NEW THEME API (for custom pages / FATE OS):
   FATE_theme()                  -> current theme id
@@ -50,5 +53,5 @@ NOTES:
     popup included (users can tick "don't show again").
   - To add a new theme later: copy a block in theme.js THEMES,
     give it id/label/swatch/vars — it auto-appears in Settings.
-  - Both pages boot their init steps guarded: if cloak.js / track.js /
+  - All pages boot their init steps guarded: if cloak.js / track.js /
     seasonal.js ever fail to load, the Themes picker still renders.
