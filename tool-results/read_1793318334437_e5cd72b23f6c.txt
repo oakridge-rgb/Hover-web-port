@@ -1,0 +1,909 @@
+     1→<!DOCTYPE html>
+     2→<html lang="en">
+     3→<head>
+     4→<meta charset="UTF-8">
+     5→<meta name="viewport" content="width=device-width, initial-scale=1.0">
+     6→<title>FATE V6 — Settings</title>
+     7→<script src="seasonal.js"></script>
+     8→<link rel="shortcut icon" href="media/logo.svg" type="image/x-icon">
+     9→<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    10→<script src="cloak.js"></script>
+    11→<script src="track.js"></script>
+    12→<style>
+    13→:root{
+    14→  --primary:#f59e0b;
+    15→  --secondary:#ef4444;
+    16→  --accent:#10b981;
+    17→  --bg-deep:#050505;
+    18→  --glass:rgba(0,0,0,0.55);
+    19→  --glass-border:rgba(255,255,255,0.1);
+    20→  --text:#f8fafc;
+    21→  --text-muted:#cbd5e1;
+    22→  --card-bg:rgba(255,255,255,0.03);
+    23→}
+    24→*{box-sizing:border-box;margin:0;padding:0}
+    25→html{scroll-behavior:smooth}
+    26→body{background:var(--bg-deep);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+    27→.bg-image{position:fixed;inset:0;z-index:0;background:url('/img/background.png') center center/cover no-repeat}
+    28→.bg-overlay{position:fixed;inset:0;z-index:1;background:rgba(5,5,5,0.55);backdrop-filter:blur(4px)}
+    29→#particleCanvas{position:fixed;inset:0;z-index:2;pointer-events:none}
+    30→#mouseGlow{position:fixed;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,0.12) 0%,transparent 70%);pointer-events:none;z-index:3;transform:translate(-50%,-50%);transition:opacity .3s;opacity:0}
+    31→
+    32→.main{position:relative;z-index:4;max-width:800px;margin:0 auto;padding:40px 24px}
+    33→.page-header{text-align:center;margin-bottom:3rem}
+    34→.page-header h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(2rem,6vw,3rem);font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#fff 0%,#fcd34d 50%,#f59e0b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    35→.page-header p{color:var(--text-muted);margin-top:.5rem;font-size:1rem}
+    36→
+    37→.settings-grid{display:flex;flex-direction:column;gap:1.5rem}
+    38→.setting-card{background:var(--card-bg);border:1px solid var(--glass-border);border-radius:20px;padding:1.5rem;transition:all .3s ease}
+    39→.setting-card:hover{border-color:rgba(245,158,11,0.2)}
+    40→.setting-header{display:flex;align-items:center;gap:12px;margin-bottom:1.25rem}
+    41→.setting-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(239,68,68,0.15));display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0}
+    42→.setting-icon svg{width:20px;height:20px;fill:currentColor}
+    43→.setting-title{font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:600}
+    44→.setting-desc{font-size:.875rem;color:var(--text-muted);margin-top:2px}
+    45→
+    46→.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:.875rem 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+    47→.toggle-row:last-child{border-bottom:none;padding-bottom:0}
+    48→.toggle-row:first-child{padding-top:0}
+    49→.toggle-info{flex:1;min-width:0}
+    50→.toggle-label{font-weight:500;font-size:.95rem;display:block;margin-bottom:2px}
+    51→.toggle-hint{font-size:.8rem;color:#64748b}
+    52→.toggle{position:relative;width:50px;height:26px;background:rgba(255,255,255,0.05);border-radius:13px;cursor:pointer;transition:background .3s ease;border:1px solid var(--glass-border);flex-shrink:0;margin-left:1rem}
+    53→.toggle.on{background:var(--primary);border-color:var(--primary)}
+    54→.toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:white;border-radius:50%;transition:transform .3s ease}
+    55→.toggle.on::after{transform:translateX(24px)}
+    56→
+    57→.setting-btn{padding:10px 18px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);font-size:.875rem;font-weight:500;cursor:pointer;transition:all .3s ease;display:inline-flex;align-items:center;gap:8px}
+    58→.setting-btn:hover{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#fff;transform:translateY(-1px)}
+    59→.setting-btn.danger:hover{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:#ef4444}
+    60→
+    61→.key-display{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);font-family:monospace;font-size:.9rem;color:var(--primary);font-weight:600}
+    62→.range-wrap{display:flex;align-items:center;gap:1rem}
+    63→.range-wrap input[type=range]{flex:1;-webkit-appearance:none;height:6px;border-radius:3px;background:rgba(255,255,255,0.08);outline:none}
+    64→.range-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));cursor:pointer;box-shadow:0 0 10px rgba(245,158,11,0.4)}
+    65→.range-value{min-width:40px;text-align:right;font-family:monospace;font-size:.9rem;color:var(--primary);font-weight:600}
+    66→
+    67→/* Background presets */
+    68→.bg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:.75rem}
+    69→.bg-option{position:relative;border-radius:12px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .3s ease;height:80px;background-size:cover;background-position:center}
+    70→.bg-option:hover{transform:scale(1.03)}
+    71→.bg-option.active{border-color:var(--primary);box-shadow:0 0 0 3px rgba(245,158,11,0.2)}
+    72→.bg-option .bg-label{position:absolute;bottom:0;left:0;right:0;padding:6px 8px;background:rgba(0,0,0,0.7);font-size:.75rem;font-weight:600;text-align:center;color:#fff}
+    73→.bg-option.solid-dark{background:linear-gradient(135deg,#0f0f0f,#1a1a1a)}
+    74→.bg-option.solid-purple{background:linear-gradient(135deg,#1a0a2e,#2d1b4e)}
+    75→.bg-option.solid-blue{background:linear-gradient(135deg,#0a1628,#0d1b2a)}
+    76→
+    77→/* Custom URL input */
+    78→.url-input{width:100%;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:var(--text);font-size:.9rem;outline:none;margin-top:.5rem;transition:all .3s}
+    79→.url-input:focus{border-color:rgba(245,158,11,0.4)}
+    80→.url-input option{background:#0a0a0a;color:#fff}
+    81→
+    82→.toast-container{position:fixed;top:20px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:8px}
+    83→.toast{padding:12px 18px;border-radius:12px;background:rgba(10,10,10,0.95);border:1px solid var(--glass-border);color:var(--text);font-size:.9rem;box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:toastIn .3s ease;max-width:320px;backdrop-filter:blur(10px)}
+    84→.toast.ok{border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.08)}
+    85→.toast.bad{border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.08)}
+    86→@keyframes toastIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+    87→
+    88→.fab-container{position:fixed;bottom:24px;left:24px;z-index:100;display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+    89→.fab-btn{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--secondary));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;box-shadow:0 8px 32px rgba(245,158,11,0.4);transition:all .4s cubic-bezier(.34,1.56,.64,1);position:relative;z-index:102}
+    90→.fab-btn:hover{transform:scale(1.08);box-shadow:0 12px 40px rgba(245,158,11,0.6)}
+    91→.fab-btn .line{display:block;width:22px;height:2.5px;background:white;border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1)}
+    92→.fab-btn.open .line:nth-child(1){transform:translateY(7.5px) rotate(45deg)}
+    93→.fab-btn.open .line:nth-child(2){opacity:0;transform:scaleX(0)}
+    94→.fab-btn.open .line:nth-child(3){transform:translateY(-7.5px) rotate(-45deg)}
+    95→.fab-menu{position:absolute;bottom:70px;left:0;display:flex;flex-direction:column;gap:10px;opacity:0;transform:translateY(20px) scale(.8);transform-origin:bottom left;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1)}
+    96→.fab-menu.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all}
+    97→.fab-item{display:flex;align-items:center;gap:12px;padding:12px 20px;background:rgba(5,5,5,0.85);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:16px;color:var(--text);text-decoration:none;font-weight:500;font-size:.95rem;white-space:nowrap;opacity:0;transform:translateX(-30px);transition:all .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+    98→.fab-menu.open .fab-item{opacity:1;transform:translateX(0)}
+    99→.fab-menu.open .fab-item:nth-child(1){transition-delay:.05s}
+   100→.fab-menu.open .fab-item:nth-child(2){transition-delay:.1s}
+   101→.fab-menu.open .fab-item:nth-child(3){transition-delay:.15s}
+   102→.fab-menu.open .fab-item:nth-child(4){transition-delay:.2s}
+   103→.fab-menu.open .fab-item:nth-child(5){transition-delay:.25s}
+   104→.fab-menu.open .fab-item:nth-child(6){transition-delay:.3s}
+   105→.fab-menu.open .fab-item:nth-child(7){transition-delay:.35s}
+   106→.fab-menu.open .fab-item:nth-child(8){transition-delay:.4s}
+   107→.fab-item:hover{background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.3);transform:translateX(6px)}
+   108→.fab-item:hover span{color:#fcd34d}
+   109→.fab-item svg{width:20px;height:20px;fill:var(--primary);flex-shrink:0}
+   110→.fab-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.3);backdrop-filter:blur(2px);z-index:99;opacity:0;pointer-events:none;transition:opacity .3s ease}
+   111→.fab-backdrop.open{opacity:1;pointer-events:all}
+   112→
+   113→.footer{margin-top:4rem;padding:2rem;text-align:center;border-top:1px solid var(--glass-border);color:var(--text-muted);font-size:.875rem}
+   114→::-webkit-scrollbar{width:8px}
+   115→::-webkit-scrollbar-track{background:var(--bg-deep)}
+   116→::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--primary),var(--secondary));border-radius:4px}
+   117→
+   118→@media(max-width:640px){
+   119→  .main{padding:24px 16px}
+   120→  .fab-container{bottom:16px;left:16px}
+   121→  .fab-btn{width:50px;height:50px}
+   122→  .bg-grid{grid-template-columns:repeat(2,1fr)}
+   123→}
+   124→</style>
+   125→</head>
+   126→<body>
+   127→<div class="bg-image" id="bgImage"></div>
+   128→<div class="bg-overlay" id="bgOverlay"></div>
+   129→<canvas id="particleCanvas"></canvas>
+   130→<div id="mouseGlow"></div>
+   131→
+   132→<div class="fab-backdrop" id="fabBackdrop" onclick="toggleFab()"></div>
+   133→<div class="fab-container">
+   134→  <div class="fab-menu" id="fabMenu">
+   135→    <a href="index.html" class="fab-item">
+   136→      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+   137→      <span>Home</span>
+   138→    </a>
+   139→    <a href="games.html" class="fab-item">
+   140→      <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+   141→      <span>Games</span>
+   142→    </a>
+   143→<a href="s.html" class="fab-item">
+   144→    <svg viewBox="0 0 24 24">
+   145→        <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/>
+   146→    </svg>
+   147→    <span>Music</span>
+   148→</a>
+   149→<a href="tv.html" class="fab-item">
+   150→    <svg viewBox="0 0 24 24"><path d="M21 6h-7.59l3.29-3.29L16 2l-4 4-4-4-.71.71L10.59 6H3c-1.1 0-2 .89-2 2v12c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.11-.9-2-2-2zm0 14H3V8h18v12zM9 10v8l7-4z"/></svg>
+   151→    <span>Live TV</span>
+   152→</a>
+   153→<a href="prox.html" class="fab-item">
+   154→    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+   155→    <span>Proxy</span>
+   156→</a>
+   157→    <a href="https://discord.gg/MfEnRxxxA" target="_blank" class="fab-item">
+   158→      <svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+   159→      <span>Discord</span>
+   160→    </a>
+   161→    <a href="settings.html" class="fab-item">
+   162→      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84a.484.484 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.488.488 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+   163→      <span>Settings</span>
+   164→    </a>
+   165→  </div>
+   166→  <button class="fab-btn" id="fabBtn" onclick="toggleFab()" aria-label="Menu">
+   167→    <span class="line"></span>
+   168→    <span class="line"></span>
+   169→    <span class="line"></span>
+   170→  </button>
+   171→</div>
+   172→
+   173→<main class="main">
+   174→  <div class="page-header">
+   175→    <h1>Settings</h1>
+   176→    <p>Made by Nicecat & Midnight fuel, Made with love ❤😺</p>
+   177→  </div>
+   178→
+   179→  <div class="settings-grid">
+   180→    <!-- FATE OS -->
+   181→    <div class="setting-card">
+   182→      <div class="setting-header">
+   183→        <div class="setting-icon">
+   184→          <svg viewBox="0 0 24 24"><path d="M21 2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7l-2 3v1h8v-1l-2-3h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H3V4h18v12z"/></svg>
+   185→        </div>
+   186→        <div>
+   187→          <div class="setting-title">FATE OS</div>
+   188→          <div class="setting-desc">Turn FATE into a fake desktop OS</div>
+   189→        </div>
+   190→      </div>
+   191→      <div class="toggle-row">
+   192→        <div class="toggle-info">
+   193→          <span class="toggle-label">Launch FATE OS</span>
+   194→          <span class="toggle-hint">Boot screen, windows, taskbar & start menu — press it and boom</span>
+   195→        </div>
+   196→        <button class="setting-btn" onclick="location.href='os.html'">
+   197→          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+   198→          Launch
+   199→        </button>
+   200→      </div>
+   201→      <div class="toggle-row">
+   202→        <div class="toggle-info">
+   203→          <span class="toggle-label">Auto-Boot FATE OS</span>
+   204→          <span class="toggle-hint">Visiting index.html loads the OS automatically</span>
+   205→        </div>
+   206→        <div class="toggle" id="osModeToggle" onclick="toggleOsMode()"></div>
+   207→      </div>
+   208→      <div class="toggle-row">
+   209→        <div class="toggle-info">
+   210→          <span class="toggle-label">Proxy Browser</span>
+   211→          <span class="toggle-hint">Browse any site through FATE</span>
+   212→        </div>
+   213→        <button class="setting-btn" onclick="location.href='prox.html'">
+   214→          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+   215→          Open
+   216→        </button>
+   217→      </div>
+   218→    </div>
+   219→
+   220→    <!-- Background -->
+   221→    <div class="setting-card">
+   222→      <div class="setting-header">
+   223→        <div class="setting-icon">
+   224→          <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+   225→        </div>
+   226→        <div>
+   227→          <div class="setting-title">Background</div>
+   228→          <div class="setting-desc">Pick a vibe</div>
+   229→        </div>
+   230→      </div>
+   231→
+   232→      <div class="bg-grid" id="bgGrid">
+   233→        <div class="bg-option active" data-bg="default" style="background-image:url('/img/background.png')">
+   234→          <div class="bg-label">Default</div>
+   235→        </div>
+   236→        <div class="bg-option solid-dark" data-bg="none">
+   237→          <div class="bg-label">Solid</div>
+   238→        </div>
+   239→        <div class="bg-option" data-bg="gif1" style="background-image:url('https://media.giphy.com/media/3o7abAH6Y8g0yZ7dqU/giphy.gif')">
+   240→          <div class="bg-label">Space</div>
+   241→        </div>
+   242→        <div class="bg-option" data-bg="gif2" style="background-image:url('https://media.giphy.com/media/WoD6FZn9GAO1y/giphy.gif')">
+   243→          <div class="bg-label">Matrix</div>
+   244→        </div>
+   245→        <div class="bg-option" data-bg="gif3" style="background-image:url('https://media.giphy.com/media/l0HlNQ03J5JxX6lva/giphy.gif')">
+   246→          <div class="bg-label">Cyber</div>
+   247→        </div>
+   248→        <div class="bg-option" data-bg="custom" id="bgCustomPreview" style="background:linear-gradient(135deg,#333,#111)">
+   249→          <div class="bg-label">Custom</div>
+   250→        </div>
+   251→      </div>
+   252→
+   253→      <div style="margin-top:1rem">
+   254→        <span class="toggle-label">Custom URL</span>
+   255→        <span class="toggle-hint" style="display:block;margin-bottom:6px">Paste a GIF or image link</span>
+   256→        <input type="text" class="url-input" id="customBgUrl" placeholder="https://example.com/background.gif" onchange="applyCustomBg(this.value)">
+   257→      </div>
+   258→
+   259→      <div class="toggle-row" style="margin-top:.75rem">
+   260→        <div class="toggle-info">
+   261→          <span class="toggle-label">Overlay Darkness</span>
+   262→          <span class="toggle-hint">How dark the tint is</span>
+   263→        </div>
+   264→        <div class="range-wrap" style="flex:0 0 140px;margin-left:1rem;margin-top:0;">
+   265→          <input type="range" id="overlayRange" min="0" max="90" value="55" oninput="updateOverlay(this.value)">
+   266→          <span class="range-value" id="overlayValue">55%</span>
+   267→        </div>
+   268→      </div>
+   269→
+   270→      <div class="toggle-row">
+   271→        <div class="toggle-info">
+   272→          <span class="toggle-label">Blur Overlay</span>
+   273→          <span class="toggle-hint">Softens the background</span>
+   274→        </div>
+   275→        <div class="toggle on" id="blurToggle" onclick="toggleBlur()"></div>
+   276→      </div>
+   277→    </div>
+   278→
+   279→    <!-- Privacy -->
+   280→    <div class="setting-card">
+   281→      <div class="setting-header">
+   282→        <div class="setting-icon">
+   283→          <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+   284→        </div>
+   285→        <div>
+   286→          <div class="setting-title">Privacy & Safety</div>
+   287→          <div class="setting-desc">Stay under the radar</div>
+   288→        </div>
+   289→      </div>
+   290→      <div style="padding:.875rem 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+   291→        <div class="toggle-info" style="margin-bottom:.6rem">
+   292→          <span class="toggle-label">Tab Cloak</span>
+   293→          <span class="toggle-hint">Disguise the tab as another site — applies site-wide</span>
+   294→        </div>
+   295→        <select id="cloakSelect" class="url-input" style="margin-top:0" onchange="setCloak(this.value)"></select>
+   296→      </div>
+   297→      <div class="toggle-row">
+   298→        <div class="toggle-info">
+   299→          <span class="toggle-label">Panic Key</span>
+   300→          <span class="toggle-hint">Press to instantly redirect to Clever</span>
+   301→        </div>
+   302→        <button class="setting-btn" id="panicKeyBtn" onclick="setPanicKey()">
+   303→          <span id="panicKeyLabel">Set Key</span>
+   304→        </button>
+   305→      </div>
+   306→    </div>
+   307→
+   308→    <!-- Appearance -->
+   309→    <div class="setting-card">
+   310→      <div class="setting-header">
+   311→        <div class="setting-icon">
+   312→          <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+   313→        </div>
+   314→        <div>
+   315→          <div class="setting-title">Appearance</div>
+   316→          <div class="setting-desc">Make it yours</div>
+   317→        </div>
+   318→      </div>
+   319→      <div class="toggle-row">
+   320→        <div class="toggle-info">
+   321→          <span class="toggle-label">Particles</span>
+   322→          <span class="toggle-hint">Animated background particles</span>
+   323→        </div>
+   324→        <div class="toggle on" id="particlesToggle" onclick="toggleParticles()"></div>
+   325→      </div>
+   326→      <div class="toggle-row">
+   327→        <div class="toggle-info">
+   328→          <span class="toggle-label">Mouse Glow</span>
+   329→          <span class="toggle-hint">Cursor spotlight effect</span>
+   330→        </div>
+   331→        <div class="toggle on" id="glowToggle" onclick="toggleGlow()"></div>
+   332→      </div>
+   333→      <div class="toggle-row">
+   334→        <div class="toggle-info">
+   335→          <span class="toggle-label">Particle Count</span>
+   336→          <span class="toggle-hint">Adjust background density</span>
+   337→        </div>
+   338→        <div class="range-wrap" style="flex:0 0 140px;margin-left:1rem;margin-top:0;">
+   339→          <input type="range" id="particleRange" min="0" max="150" value="50" oninput="updateParticleCount(this.value)">
+   340→          <span class="range-value" id="particleValue">50</span>
+   341→        </div>
+   342→      </div>
+   343→    </div>
+   344→    <!-- Seasonal -->
+   345→    <div class="setting-card">
+   346→      <div class="setting-header">
+   347→        <div class="setting-icon">
+   348→          <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+   349→        </div>
+   350→        <div>
+   351→          <div class="setting-title">Seasonal Themes</div>
+   352→          <div class="setting-desc">Holiday colors &amp; effects, auto by date</div>
+   353→        </div>
+   354→      </div>
+   355→      <div class="toggle-row">
+   356→        <div class="toggle-info">
+   357→          <span class="toggle-label">Theme</span>
+   358→          <span class="toggle-hint">Pick a season or let the calendar decide</span>
+   359→        </div>
+   360→        <select id="seasonSelect" class="url-input" style="margin:0;width:180px" onchange="setSeason(this.value)"></select>
+   361→      </div>
+   362→      <div class="toggle-row">
+   363→        <div class="toggle-info">
+   364→          <span class="toggle-label">Active right now</span>
+   365→          <span class="toggle-hint" id="seasonNow">—</span>
+   366→        </div>
+   367→      </div>
+   368→    </div>
+   369→    <!-- Behavior -->
+   370→    <div class="setting-card">
+   371→      <div class="setting-header">
+   372→        <div class="setting-icon">
+   373→          <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+   374→        </div>
+   375→        <div>
+   376→          <div class="setting-title">Behavior</div>
+   377→          <div class="setting-desc">How FATE V5 works</div>
+   378→        </div>
+   379→      </div>
+   380→      <div class="toggle-row">
+   381→        <div class="toggle-info">
+   382→          <span class="toggle-label">Open Games in New Tab</span>
+   383→          <span class="toggle-hint">Bypass iframe restrictions on some networks</span>
+   384→        </div>
+   385→        <div class="toggle" id="newTabToggle" onclick="toggleNewTab()"></div>
+   386→      </div>
+   387→      <div class="toggle-row">
+   388→        <div class="toggle-info">
+   389→          <span class="toggle-label">Smooth Scroll</span>
+   390→          <span class="toggle-hint">Animated page scrolling</span>
+   391→        </div>
+   392→        <div class="toggle on" id="smoothScrollToggle" onclick="toggleSmoothScroll()"></div>
+   393→      </div>
+   394→    </div>
+   395→
+   396→    <!-- Data -->
+   397→    <div class="setting-card">
+   398→      <div class="setting-header">
+   399→        <div class="setting-icon">
+   400→          <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+   401→        </div>
+   402→        <div>
+   403→          <div class="setting-title">Data & Storage</div>
+   404→          <div class="setting-desc">Manage your local data</div>
+   405→        </div>
+   406→      </div>
+   407→      <div class="toggle-row">
+   408→        <div class="toggle-info">
+   409→          <span class="toggle-label">Export Favorites</span>
+   410→          <span class="toggle-hint">Download your favorites as JSON</span>
+   411→        </div>
+   412→        <button class="setting-btn" onclick="exportFavorites()">
+   413→          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+   414→          Export
+   415→        </button>
+   416→      </div>
+   417→      <div class="toggle-row">
+   418→        <div class="toggle-info">
+   419→          <span class="toggle-label">Import Favorites</span>
+   420→          <span class="toggle-hint">Restore from a JSON file</span>
+   421→        </div>
+   422→        <button class="setting-btn" onclick="document.getElementById('importInput').click()">
+   423→          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+   424→          Import
+   425→        </button>
+   426→        <input type="file" id="importInput" accept=".json" style="display:none" onchange="importFavorites(this)">
+   427→      </div>
+   428→      <div class="toggle-row">
+   429→        <div class="toggle-info">
+   430→          <span class="toggle-label" style="color:#ef4444">Clear All Data</span>
+   431→          <span class="toggle-hint">Removes favorites, recents, cloaks, auto-boot, and all preferences</span>
+   432→        </div>
+   433→        <button class="setting-btn danger" onclick="clearAllData()">
+   434→          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+   435→          Clear
+   436→        </button>
+   437→      </div>
+   438→    </div>
+   439→
+   440→    <!-- About -->
+   441→    <div class="setting-card">
+   442→      <div class="setting-header">
+   443→        <div class="setting-icon">
+   444→          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+   445→        </div>
+   446→        <div>
+   447→          <div class="setting-title">About FATE V6</div>
+   448→          <div class="setting-desc">Version info and shortcuts</div>
+   449→        </div>
+   450→      </div>
+   451→      <div style="padding:.5rem 0;color:var(--text-muted);font-size:.9rem;line-height:1.8">
+   452→        <p><strong style="color:var(--text)">Version:</strong> 6.0.0 · FATE OS 2.0</p>
+   453→        <p style="margin-top:8px"><strong style="color:var(--text)">Keyboard Shortcuts:</strong></p>
+   454→        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-top:8px;font-size:.85rem">
+   455→          <div><span class="key-display">/</span> Search games</div>
+   456→          <div><span class="key-display">ESC</span> Close popup</div>
+   457→          <div><span class="key-display">F</span> Fullscreen</div>
+   458→          <div><span class="key-display">R</span> Random game</div>
+   459→          <div><span class="key-display">L</span> Toggle favorites</div>
+   460→          <div><span class="key-display">?</span> Show shortcuts</div>
+   461→        </div>
+   462→        <p style="margin-top:12px"><strong style="color:var(--text)">FATE OS Shortcuts:</strong></p>
+   463→        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-top:8px;font-size:.85rem">
+   464→          <div><span class="key-display">Dbl-click</span> Maximize window</div>
+   465→          <div><span class="key-display">Drag edge</span> Snap window</div>
+   466→          <div><span class="key-display">Right-click</span> Desktop menu</div>
+   467→          <div><span class="key-display">F11</span> Fullscreen OS</div>
+   468→        </div>
+   469→      </div>
+   470→    </div>
+   471→  </div>
+   472→</main>
+   473→
+   474→<footer class="footer">
+   475→  <p>FATE V5 — Made with <span style="color:#ef4444;">&#10084;</span></p>
+   476→</footer>
+   477→
+   478→<div class="toast-container" id="toastContainer"></div>
+   479→
+   480→<script>
+   481→/* ========== CONFIG ========== */
+   482→var BG_PRESETS = {
+   483→  default: '/img/background.png',
+   484→  none: '',
+   485→  gif1: 'https://media.giphy.com/media/3o7abAH6Y8g0yZ7dqU/giphy.gif',
+   486→  gif2: 'https://media.giphy.com/media/WoD6FZn9GAO1y/giphy.gif',
+   487→  gif3: 'https://media.giphy.com/media/l0HlNQ03J5JxX6lva/giphy.gif'
+   488→};
+   489→
+   490→var LS = {
+   491→  FAV: 'fate_v5_favorites',
+   492→  RECENT: 'fate_v5_recent',
+   493→  CLOAK: 'fate_v5_cloak',
+   494→  CLOAK_CHOICE: 'fate_v5_cloak_choice',
+   495→  PANIC: 'fate_v5_panic',
+   496→  PARTICLES: 'fate_v5_particles',
+   497→  GLOW: 'fate_v5_glow',
+   498→  PARTICLE_COUNT: 'fate_v5_particle_count',
+   499→  NEW_TAB: 'fate_v5_newtab',
+   500→  SMOOTH: 'fate_v5_smooth',
+   501→  BG: 'fate_v5_bg',
+   502→  BG_CUSTOM: 'fate_v5_bg_custom',
+   503→  BG_OPACITY: 'fate_v5_bg_opacity',
+   504→  BG_BLUR: 'fate_v5_bg_blur',
+   505→  OS_MODE: 'fate_v5_os_mode',
+   506→  OS_NOTES: 'fate_os_notes',
+   507→  PROXY_RECENT: 'fate_v5_proxy_recent',
+   508→  SEASONAL: 'fate_v5_seasonal'
+   509→};
+   510→
+   511→function $(id){ return document.getElementById(id); }
+   512→
+   513→function toast(msg, type){
+   514→  type = type || 'ok';
+   515→  var t = document.createElement('div');
+   516→  t.className = 'toast ' + type;
+   517→  t.textContent = msg;
+   518→  $('toastContainer').appendChild(t);
+   519→  setTimeout(function(){ t.remove(); }, 3500);
+   520→}
+   521→
+   522→/* ========== BACKGROUND ========== */
+   523→function applyBackground(){
+   524→  var bgKey = localStorage.getItem(LS.BG) || 'default';
+   525→  var customUrl = localStorage.getItem(LS.BG_CUSTOM) || '';
+   526→  var opacity = localStorage.getItem(LS.BG_OPACITY);
+   527→  if(opacity === null) opacity = 55;
+   528→  var blur = localStorage.getItem(LS.BG_BLUR);
+   529→  if(blur === null) blur = 'true';
+   530→
+   531→  var bgImage = $('bgImage');
+   532→  var bgOverlay = $('bgOverlay');
+   533→
+   534→  var url = '';
+   535→  if(bgKey === 'custom' && customUrl){
+   536→    url = customUrl;
+   537→  } else if(BG_PRESETS[bgKey]){
+   538→    url = BG_PRESETS[bgKey];
+   539→  } else if(bgKey === 'none'){
+   540→    url = '';
+   541→  } else {
+   542→    url = BG_PRESETS.default;
+   543→  }
+   544→
+   545→  if(url){
+   546→    bgImage.style.backgroundImage = 'url(' + url + ')';
+   547→    bgImage.style.display = 'block';
+   548→  } else {
+   549→    bgImage.style.backgroundImage = 'none';
+   550→    bgImage.style.display = 'none';
+   551→  }
+   552→
+   553→  bgOverlay.style.background = 'rgba(5,5,5,' + (opacity / 100) + ')';
+   554→  if(blur === 'true'){
+   555→    bgOverlay.style.backdropFilter = 'blur(4px)';
+   556→    bgOverlay.style.webkitBackdropFilter = 'blur(4px)';
+   557→  } else {
+   558→    bgOverlay.style.backdropFilter = 'none';
+   559→    bgOverlay.style.webkitBackdropFilter = 'none';
+   560→  }
+   561→
+   562→  var opts = document.querySelectorAll('.bg-option');
+   563→  for(var i = 0; i < opts.length; i++){
+   564→    opts[i].classList.remove('active');
+   565→    if(opts[i].dataset.bg === bgKey) opts[i].classList.add('active');
+   566→  }
+   567→
+   568→  if(bgKey === 'custom' && customUrl){
+   569→    $('bgCustomPreview').style.backgroundImage = 'url(' + customUrl + ')';
+   570→  }
+   571→
+   572→  $('overlayRange').value = opacity;
+   573→  $('overlayValue').textContent = opacity + '%';
+   574→
+   575→  var blurToggle = $('blurToggle');
+   576→  if(blur === 'true') blurToggle.classList.add('on');
+   577→  else blurToggle.classList.remove('on');
+   578→}
+   579→
+   580→function selectBg(key){
+   581→  localStorage.setItem(LS.BG, key);
+   582→  applyBackground();
+   583→  toast('Background updated');
+   584→}
+   585→
+   586→function applyCustomBg(url){
+   587→  if(!url) return;
+   588→  localStorage.setItem(LS.BG, 'custom');
+   589→  localStorage.setItem(LS.BG_CUSTOM, url);
+   590→  applyBackground();
+   591→  toast('Custom background applied');
+   592→}
+   593→
+   594→function updateOverlay(val){
+   595→  localStorage.setItem(LS.BG_OPACITY, val);
+   596→  $('overlayValue').textContent = val + '%';
+   597→  applyBackground();
+   598→}
+   599→
+   600→function toggleBlur(){
+   601→  var on = $('blurToggle').classList.toggle('on');
+   602→  localStorage.setItem(LS.BG_BLUR, on);
+   603→  applyBackground();
+   604→  toast(on ? 'Blur enabled' : 'Blur disabled');
+   605→}
+   606→
+   607→/* ========== CLOAK (multi — powered by cloak.js) ========== */
+   608→function initCloakSelect(){
+   609→  var sel = $('cloakSelect');
+   610→  if(!sel) return;
+   611→  Object.keys(FATE_CLOAKS).forEach(function(key){
+   612→    var o = document.createElement('option');
+   613→    o.value = key;
+   614→    o.textContent = FATE_CLOAKS[key].label;
+   615→    sel.appendChild(o);
+   616→  });
+   617→  sel.value = FATE_currentCloak();
+   618→}
+   619→function setCloak(key){
+   620→  FATE_setCloak(key);
+   621→  toast(key === 'none' ? 'Cloak removed' : 'Cloaked as ' + FATE_CLOAKS[key].label);
+   622→}
+   623→
+   624→/* ========== OS AUTO-BOOT ========== */
+   625→function toggleOsMode(){
+   626→  var on = $('osModeToggle').classList.toggle('on');
+   627→  if(on){
+   628→    localStorage.setItem(LS.OS_MODE, 'true');
+   629→    toast('Auto-boot on — visiting Home loads FATE OS');
+   630→  } else {
+   631→    localStorage.removeItem(LS.OS_MODE);
+   632→    toast('Auto-boot disabled');
+   633→  }
+   634→}
+   635→
+   636→/* ========== OTHER SETTINGS ========== */
+   637→function loadSettings(){
+   638→  applyBackground();
+   639→
+   640→  initCloakSelect();
+   641→
+   642→  if(localStorage.getItem(LS.OS_MODE) === 'true'){
+   643→    $('osModeToggle').classList.add('on');
+   644→  }
+   645→
+   646→  var panic = localStorage.getItem(LS.PANIC);
+   647→  if(panic) $('panicKeyLabel').textContent = panic.toUpperCase();
+   648→
+   649→  if(localStorage.getItem(LS.PARTICLES) === 'false'){
+   650→    $('particlesToggle').classList.remove('on');
+   651→  }
+   652→  if(localStorage.getItem(LS.GLOW) === 'false'){
+   653→    $('glowToggle').classList.remove('on');
+   654→    var g = $('mouseGlow');
+   655→    if(g) g.style.display = 'none';
+   656→  }
+   657→  var count = localStorage.getItem(LS.PARTICLE_COUNT);
+   658→  if(count !== null){
+   659→    $('particleRange').value = count;
+   660→    $('particleValue').textContent = count;
+   661→  }
+   662→  if(localStorage.getItem(LS.NEW_TAB) === 'true'){
+   663→    $('newTabToggle').classList.add('on');
+   664→  }
+   665→  if(localStorage.getItem(LS.SMOOTH) === 'false'){
+   666→    $('smoothScrollToggle').classList.remove('on');
+   667→    document.documentElement.style.scrollBehavior = 'auto';
+   668→  }
+   669→
+   670→  var customUrl = localStorage.getItem(LS.BG_CUSTOM);
+   671→  if(customUrl) $('customBgUrl').value = customUrl;
+   672→}
+   673→
+   674→function setPanicKey(){
+   675→  var key = prompt('Enter the key you want as panic key (or Cancel to remove):');
+   676→  if(key === null){
+   677→    localStorage.removeItem(LS.PANIC);
+   678→    $('panicKeyLabel').textContent = 'Set Key';
+   679→    toast('Panic key removed');
+   680→  } else if(key.length === 1){
+   681→    var k = key.toLowerCase();
+   682→    localStorage.setItem(LS.PANIC, k);
+   683→    $('panicKeyLabel').textContent = k.toUpperCase();
+   684→    toast('Panic key set to ' + k.toUpperCase());
+   685→  } else {
+   686→    toast('Please enter a single key', 'bad');
+   687→  }
+   688→}
+   689→function triggerPanic(){
+   690→  window.location.href = 'https://clever.com';
+   691→}
+   692→
+   693→var particlesEnabled = true;
+   694→var particleCount = 50;
+   695→var canvas, ctx, particles = [], mouseX = 0, mouseY = 0;
+   696→
+   697→function toggleParticles(){
+   698→  particlesEnabled = $('particlesToggle').classList.toggle('on');
+   699→  localStorage.setItem(LS.PARTICLES, particlesEnabled);
+   700→  if(!particlesEnabled && ctx){
+   701→    ctx.clearRect(0, 0, canvas.width, canvas.height);
+   702→  }
+   703→  toast(particlesEnabled ? 'Particles enabled' : 'Particles disabled');
+   704→}
+   705→function updateParticleCount(val){
+   706→  particleCount = parseInt(val);
+   707→  $('particleValue').textContent = val;
+   708→  localStorage.setItem(LS.PARTICLE_COUNT, val);
+   709→  particles = [];
+   710→  for(var i = 0; i < particleCount; i++) particles.push(new Particle());
+   711→}
+   712→
+   713→function toggleGlow(){
+   714→  var on = $('glowToggle').classList.toggle('on');
+   715→  localStorage.setItem(LS.GLOW, on);
+   716→  var g = $('mouseGlow');
+   717→  if(g) g.style.display = on ? 'block' : 'none';
+   718→  toast(on ? 'Mouse glow enabled' : 'Mouse glow disabled');
+   719→}
+   720→
+   721→function toggleNewTab(){
+   722→  var on = $('newTabToggle').classList.toggle('on');
+   723→  localStorage.setItem(LS.NEW_TAB, on);
+   724→  toast(on ? 'Games will open in new tab' : 'Games will open in popup');
+   725→}
+   726→
+   727→function toggleSmoothScroll(){
+   728→  var on = $('smoothScrollToggle').classList.toggle('on');
+   729→  localStorage.setItem(LS.SMOOTH, on);
+   730→  document.documentElement.style.scrollBehavior = on ? 'smooth' : 'auto';
+   731→  toast(on ? 'Smooth scroll enabled' : 'Smooth scroll disabled');
+   732→}
+   733→
+   734→function exportFavorites(){
+   735→  try{
+   736→    var favs = JSON.parse(localStorage.getItem(LS.FAV)) || [];
+   737→    var data = {favorites: favs, exported: new Date().toISOString(), app: 'FATE V5'};
+   738→    var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+   739→    var url = URL.createObjectURL(blob);
+   740→    var a = document.createElement('a');
+   741→    a.href = url;
+   742→    a.download = 'fate_v5_favorites.json';
+   743→    a.click();
+   744→    URL.revokeObjectURL(url);
+   745→    toast('Favorites exported');
+   746→  }catch(e){ toast('Export failed', 'bad'); }
+   747→}
+   748→function importFavorites(input){
+   749→  var file = input.files[0];
+   750→  if(!file) return;
+   751→  var reader = new FileReader();
+   752→  reader.onload = function(e){
+   753→    try{
+   754→      var data = JSON.parse(e.target.result);
+   755→      if(data.favorites && Array.isArray(data.favorites)){
+   756→        localStorage.setItem(LS.FAV, JSON.stringify(data.favorites));
+   757→        toast('Favorites imported (' + data.favorites.length + ')');
+   758→      } else {
+   759→        toast('Invalid file format', 'bad');
+   760→      }
+   761→    }catch(err){ toast('Import failed', 'bad'); }
+   762→  };
+   763→  reader.readAsText(file);
+   764→  input.value = '';
+   765→}
+   766→
+   767→function clearAllData(){
+   768→  if(!confirm('This will erase ALL saved data including favorites, recents, cloaks, auto-boot, and settings. Continue?')) return;
+   769→  localStorage.removeItem(LS.OS_NOTES);
+   770→  localStorage.removeItem(LS.PROXY_RECENT);
+   771→  Object.values(LS).forEach(function(k){ localStorage.removeItem(k); });
+   772→  toast('All data cleared. Reloading...');
+   773→  setTimeout(function(){ location.reload(); }, 1200);
+   774→}
+   775→
+   776→document.addEventListener('keydown', function(e){
+   777→  var t = e.target.tagName;
+   778→  if(t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return;
+   779→  var panic = localStorage.getItem(LS.PANIC);
+   780→  if(panic && e.key.toLowerCase() === panic.toLowerCase()) triggerPanic();
+   781→});
+   782→
+   783→function toggleFab(){
+   784→  $('fabBtn').classList.toggle('open');
+   785→  $('fabMenu').classList.toggle('open');
+   786→  $('fabBackdrop').classList.toggle('open');
+   787→}
+   788→
+   789→function resizeCanvas(){
+   790→  if(!canvas) return;
+   791→  canvas.width = window.innerWidth;
+   792→  canvas.height = window.innerHeight;
+   793→}
+   794→
+   795→function Particle(){
+   796→  this.x = Math.random() * canvas.width;
+   797→  this.y = Math.random() * canvas.height;
+   798→  this.vx = (Math.random() - 0.5) * 0.4;
+   799→  this.vy = (Math.random() - 0.5) * 0.4;
+   800→  this.size = Math.random() * 2 + 0.5;
+   801→  this.opacity = Math.random() * 0.4 + 0.1;
+   802→}
+   803→Particle.prototype.update = function(){
+   804→  this.x += this.vx; this.y += this.vy;
+   805→  var dx = mouseX - this.x, dy = mouseY - this.y;
+   806→  var dist = Math.sqrt(dx*dx + dy*dy);
+   807→  if(dist < 150){ this.vx -= dx * 0.0003; this.vy -= dy * 0.0003; }
+   808→  if(this.x < 0 || this.x > canvas.width) this.vx *= -1;
+   809→  if(this.y < 0 || this.y > canvas.height) this.vy *= -1;
+   810→};
+   811→Particle.prototype.draw = function(){
+   812→  ctx.beginPath();
+   813→  ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+   814→  ctx.fillStyle = 'rgba(245,158,11,' + this.opacity + ')';
+   815→  ctx.fill();
+   816→};
+   817→
+   818→function animateParticles(){
+   819→  if(!particlesEnabled || !ctx) return;
+   820→  ctx.clearRect(0, 0, canvas.width, canvas.height);
+   821→  for(var i = 0; i < particles.length; i++){
+   822→    for(var j = i + 1; j < particles.length; j++){
+   823→      var dx = particles[i].x - particles[j].x;
+   824→      var dy = particles[i].y - particles[j].y;
+   825→      var dist = Math.sqrt(dx*dx + dy*dy);
+   826→      if(dist < 120){
+   827→        ctx.beginPath();
+   828→        ctx.moveTo(particles[i].x, particles[i].y);
+   829→        ctx.lineTo(particles[j].x, particles[j].y);
+   830→        ctx.strokeStyle = 'rgba(245,158,11,' + (0.08 * (1 - dist/120)) + ')';
+   831→        ctx.lineWidth = 0.5;
+   832→        ctx.stroke();
+   833→      }
+   834→    }
+   835→  }
+   836→  for(var k = 0; k < particles.length; k++){
+   837→    particles[k].update();
+   838→    particles[k].draw();
+   839→  }
+   840→  requestAnimationFrame(animateParticles);
+   841→}
+   842→
+   843→function initParticles(){
+   844→  canvas = $('particleCanvas');
+   845→  if(!canvas || !canvas.getContext) return;
+   846→  ctx = canvas.getContext('2d');
+   847→  if(!ctx) return;
+   848→  resizeCanvas();
+   849→  window.addEventListener('resize', resizeCanvas);
+   850→  var count = parseInt(localStorage.getItem(LS.PARTICLE_COUNT)) || 50;
+   851→  particleCount = count;
+   852→  for(var i = 0; i < count; i++) particles.push(new Particle());
+   853→  animateParticles();
+   854→}
+   855→
+   856→function initMouseGlow(){
+   857→  var glow = $('mouseGlow');
+   858→  if(!glow) return;
+   859→  document.addEventListener('mousemove', function(e){
+   860→    mouseX = e.clientX; mouseY = e.clientY;
+   861→    glow.style.left = e.clientX + 'px';
+   862→    glow.style.top = e.clientY + 'px';
+   863→    glow.style.opacity = '1';
+   864→  });
+   865→  document.addEventListener('mouseleave', function(){
+   866→    glow.style.opacity = '0';
+   867→  });
+   868→}
+   869→/* ========== SEASONAL ========== */
+   870→function initSeasonal(){
+   871→  var sel=$('seasonSelect'); if(!sel)return;
+   872→  var opts=[['auto','Auto (calendar)'],['off','Off']];
+   873→  FATE_SEASON.list.forEach(function(s){opts.push([s.id,s.label]);});
+   874→  opts.forEach(function(o){
+   875→    var e=document.createElement('option');
+   876→    e.value=o[0]; e.textContent=o[1];
+   877→    sel.appendChild(e);
+   878→  });
+   879→  sel.value=localStorage.getItem(LS.SEASONAL)||'auto';
+   880→  updateSeasonNow();
+   881→}
+   882→function setSeason(v){
+   883→  localStorage.setItem(LS.SEASONAL,v);
+   884→  FATE_SEASON.apply();
+   885→  updateSeasonNow();
+   886→  toast(v==='off'?'Seasonal themes off':v==='auto'?'Seasonal: auto by date':'Seasonal: '+v);
+   887→}
+   888→function updateSeasonNow(){
+   889→  var cur=FATE_SEASON.current();
+   890→  if(!cur){ $('seasonNow').textContent='Classic FATE amber'; return; }
+   891→  $('seasonNow').textContent=cur.label+' — '+(FATE_SEASON.labels[cur.fx]||cur.fx)+(cur.colors?' + colors':'');
+   892→}
+   893→/* ========== INIT ========== */
+   894→document.addEventListener('DOMContentLoaded', function(){
+   895→  loadSettings();
+   896→  initParticles();
+   897→  initMouseGlow();
+   898→  initSeasonal();
+   899→
+   900→  var bgOpts = document.querySelectorAll('.bg-option');
+   901→  for(var i = 0; i < bgOpts.length; i++){
+   902→    bgOpts[i].addEventListener('click', function(){
+   903→      selectBg(this.dataset.bg);
+   904→    });
+   905→  }
+   906→});
+   907→</script>
+   908→</body>
+   909→</html>

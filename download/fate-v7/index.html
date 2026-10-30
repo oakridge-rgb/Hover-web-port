@@ -1536,11 +1536,11 @@
          4) INIT
          ================================================================ */
       document.addEventListener('DOMContentLoaded', function () {
-        initGate();            /* password check FIRST */
-        loadSharedSettings();
-        initParticles();
-        initMouseGlow();
-        loadChangelog();
+        try{ initGate(); }catch(e){ console.warn('gate skipped —', e.message); }            /* password check FIRST */
+        try{ loadSharedSettings(); }catch(e){ console.warn('shared settings skipped —', e.message); }
+        try{ initParticles(); }catch(e){}
+        try{ initMouseGlow(); }catch(e){}
+        try{ loadChangelog(); }catch(e){ console.warn('changelog skipped —', e.message); }
       });
     </script>
   </body>

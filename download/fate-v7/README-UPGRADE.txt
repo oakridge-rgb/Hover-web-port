@@ -50,3 +50,5 @@ NOTES:
     popup included (users can tick "don't show again").
   - To add a new theme later: copy a block in theme.js THEMES,
     give it id/label/swatch/vars — it auto-appears in Settings.
+  - Both pages boot their init steps guarded: if cloak.js / track.js /
+    seasonal.js ever fail to load, the Themes picker still renders.

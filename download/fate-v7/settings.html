@@ -922,6 +922,7 @@ function initMouseGlow(){
 /* ========== SEASONAL ========== */
 function initSeasonal(){
   var sel=$('seasonSelect'); if(!sel)return;
+  if(typeof FATE_SEASON==='undefined'||!FATE_SEASON||!FATE_SEASON.list){updateSeasonNow();return;}
   var opts=[['auto','Auto (calendar)'],['off','Off']];
   FATE_SEASON.list.forEach(function(s){opts.push([s.id,s.label]);});
   opts.forEach(function(o){
@@ -939,7 +940,8 @@ function setSeason(v){
   toast(v==='off'?'Seasonal themes off':v==='auto'?'Seasonal: auto by date':'Seasonal: '+v);
 }
 function updateSeasonNow(){
-  var cur=FATE_SEASON.current();
+  var cur=null;
+  try{ cur=(typeof FATE_SEASON!=='undefined'&&FATE_SEASON)?FATE_SEASON.current():null; }catch(e){}
   if(!cur){ $('seasonNow').textContent='Classic FATE amber'; return; }
   $('seasonNow').textContent=cur.label+' — '+(FATE_SEASON.labels[cur.fx]||cur.fx)+(cur.colors?' + colors':'');
 }
@@ -987,11 +989,13 @@ function initThemes(){
 
 /* ========== INIT ========== */
 document.addEventListener('DOMContentLoaded', function(){
-  loadSettings();
-  initParticles();
-  initMouseGlow();
-  initThemes();
-  initSeasonal();
+  /* every step guarded — one missing helper script (cloak/track/seasonal)
+     must never take down the Themes picker */
+  try{ loadSettings(); }catch(e){ console.warn('settings: loadSettings skipped —', e.message); }
+  try{ initParticles(); }catch(e){}
+  try{ initMouseGlow(); }catch(e){}
+  try{ initThemes(); }catch(e){ console.warn('settings: themes failed —', e.message); }
+  try{ initSeasonal(); }catch(e){ if($('seasonNow')) $('seasonNow').textContent='Classic FATE amber'; }
 
   var bgOpts = document.querySelectorAll('.bg-option');
   for(var i = 0; i < bgOpts.length; i++){
