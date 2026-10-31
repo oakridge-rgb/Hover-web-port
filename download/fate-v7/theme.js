@@ -159,6 +159,125 @@
         '--particle-rgb': '0, 255, 80',
         '--particle-glow-rgb': '0, 200, 60'
       }
+    },
+    psp: {
+      label: 'PSP',
+      desc: 'Pocket silver & wave blue',
+      swatch: ['#c8d9ee', '#3f6288'],
+      vars: {
+        '--primary': '#9db9dc',
+        '--primary-soft': '#c8d9ee',
+        '--primary-hot': '#5e83ad',
+        '--primary-rgb': '157, 185, 220',
+        '--primary-soft-rgb': '200, 217, 238',
+        '--primary-hot-rgb': '94, 131, 173',
+        '--primary-glow': 'rgba(157, 185, 220, 0.4)',
+        '--secondary': '#2f8fd6',
+        '--secondary-rgb': '47, 143, 214',
+        '--grad-a': '#c3d4e8',
+        '--grad-b': '#4c6f96',
+        '--bg-deep': '#04070c',
+        '--panel-rgb': '13, 18, 26',
+        '--panel2-rgb': '7, 10, 15',
+        '--glass-border': 'rgba(190, 215, 245, 0.15)',
+        '--card-bg': 'rgba(180, 205, 240, 0.05)',
+        '--text': '#eef3f9',
+        '--text-muted': '#93a5ba',
+        '--particle-rgb': '185, 210, 240',
+        '--particle-glow-rgb': '120, 170, 235'
+      }
+    },
+    wii: {
+      label: 'Wii Menu',
+      desc: 'Channel white & Wii blue',
+      swatch: ['#00a8e0', '#eaf7fd'],
+      vars: {
+        '--primary': '#00a8e0',
+        '--primary-soft': '#5cc9f0',
+        '--primary-hot': '#0077b3',
+        '--primary-rgb': '0, 168, 224',
+        '--primary-soft-rgb': '92, 201, 240',
+        '--primary-hot-rgb': '0, 119, 179',
+        '--primary-glow': 'rgba(0, 168, 224, 0.3)',
+        '--secondary': '#8dc63f',
+        '--secondary-rgb': '141, 198, 63',
+        '--grad-a': '#4db8e8',
+        '--grad-b': '#0077b3',
+        '--bg-deep': '#e9f2f7',
+        '--panel-rgb': '247, 251, 253',
+        '--panel2-rgb': '235, 244, 249',
+        '--glass-border': 'rgba(0, 130, 190, 0.18)',
+        '--card-bg': 'rgba(0, 168, 224, 0.08)',
+        '--text': '#14323f',
+        '--text-muted': '#527284',
+        '--particle-rgb': '0, 140, 200',
+        '--particle-glow-rgb': '0, 168, 224'
+      },
+      extra: 'html[data-fate-theme="wii"] .bg-overlay{background:rgba(233,242,247,0.35) !important}' +
+             'html[data-fate-theme="wii"] .page-glow{opacity:0.25}' +
+             'html[data-fate-theme="wii"] .nav-glass{background:rgba(247,251,253,0.85);border-bottom:1px solid rgba(0,130,190,0.15)}' +
+             'html[data-fate-theme="wii"] .nav-title{background:linear-gradient(135deg,#14323f,var(--primary-hot));-webkit-background-clip:text;background-clip:text}' +
+             'html[data-fate-theme="wii"] .q-btn,html[data-fate-theme="wii"] .search-input{background:rgba(255,255,255,0.8);border-color:rgba(0,130,190,0.22)}' +
+             'html[data-fate-theme="wii"] .hero-badge{color:#0077b3;border-color:rgba(0,130,190,0.35)}'
+    },
+    switch: {
+      label: 'Switch',
+      desc: 'Neon red & joy-con blue',
+      swatch: ['#ff4554', '#00c3e3'],
+      vars: {
+        '--primary': '#ff4554',
+        '--primary-soft': '#ff8d96',
+        '--primary-hot': '#d62438',
+        '--primary-rgb': '255, 69, 84',
+        '--primary-soft-rgb': '255, 141, 150',
+        '--primary-hot-rgb': '214, 36, 56',
+        '--primary-glow': 'rgba(255, 69, 84, 0.4)',
+        '--secondary': '#00c3e3',
+        '--secondary-rgb': '0, 195, 227',
+        '--grad-a': '#ff5c52',
+        '--grad-b': '#d61f30',
+        '--bg-deep': '#0a0a0c',
+        '--panel-rgb': '24, 24, 28',
+        '--panel2-rgb': '14, 14, 17',
+        '--glass-border': 'rgba(255, 130, 120, 0.14)',
+        '--card-bg': 'rgba(255, 69, 84, 0.05)',
+        '--text': '#f7f5f6',
+        '--text-muted': '#a7a1a8',
+        '--particle-rgb': '255, 100, 90',
+        '--particle-glow-rgb': '0, 195, 227'
+      }
+    },
+    gameboy: {
+      label: 'Game Boy',
+      desc: 'DMG pea-green screen',
+      swatch: ['#0f380f', '#9bbc0f'],
+      vars: {
+        '--primary': '#2f5a14',
+        '--primary-soft': '#306230',
+        '--primary-hot': '#1c3d0a',
+        '--primary-rgb': '47, 90, 20',
+        '--primary-soft-rgb': '48, 98, 48',
+        '--primary-hot-rgb': '28, 61, 10',
+        '--primary-glow': 'rgba(48, 98, 48, 0.3)',
+        '--secondary': '#8bac0f',
+        '--secondary-rgb': '139, 172, 15',
+        '--grad-a': '#306230',
+        '--grad-b': '#0f380f',
+        '--bg-deep': '#9bbc0f',
+        '--panel-rgb': '224, 237, 176',
+        '--panel2-rgb': '205, 222, 140',
+        '--glass-border': 'rgba(15, 56, 15, 0.28)',
+        '--card-bg': 'rgba(15, 56, 15, 0.06)',
+        '--text': '#0f380f',
+        '--text-muted': '#3f5c2a',
+        '--particle-rgb': '48, 98, 48',
+        '--particle-glow-rgb': '139, 172, 15'
+      },
+      extra: 'html[data-fate-theme="gameboy"] .bg-overlay{background:rgba(155,188,15,0.25) !important}' +
+             'html[data-fate-theme="gameboy"] .page-glow{opacity:0.2}' +
+             'html[data-fate-theme="gameboy"] .nav-glass{background:rgba(224,237,176,0.9);border-bottom:1px solid rgba(15,56,15,0.25)}' +
+             'html[data-fate-theme="gameboy"] .nav-title{background:linear-gradient(135deg,#0f380f,var(--primary-hot));-webkit-background-clip:text;background-clip:text}' +
+             'html[data-fate-theme="gameboy"] .q-btn,html[data-fate-theme="gameboy"] .search-input{background:rgba(255,252,235,0.6);border-color:rgba(15,56,15,0.3)}'
     }
   };
 
@@ -186,6 +305,7 @@
       var vars = THEMES[id].vars;
       Object.keys(vars).forEach(function (k) { css += k + ':' + vars[k] + ';'; });
       css += '}';
+      if (THEMES[id].extra) css += THEMES[id].extra; /* per-theme spot fixes */
     });
     st.textContent = css;
     document.head.appendChild(st);

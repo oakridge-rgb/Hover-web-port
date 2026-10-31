@@ -4,7 +4,8 @@
       "version": "V7.0.0",
       "date": "2026-10-30",
       "changes": [
-        "NEW: Themes — PS3 XMB, Xbox 360, GameCube, Vaporwave & Matrix",
+        "NEW: Launch countdown — Home & Games tick down to Nov 19, 6:05 AM CT, then flips to IS LIVE",
+        "NEW: 4 more console themes — PSP, Wii Menu, Switch & Game Boy (10 themes total)",
         "Pick your theme in Settings > Themes — it applies across FATE, Home & Games included",
         "Full theme engine: colors, glows, particles & panels all follow your theme",
         "Theme syncs live across tabs — switch once, everywhere",
@@ -27,7 +28,7 @@
     "badge": "New Update",
     "subtitle": "FATE V7",
     "title": "Themes Have Landed",
-    "message": "FATE V7 brings full themes — PS3 XMB, Xbox 360, GameCube, Vaporwave and Matrix. Open Settings > Themes, pick your vibe and it follows you across the whole site — Home, Games and Settings included.",
+    "message": "FATE V7 brings full themes — PS3, Xbox 360, GameCube, Vaporwave, Matrix, PSP, Wii Menu, Switch and Game Boy. Pick your vibe in Settings > Themes and it follows you across the whole site — Home, Games and Settings included. The launch countdown is live too: Nov 19, 6:05 AM CT.",
     "link": "settings.html",
     "linkText": "Pick a Theme",
     "dismissText": "Later"
