@@ -1,0 +1,132 @@
+{
+ "vidphantom (TMDB)": {
+  "code": 502,
+  "class": "HTTP-502",
+  "final": "https://vidphantom.com/movie/550"
+ },
+ "vidsrc.pm (TMDB)": {
+  "code": 200,
+  "class": "PARKED",
+  "final": "https://vidsrc.pm/embed/movie/550"
+ },
+ "cinesrc.st (TMDB)": {
+  "code": 200,
+  "class": "200-SHELL",
+  "final": "https://www.cinesrc.st/embed/movie/550"
+ },
+ "vidsrc.sbs (TMDB)": {
+  "code": "ERR",
+  "class": "DNS/TIMEOUT: <urlopen error [Errno -2] Name or service not known>",
+  "final": "https://vidsrc.sbs/embed/movie/550"
+ },
+ "vidcore.org (TMDB)": {
+  "code": "ERR",
+  "class": "DNS/TIMEOUT: <urlopen error timed out>",
+  "final": "https://vidcore.org/embed/movie/550"
+ },
+ "videasy (TMDB)": {
+  "code": 200,
+  "class": "200-SHELL",
+  "final": "https://player.videasy.to/movie/550"
+ },
+ "moviesapi.to (TMDB)": {
+  "code": 200,
+  "class": "200-SHELL",
+  "final": "https://vidspark.to/movie/550"
+ },
+ "autoembed (TMDB)": {
+  "code": 404,
+  "class": "CF-CHALLENGE(bot-block)",
+  "final": "https://autoembed.app/movie/tmdb/550"
+ },
+ "yapgrid (TMDB)": {
+  "code": 200,
+  "class": "200-SHELL",
+  "final": "https://yapgrid.com/embed/movie/550"
+ },
+ "embedflix (TMDB)": {
+  "code": 200,
+  "class": "200-SHELL",
+  "final": "https://embedflix.net/movie/550"
+ },
+ "vidspark.to (TMDB)": {
+  "code": 200,
+  "class": "200-SHELL",
+  "final": "https://vidspark.to/movie/550"
+ },
+ "vidrock.ru (TMDB)": {
+  "code": "ERR",
+  "class": "DNS/TIMEOUT: <urlopen error [Errno 111] Connection refused>",
+  "final": "https://vidrock.ru/movie/550"
+ },
+ "vidflix.club (TMDB)": {
+  "code": 200,
+  "class": "200-SHELL",
+  "final": "https://vidflix.club/movie/550"
+ },
+ "vidlux.xyz (TMDB)": {
+  "code": 200,
+  "class": "200-SHELL",
+  "final": "https://vidlux.xyz/embed/movie/550"
+ },
+ "vidsrcme.ru (TMDB)": {
+  "code": "ERR",
+  "class": "DNS/TIMEOUT: <urlopen error [Errno 111] Connection refused>",
+  "final": "https://vidsrcme.ru/embed/movie/550"
+ },
+ "vidsrc.in (TMDB)": {
+  "code": "ERR",
+  "class": "DNS/TIMEOUT: <urlopen error [Errno -2] Name or service not known>",
+  "final": "https://vidsrc.in/embed/movie/550"
+ },
+ "vidsrc.io (TMDB)": {
+  "code": 200,
+  "class": "PARKED",
+  "final": "https://vidsrc.io/embed/movie/550"
+ },
+ "vsembed.ru (TMDB)": {
+  "code": 403,
+  "class": "CF-CHALLENGE(bot-block)",
+  "final": "https://vsembed.ru/embed/movie/550"
+ },
+ "toustream (TMDB)": {
+  "code": 403,
+  "class": "CF-CHALLENGE(bot-block)",
+  "final": "https://toustream.xyz/movie/550"
+ },
+ "2embed.cc (TMDB)": {
+  "code": 200,
+  "class": "PLAYER-OK",
+  "final": "https://www.2embed.cc/embed/movie/550"
+ },
+ "embed.su->vidsrc.to": {
+  "code": 200,
+  "class": "200-SHELL",
+  "final": "https://vidsrc.to/embed/movie/550"
+ },
+ "vidlink (IMDb)": {
+  "code": 200,
+  "class": "PLAYER-OK",
+  "final": "https://vidlink.pro/movie/tt0137523"
+ },
+ "vidsrc.pm (IMDb)": {
+  "code": 200,
+  "class": "PARKED",
+  "final": "https://vidsrc.pm/embed/movie/tt0137523"
+ },
+ "vidsrc.xyz (IMDb)": {
+  "code": "ERR",
+  "class": "DNS/TIMEOUT: <urlopen error [Errno -2] Name or service not known>",
+  "final": "https://vidsrc.xyz/embed/movie?imdb=tt0137523"
+ },
+ "multiembed (IMDb)": {
+  "code": 403,
+  "class": "CF-CHALLENGE(bot-block)",
+  "final": "https://multiembed.mov/?video_id=tt0137523"
+ },
+ "multiembed (TMDB)": {
+  "code": 403,
+  "class": "CF-CHALLENGE(bot-block)",
+  "final": "https://multiembed.mov/?video_id=550&tmdb=1"
+ }
+}
