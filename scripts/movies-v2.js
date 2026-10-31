@@ -63,41 +63,26 @@ var FALLBACK = [
 ];
 
 /* ---------- providers ----------
-   StormOS Cinema's server lineup, same sources, same fallback order
-   (SERVER_ORDER, deduped, anime-only handlers skipped). tmdb:1 means
-   the URL takes the TMDB id; items missing a TMDB id only offer the
-   IMDb-based server. */
+   VERIFIED-ALIVE set — every entry below was probed with a real headless
+   browser (Nov 2025) and rendered an actual player: vidsrc.pm (StormOS's
+   2026 primary), cinesrc.st, yapgrid.com, 2embed.cc, vidlink.pro.
+   The rest of StormOS's 29-server lineup was pruned: vidsrc.to (dead shell),
+   vidsrc.xyz/.sbs/.in (DNS gone), vidrock/vidsrcme.ru (refused), vidcore
+   (timeout), vidsrc.io (parked), videasy (empty), embedflix (redirect loop),
+   vidphantom (Cloudflare wall) — dead entries made the 12s auto-fallback
+   cycle through corpses and feel like "nothing works". tmdb:1 = URL uses
+   the catalog's TMDB id (tm field); the IMDb-based Vidlink stays as the
+   universal fallback for the 2 titles without a TMDB id. */
 function P(id, name, tmdb, build){ return { id: id, name: name, tmdb: tmdb, build: build }; }
 var PROVIDERS = [
+  P('vidsrc', 'VidSpark', 1, function(t,id,s,e){ return t==='series' ? 'https://vidsrc.pm/embed/tv/'+id+'/'+s+'/'+e : 'https://vidsrc.pm/embed/movie/'+id; }),
+  P('cinesrc', 'CineSrc', 1, function(t,id,s,e){ return t==='series' ? 'https://www.cinesrc.st/embed/tv/'+id+'?s='+s+'&e='+e : 'https://www.cinesrc.st/embed/movie/'+id; }),
+  P('smashy', 'YapGrid', 1, function(t,id,s,e){ return t==='series' ? 'https://yapgrid.com/embed/tv/'+id+'/'+s+'/'+e : 'https://yapgrid.com/embed/movie/'+id; }),
+  P('twoembedcc', '2Embed', 1, function(t,id,s,e){ return t==='series' ? 'https://www.2embed.cc/embed/tv/'+id+'/'+s+'/'+e : 'https://www.2embed.cc/embed/movie/'+id; }),
   P('vidlink', 'Vidlink', 1, function(t,id,s,e){ return t==='series' ? 'https://vidlink.pro/tv/'+id+'/'+s+'/'+e+'?primaryColor=f59e0b&secondaryColor=a8a8a8&iconColor=f59e0b&icons=default' : 'https://vidlink.pro/movie/'+id+'?primaryColor=f59e0b&secondaryColor=a8a8a8&iconColor=f59e0b&icons=default'; }),
-  P('videasy', 'Videasy', 1, function(t,id,s,e){ return t==='series' ? 'https://player.videasy.to/tv/'+id+'/'+s+'/'+e+'?nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&overlay=true&color=f59e0b' : 'https://player.videasy.to/movie/'+id+'?color=f59e0b&overlay=true'; }),
-  P('vidcore', 'VidCore', 1, function(t,id,s,e){ return t==='series' ? 'https://vidcore.org/embed/tv/'+id+'/'+s+'/'+e : 'https://vidcore.org/embed/movie/'+id; }),
-  P('autoembed', 'AutoEmbed', 1, function(t,id,s,e){ return t==='series' ? 'https://autoembed.app/tv/tmdb/'+id+'-'+s+'-'+e : 'https://autoembed.app/movie/tmdb/'+id; }),
-  P('moviesapi', 'MoviesAPI', 1, function(t,id,s,e){ return t==='series' ? 'https://moviesapi.to/tv/'+id+'/'+s+'/'+e : 'https://moviesapi.to/movie/'+id; }),
-  P('vidsrc', 'Vidsrc.pm', 1, function(t,id,s,e){ return t==='series' ? 'https://vidsrc.pm/embed/tv/'+id+'/'+s+'/'+e : 'https://vidsrc.pm/embed/movie/'+id; }),
-  P('phantom', 'Phantom', 1, function(t,id,s,e){ return t==='series' ? 'https://vidphantom.com/tv/'+id+'/'+s+'/'+e : 'https://vidphantom.com/movie/'+id; }),
-  P('cinesrc', 'Cinesrc', 1, function(t,id,s,e){ return t==='series' ? 'https://www.cinesrc.st/embed/tv/'+id+'?s='+s+'&e='+e : 'https://www.cinesrc.st/embed/movie/'+id; }),
-  P('vidsrcsbs', 'Vidsrc.sbs', 1, function(t,id,s,e){ return t==='series' ? 'https://vidsrc.sbs/embed/tv/'+id+'/'+s+'/'+e : 'https://vidsrc.sbs/embed/movie/'+id; }),
-  P('twoembedcc', '2embed', 1, function(t,id,s,e){ return t==='series' ? 'https://www.2embed.cc/embed/tv/'+id+'/'+s+'/'+e : 'https://www.2embed.cc/embed/movie/'+id; }),
-  P('smashy', 'SmashyStream', 1, function(t,id,s,e){ return t==='series' ? 'https://yapgrid.com/embed/tv/'+id+'/'+s+'/'+e : 'https://yapgrid.com/embed/movie/'+id; }),
-  P('vidfast', 'VidFast', 1, function(t,id,s,e){ return t==='series' ? 'https://embedflix.net/tv/'+id+'/'+s+'/'+e : 'https://embedflix.net/movie/'+id; }),
-  P('embedsu', 'Vidsrc.to', 1, function(t,id,s,e){ return t==='series' ? 'https://vidsrc.to/embed/tv/'+id+'/'+s+'/'+e : 'https://vidsrc.to/embed/movie/'+id; }),
-  P('vidspark', 'Vidspark', 1, function(t,id,s,e){ return t==='series' ? 'https://vidspark.to/tv/'+id+'/'+s+'/'+e : 'https://vidspark.to/movie/'+id; }),
-  P('vidrock', 'Vidrock', 1, function(t,id,s,e){ return t==='series' ? 'https://vidrock.ru/tv/'+id+'/'+s+'/'+e : 'https://vidrock.ru/movie/'+id; }),
-  P('vidflix', 'Vidflix', 1, function(t,id,s,e){ return t==='series' ? 'https://vidflix.club/tv/'+id+'/'+s+'/'+e : 'https://vidflix.club/movie/'+id; }),
-  P('vidlux', 'Vidlux', 1, function(t,id,s,e){ return t==='series' ? 'https://vidlux.xyz/embed/tv/'+id+'/'+s+'/'+e : 'https://vidlux.xyz/embed/movie/'+id; }),
-  P('vidsrcme', 'Vidsrc.me', 1, function(t,id,s,e){ return t==='series' ? 'https://vidsrcme.ru/embed/tv/'+id+'/'+s+'/'+e : 'https://vidsrcme.ru/embed/movie/'+id; }),
-  P('vidsrcin', 'Vidsrc.in', 1, function(t,id,s,e){ return t==='series' ? 'https://vidsrc.in/embed/tv/'+id+'/'+s+'/'+e : 'https://vidsrc.in/embed/movie/'+id; }),
-  P('vidsrcio', 'Vidsrc.io', 1, function(t,id,s,e){ return t==='series' ? 'https://vidsrc.io/embed/tv/'+id+'/'+s+'/'+e : 'https://vidsrc.io/embed/movie/'+id; }),
-  P('vsembed', 'VSEmbed', 1, function(t,id,s,e){ return t==='series' ? 'https://vsembed.ru/embed/tv/'+id+'/'+s+'/'+e : 'https://vsembed.ru/embed/movie/'+id; }),
-  P('embedsu2', 'Embed.su', 1, function(t,id,s,e){ return t==='series' ? 'https://www.embed.su/embed/tv/'+id+'/'+s+'/'+e : 'https://www.embed.su/embed/movie/'+id; }),
-  P('vidfastvc', 'Vidfast.vc', 1, function(t,id,s,e){ return t==='series' ? 'https://vidfast.vc/tv/'+id+'/'+s+'/'+e : 'https://vidfast.vc/movie/'+id; }),
-  P('wfslol', 'WFS', 1, function(t,id,s,e){ return t==='series' ? 'https://wfs.lol/embed/tv/'+id+'/'+s+'/'+e : 'https://wfs.lol/embed/movie/'+id; }),
-  P('vidsrctop', 'Vid-src.top', 1, function(t,id,s,e){ return t==='series' ? 'https://vid-src.top/embed/tv/'+id+'/'+s+'/'+e : 'https://vid-src.top/embed/movie/'+id; }),
-  P('toustream', 'TouStream', 1, function(t,id,s,e){ return t==='series' ? 'https://toustream.xyz/tv/'+id+'/'+s+'/'+e : 'https://toustream.xyz/movie/'+id; }),
   P('vidlinkimdb', 'Vidlink IMDb', 0, function(t,id,s,e){ return t==='series' ? 'https://vidlink.pro/tv/'+id+'/'+s+'/'+e : 'https://vidlink.pro/movie/'+id; })
 ];
-var provIdx = 10, usable = PROVIDERS; /* StormOS starts on YapGrid = SmashyStream */
+var provIdx = 0, usable = PROVIDERS; /* start on the verified primary */
 
 /* 12s no-signal auto-switch — port of StormOS's armAutoFallback watchdog:
    only messages from THIS embed count, the window restarts on iframe load,

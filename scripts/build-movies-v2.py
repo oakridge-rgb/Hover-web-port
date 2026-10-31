@@ -44,7 +44,7 @@ shell = shell.replace(old_img, '<div class="d-poster" id="dPoster"></div>', 1)
 old_hint = 'Dead stream? Switch provider above — each one is a different source. Nothing loads? The source may be down for everyone, try another provider or come back later.'
 assert old_hint in shell, 'hint text not found'
 shell = shell.replace(old_hint,
-    'Same 26-server lineup StormOS Cinema uses. A dead stream auto-switches to the next server after 12 seconds \u2014 or tap any server to switch instantly.', 1)
+    'Every server here was live-tested with a real player. A dead stream auto-switches to the next one after 12 seconds \u2014 or tap any server to switch instantly.', 1)
 
 # 4. append the new data-layer script
 js = open(JS, encoding='utf-8').read()
