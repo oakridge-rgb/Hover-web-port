@@ -88,8 +88,11 @@ def clean(m, typ):
     g = [x for x in g if x and len(x) < 25][:3]
     d = re.sub(r'\s+', ' ', m.get('description') or '').strip()[:240]
     c = [x for x in (m.get('cast') or []) if isinstance(x, str)][:4]
+    tmdb = m.get('moviedb_id')
+    try: tmdb = int(tmdb)
+    except Exception: tmdb = None
     return {'i': imdb, 'n': m['name'].strip()[:90], 't': typ, 'y': year, 'r': r,
-            'g': g, 'd': d, 'ru': (m.get('runtime') or '')[:20], 'c': c}
+            'g': g, 'd': d, 'ru': (m.get('runtime') or '')[:20], 'c': c, 'tm': tmdb}
 
 seen = set()
 items = {'movie': [], 'series': []}
@@ -184,6 +187,7 @@ for it in allitems:
     if it['r'] is None: it.pop('r', None)
     if not it['g']: it.pop('g', None)
     if it['y'] is None: it.pop('y', None)
+    if it['tm'] is None: it.pop('tm', None)
 
 cat = {'v': 1, 'gm': MOVIE_GENRES, 'gs': SERIES_GENRES,
        'm': items['movie'], 's': items['series']}

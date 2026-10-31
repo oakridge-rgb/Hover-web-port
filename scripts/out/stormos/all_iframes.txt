@@ -1,0 +1,148 @@
+hardenCloudIframe(iframe)
+phantomIframe(tmdbId, type, season, episode)
+    https://vidphantom.com/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidphantom.com/movie/${encodeURIComponent(tmdbId)}
+    https://vidsrc.pm/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURICo
+vidsrcIframe(tmdbId, type, season, episode)
+    https://vidsrc.pm/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidsrc.pm/embed/movie/${encodeURIComponent(tmdbId)}
+    https://www.cinesrc.st/embed/tv/${encodeURIComponent(tmdbId)}?s=${encodeURIComponent(season || 1)}&e=${encodeURIComponent(episode 
+cinesrcIframe(tmdbId, type, season, episode)
+    https://www.cinesrc.st/embed/tv/${encodeURIComponent(tmdbId)}?s=${encodeURIComponent(season || 1)}&e=${encodeURIComponent(episode 
+    https://www.cinesrc.st/embed/movie/${encodeURIComponent(tmdbId)}
+    https://vidsrc.sbs/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+vidsrcSbsIframe(tmdbId, type, season, episode)
+    https://vidsrc.sbs/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidsrc.sbs/embed/movie/${encodeURIComponent(tmdbId)}
+    https://www.vidcore.org free ad-free TMDB embed (4K, HLS, 99.9% uptime).
+function vidcoreIframe(tmdbId, type, season, episode) {
+ 
+vidcoreIframe(tmdbId, type, season, episode)
+    https://vidcore.org/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidcore.org/embed/movie/${encodeURIComponent(tmdbId)}
+    https://www.videasy.to player (player.videasy.to) - supports movies, TV, anime.
+function videasyIframe(tmdbId, type, season, episo
+videasyIframe(tmdbId, type, season, episode)
+    https://player.videasy.to/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}?
+    https://player.videasy.to/movie/${encodeURIComponent(tmdbId)}?color=e50914&overlay=true
+    https://www.superembed.stream/#install
+// Docs simple: https://multiembed.mov/?video_id=522931&tmdb=1 | tv https://multiembed.mov/
+superembedIframe(tmdbId, type, season, episode)
+    https://moviesapi.to/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://moviesapi.to/movie/${encodeURIComponent(tmdbId)}
+    https://moviesapi.to (replaces dead 2embed.cc/family).
+function twoembedIframe(tmdbId, type, season, episode) {
+    let url;
+    i
+twoembedIframe(tmdbId, type, season, episode)
+    https://moviesapi.to/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://moviesapi.to/movie/${encodeURIComponent(tmdbId)}
+    https://anidb.app — anime ONLY, supports sub/dub via lang param
+let currentAnimeLang = localStorage.getItem(
+anidbIframe(anidbId, type, season, episode, lang)
+    https://anidb.app/anime/${encodeURIComponent(anidbId)}?episode=${encodeURIComponent(ep)}&lang=${l}&t=${Date.now()}#player
+animekaiIframe(source, id, type, episode, lang)
+    https://megavid.buzz/${src}/${encodeURIComponent(id)}
+autoembedIframe(tmdbId, type, season, episode)
+    https://autoembed.app/tv/tmdb/${encodeURIComponent(tmdbId)}-${encodeURIComponent(season || 1)}-${encodeURIComponent(episode || 1)}
+    https://autoembed.app/movie/tmdb/${encodeURIComponent(tmdbId)}
+    https://autoembed.app/anime/${encodeURIComponent(id)}/${encodeURIComponent(episode || 1)}
+autoembedAnimeIframe(id, episode)
+    https://autoembed.app/anime/${encodeURIComponent(id)}/${encodeURIComponent(episode || 1)}
+    https://yapgrid.com (replaces dead player.smashy.stream)
+function smashystreamIframe(tmdbId, type, season, episode) {
+    let url;
+    https://yapgrid.com/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+smashystreamIframe(tmdbId, type, season, episode)
+    https://yapgrid.com/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://yapgrid.com/embed/movie/${encodeURIComponent(tmdbId)}
+    https://embedflix.net (replaces dead vidfast.pro)
+function vidfastIframe(tmdbId, type, season, episode) {
+    let url;
+    if (typ
+vidfastIframe(tmdbId, type, season, episode)
+    https://embedflix.net/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://embedflix.net/movie/${encodeURIComponent(tmdbId)}
+    https://vidlink.pro
+function vidlinkIframe(tmdbId, type, season, episode) {
+    let url;
+    if (type === 
+vidlinkIframe(tmdbId, type, season, episode)
+    https://vidlink.pro/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}?primar
+    https://vidlink.pro/movie/${encodeURIComponent(tmdbId)}?primaryColor=e50914&secondaryColor=a8a8a8&iconColor=e50914&icons=default&p
+embedsuIframe(tmdbId, type, season, episode)
+    https://vidsrc.to/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidsrc.to/embed/movie/${encodeURIComponent(tmdbId)}
+    https://vidsrc.pm/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+nontongoIframe(tmdbId, type, season, episode)
+    https://vidsrc.pm/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidsrc.pm/embed/movie/${encodeURIComponent(tmdbId)}
+    https://vidspark.to/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+vidsparkIframe(tmdbId, type, season, episode)
+    https://vidspark.to/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidspark.to/movie/${encodeURIComponent(tmdbId)}
+    https://vidrock.ru/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+vidrockIframe(tmdbId, type, season, episode)
+    https://vidrock.ru/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidrock.ru/movie/${encodeURIComponent(tmdbId)}
+    https://vidflix.club/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+vidflixIframe(tmdbId, type, season, episode)
+    https://vidflix.club/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidflix.club/movie/${encodeURIComponent(tmdbId)}
+    https://vidlux.xyz/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+vidluxIframe(tmdbId, type, season, episode)
+    https://vidlux.xyz/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidlux.xyz/embed/movie/${encodeURIComponent(tmdbId)}
+    https://vidsrcme.ru/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+vidsrcmeIframe(tmdbId, type, season, episode)
+    https://vidsrcme.ru/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidsrcme.ru/embed/movie/${encodeURIComponent(tmdbId)}
+    https://vidsrc.in/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+vidsrcinIframe(tmdbId, type, season, episode)
+    https://vidsrc.in/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidsrc.in/embed/movie/${encodeURIComponent(tmdbId)}
+    https://vidsrc.io/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+vidsrcioIframe(tmdbId, type, season, episode)
+    https://vidsrc.io/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidsrc.io/embed/movie/${encodeURIComponent(tmdbId)}
+    https://vsembed.ru/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+vsembedIframe(tmdbId, type, season, episode)
+    https://vsembed.ru/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vsembed.ru/embed/movie/${encodeURIComponent(tmdbId)}
+    https://www.2embed.cc/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)
+twoembedccIframe(tmdbId, type, season, episode)
+    https://www.2embed.cc/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)
+    https://www.2embed.cc/embed/movie/${encodeURIComponent(tmdbId)}
+    https://www.embed.su/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+embedsuIframe2(tmdbId, type, season, episode)
+    https://www.embed.su/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://www.embed.su/embed/movie/${encodeURIComponent(tmdbId)}
+    https://vidfast.vc/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+vidfastvcIframe2(tmdbId, type, season, episode)
+    https://vidfast.vc/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vidfast.vc/movie/${encodeURIComponent(tmdbId)}
+    https://wfs.lol/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+wfslolIframe2(tmdbId, type, season, episode)
+    https://wfs.lol/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://wfs.lol/embed/movie/${encodeURIComponent(tmdbId)}
+    https://vid-src.top/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+vidsrctopIframe2(tmdbId, type, season, episode)
+    https://vid-src.top/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://vid-src.top/embed/movie/${encodeURIComponent(tmdbId)}
+    https://toustream.xyz/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+toustreamIframe(tmdbId, type, season, episode)
+    https://toustream.xyz/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}
+    https://toustream.xyz/movie/${encodeURIComponent(tmdbId)}
+    https://vidhawk.buzz — sub/dub, edge HLS, AniList + MAL
+function vidhawkIframe2(source, id, episode, lang) {
+    const src = sourc
+vidhawkIframe2(source, id, episode, lang)
+    https://vidhawk.buzz/embed/${src}/${encodeURIComponent(id)}/${encodeURIComponent(episode)}/${l}?server=kari
+    https://anixo.buzz — sub/dub, HLS, OP/ED skip
+function anixoIframe(anilistId, episode, lang) {
+    const l = lang === 
+    https://anixo.buzz/embed/ani/${encodeURIComponent(anilistId)}/${encodeURIComponent(episode)}/${l}?color=%232ad4b8
+anixoIframe(anilistId, episode, lang)
+    https://anixo.buzz/embed/ani/${encodeURIComponent(anilistId)}/${encodeURIComponent(episode)}/${l}?color=%232ad4b8
+kisskhIframe(episodeId, color, autoplay, epNum)
+    https://megavid.buzz/kisskh/${encodeURIComponent(episodeId)}

@@ -1,0 +1,260 @@
+// ==================== PLAY ====================
+// Phantom — an aggregator with 40+ sources, built-in source picker.
+function phantomIframe(tmdbId, type, season, episode) {
+    let url;
+    if (type === 'tv') {
+        url = `https://vidphantom.com/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}`;
+    } else {
+        url = `https://vidphantom.com/movie/${encodeURIComponent(tmdbId)}`;
+    }
+    return `<iframe referrerpolicy="origin" src="${escapeHtml(url)}" width="100%" height="100%" style="border:0" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>`;
+}
+
+// Vidsrc — TMDB-powered embed for movie / TV playback. vidsrc.pm returns the full player
+// (vidsrc.pm is the verified 2026 domain; vidsrc.to now only serves a thin redirect shell).
+function vidsrcIframe(tmdbId, type, season, episode) {
+    let url;
+    if (type === 'tv') {
+        url = `https://vidsrc.pm/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}`;
+    } else {
+        url = `https://vidsrc.pm/embed/movie/${encodeURIComponent(tmdbId)}`;
+    }
+    return `<iframe referrerpolicy="origin" src="${escapeHtml(url)}" width="100%" height="100%" style="border:0" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>`;
+}
+
+function cinesrcIframe(tmdbId, type, season, episode) {
+    let url;
+    if (type === 'tv') {
+        url = `https://www.cinesrc.st/embed/tv/${encodeURIComponent(tmdbId)}?s=${encodeURIComponent(season || 1)}&e=${encodeURIComponent(episode || 1)}`;
+    } else {
+        url = `https://www.cinesrc.st/embed/movie/${encodeURIComponent(tmdbId)}`;
+    }
+    return `<iframe referrerpolicy="origin" src="${escapeHtml(url)}" width="100%" height="100%" style="border:0" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>`;
+}
+
+function vidsrcSbsIframe(tmdbId, type, season, episode) {
+    let url;
+    if (type === 'tv') {
+        url = `https://vidsrc.sbs/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}`;
+    } else {
+        url = `https://vidsrc.sbs/embed/movie/${encodeURIComponent(tmdbId)}`;
+    }
+    return `<iframe referrerpolicy="origin" src="${escapeHtml(url)}" width="100%" height="100%" style="border:0" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>`;
+}
+
+// VidCore — https://www.vidcore.org free ad-free TMDB embed (4K, HLS, 99.9% uptime).
+function vidcoreIframe(tmdbId, type, season, episode) {
+    let url;
+    if (type === 'tv') {
+        url = `https://vidcore.org/embed/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}`;
+    } else {
+        url = `https://vidcore.org/embed/movie/${encodeURIComponent(tmdbId)}`;
+    }
+    return `<iframe referrerpolicy="origin" src="${escapeHtml(url)}" width="100%" height="100%" style="border:0" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>`;
+}
+
+// Videasy — https://www.videasy.to player (player.videasy.to) - supports movies, TV, anime.
+function videasyIframe(tmdbId, type, season, episode) {
+    const autoNext = settings.autoPlayNext !== false;
+    let url;
+    if (type === 'tv') {
+        url = `https://player.videasy.to/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}?nextEpisode=${autoNext}&autoplayNextEpisode=${autoNext}&episodeSelector=true&overlay=true&color=e50914`;
+    } else {
+        url = `https://player.videasy.to/movie/${encodeURIComponent(tmdbId)}?color=e50914&overlay=true`;
+    }
+    return `<iframe referrerpolicy="origin" src="${escapeHtml(url)}" width="100%" height="100%" style="border:0" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>`;
+}
+
+// SuperEmbed — https://www.superembed.stream/#install
+// Docs simple: https://multiembed.mov/?video_id=522931&tmdb=1 | tv https://multiembed.mov/?video_id=114472&tmdb=1&s=1&e=2
+// multiembed.mov is Charter-blocked (302 to cujo.io) and TLS handshake fails in this env, so SuperEmbed now uses a verified working mirror
+// that actually loads movies (HEAD 200) — moviesapi.to (same multi-source backend as SuperEmbed). Keeps docs URL as comment.
+function superembedIframe(tmdbId, type, season, episode) {
+    let url;
+    if (type === 'tv') {
+        url = `https://moviesapi.to/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}`;
+    } else {
+        url = `https://moviesapi.to/movie/${encodeURIComponent(tmdbId)}`;
+    }
+    return `<iframe referrerpolicy="origin" src="${escapeHtml(url)}" width="100%" height="100%" style="border:0" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>`;
+}
+
+// MoviesAPI — https://moviesapi.to (replaces dead 2embed.cc/family).
+function twoembedIframe(tmdbId, type, season, episode) {
+    let url;
+    if (type === 'tv') {
+        url = `https://moviesapi.to/tv/${encodeURIComponent(tmdbId)}/${encodeURIComponent(season || 1)}/${encodeURIComponent(episode || 1)}`;
+    } else {
+        url = `https://moviesapi.to/movie/${encodeURIComponent(tmdbId)}`;
+    }
+    return `<iframe referrerpolicy="origin" src="${escapeHtml(url)}" width="100%" height="100%" style="border:0" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>`;
+}
+
+// AniDB — https://anidb.app — anime ONLY, supports sub/dub via lang param
+let currentAnimeLang = localStorage.getItem('milkbox_anime_lang') || 'sub';
+let currentAnidbId = null;
+function normalizeTitle(s) { return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'').trim(); }
+async function fetchAnidbId(title, altTitles=[], year='') {
+    const queries = [title, ...altTitles].filter(Boolean).slice(0,3);
+    if (!queries.length) return null;
+    const fetchWithTimeout = (url, ms=2800) => {
+        const ac = new AbortController();
+        const t = setTimeout(() => { try { ac.abort(); } catch {} }, ms);
+        return fetch(url, { signal: ac.signal }).finally(() => clearTimeout(t));
+    };
+    for (let qi = 0; qi < queries.length; qi++) {
+        const qRaw = queries[qi];
+        await new Promise(r => setTimeout(r, 0));
+        const q = encodeURIComponent(qRaw);
+        const tries = [
+            `https://anidb.app/search/suggestions?q=${q}`,
+            `https://corsproxy.io/?${encodeURIComponent(`https://anidb.app/search/suggestions?q=${qRaw}`)}`
+        ];
+        for (let ti = 0; ti < tries.length; ti++) {
+            const url = tries[ti];
+            await new Promise(r => setTimeout(r, 0));
+            try {
+                const res = await fetchWithTimeout(url, 2800);
+                if (!res || !res.ok) continue;
+                const html = await res.text();
+                const tmp = document.createElement('div');
+                tmp.innerHTML = html;
+                const links = Array.from(tmp.querySelectorAll('[data-search-item][href*="/anime/"], a[href*="/anime/"]'));
+                let best = null, bestScore = -1;
+                const normQ = normalizeTitle(qRaw);
+                for (let li = 0; li < links.length; li++) {
+                    const link = links[li];
+                    const href = link.getAttribute('href') || '';
+                    const txt = (link.textContent || link.getAttribute('title') || '').trim();
+                    const normTxt = normalizeTitle(txt || href);
+                    let score = 0;
+                    if (normTxt === normQ) score = 100;
+                    else if (normTxt.includes(normQ) || normQ.includes(normTxt)) score = 90;
+                    else if (txt.toLowerCase().includes(qRaw.toLowerCase())) score = 70;
+                    if (year && link.closest('[data-year]')?.dataset?.year === String(year)) score += 10;
+                    if (score > bestScore) { bestScore = score; best = href; }
+                    if ((li % 8) === 7) await new Promise(r => setTimeout(r, 0));
+                }
+                const href = best || (links[0] && links[0].getAttribute('href')) || '';
+                if (!href) continue;
+                const m = href.match(/\/anime\/[a-z0-9-]*-(\d+)/i) || href.match(/\/anime\/(\d+)/);
+                if (m) return m[1];
+                const m2 = href.match(/(\d+)(?:\D*$)/);
+                if (m2) return m2[1];
+            } catch {}
+        }
+        if (qi < queries.length - 1) await new Promise(r => setTimeout(r, 220));
+    }
+    return null;
+}
+function anidbIframe(anidbId, type, season, episode, lang) {
+    // anidb player — uses anime id + episode, lang=sub/dub — cache-busted so switching actually reloads
+    const ep = episode || 1;
+    const l = lang === 'dub' ? 'dub' : 'sub';
+    const url = `https://anidb.app/anime/${encodeURIComponent(anidbId)}?episode=${encodeURIComponent(ep)}&lang=${l}&t=${Date.now()}#player`;
+    return `<iframe referrerpolicy="origin" src="${escapeHtml(url)}" width="100%" height="100%" style="border:0" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media"></iframe>`;
+}
+function animekaiIframe(source, id, type, episode, lang) {
+    // megavid.buzz anime player — source is 'mal' or 'ani', id is the numeric MAL/AniList id.
+    // Anime movies have NO episode segment; tv shows include it. Append ?color & autoplay like the docs.
+    // For dub, add &captions=0 to prevent forced English subs (player defaults captions on for isMega).
+    const isMovie = type === 'movie';
+    const ep = episode || 1;
+    const l = lang === 'dub' ? 'dub' : 'sub';
+    const src = source === 'ani' ? 'ani' : 'mal';
+    const base = `https://megavid.buzz/${src}/${encodeURIComponent(id)}`;
+    const path = isMovie ? `${base}/${l}` : `${base}/${encodeURIComponent(ep)}/${l}`;
+    const qs = lang === 'dub' ? '?color=2ad4b8&autoplay=true&captions=0' : '?color=2ad4b8&autoplay=true';
+    return `<iframe referrerpolicy="origin" src="${escapeHtml(path + qs)}" width="100%" height="100%" style="border:0" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="origin-when-cross-origin"></iframe>`;
+}
+let currentAnimekaiMalId = null;
+let currentAnimekaiSlug = null;
+let currentKissKhId = null;
+// Per-item KissKH episode IDs so each anime plays ITS OWN episode id (not the same one every time)
+const currentKissKhIds = {};
+// Resolved MAL/AniList id per item so the same anime isn't re-scanned every time it's played.
+const storedAnimeIds = {};
+// Whether each resolved id is a MAL id ('mal') or an AniList id ('ani') — they are different id spaces.
+const storedAnimeSrc = {};
+// Scan TMDB's "movie database" external_ids for the item's IMDb id (used to disambiguate the right anime).
+async function fetchImdbIdFromTmdb(tmdbId, type) {
+    if (!tmdbId) return null;
+    const path = type === 'tv' ? `/tv/${encodeURIComponent(tmdbId)}/external_ids` : `/movie/${encodeURIComponent(tmdbId)}/external_ids`;
+    try {
+        const d = await tmdbJson(path);
+        return (d && d.imdb_id) ? String(d.imdb_id) : null;
+    } catch { return null; }
+}
+async function fetchAnimekaiMalId(title, altTitles=[], year='', type='', imdbId='') {
+    // Use Mal ID directly if already known on the item, otherwise search Jikan/Anilist and pick
+    // the closest year-matched hit. Resolves both a MAL id (for /mal/) and an AniList id (for /ani/).
+    // Returns { id, src } where src is 'mal' or 'ani'. Preview-safe: yields + timeouts to avoid 400ms watchdog.
+    const queries = [title, ...altTitles].filter(Boolean).slice(0,3);
+    if (!queries.length) return null;
+    let anilistId = null, anilistMal = null;
+    const imdbNorm = imdbId ? normalizeTitle(String(imdbId).trim()) : '';
+    const fetchWithTimeout = (url, opts={}, ms=2800) => {
+        const ac = new AbortController();
+        const t = setTimeout(() => { try { ac.abort(); } catch {} }, ms);
+        return fetch(url, { ...opts, signal: ac.signal }).finally(() => clearTimeout(t));
+    };
+    for (let qi = 0; qi < queries.length; qi++) {
+        const qRaw = queries[qi];
+        await new Promise(r => setTimeout(r, 0));
+        // Try AniList FIRST
+        try {
+            const r2 = await fetchWithTimeout(`https://graphql.anilist.co`, { method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'}, body: JSON.stringify({ query: `query($q:String,$type:MediaType){Media(search:$q,type:$type){id idMal siteUrl title{romaji english native} startDate{year} } }`, variables:{q:qRaw, type: type==='movie' ? 'ANIME' : 'ANIME'}})}, 2800);
+            if (r2 && r2.ok) {
+                const j2 = await r2.json();
+                const m = j2?.data?.Media;
+                if (m) {
+                    const ay = String(m.startDate?.year || '');
+                    const yOk = !year || !ay || String(ay) === String(year);
+                    const titleMatch = normalizeTitle(m.title?.romaji || '') === normalizeTitle(qRaw);
+                    if (titleMatch && (yOk || !year)) {
+                        anilistId = String(m.id);
+                        anilistMal = m.idMal ? String(m.idMal) : anilistId;
+                        return m.idMal ? { id: String(m.idMal), src: 'mal' } : { id: anilistId, src: 'ani' };
+                    }
+                    if (!anilistId && (yOk || !year)) { anilistId = String(m.id); anilistMal = m.idMal ? String(m.idMal) : null; }
+                }
+            }
+        } catch {}
+        await new Promise(r => setTimeout(r, 12));
+        // try MAL (Jikan) next
+        try {
+            const r = await fetchWithTimeout(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(qRaw)}&limit=6&order_by=popularity&sort=desc&sfw=true${type==='movie'?'&type=movie':''}`, {}, 2800);
+            if (r && r.ok) {
+                const j = await r.json();
+                const normQ = normalizeTitle(qRaw);
+                let best = null, bestScore = -1;
+                const list = Array.isArray(j.data) ? j.data : [];
+                for (let ai = 0; ai < list.length; ai++) {
+                    const a = list[ai];
+                    const cand = [a.title, a.title_english, a.title_japanese, ...(a.title_synonyms||[])].filter(Boolean).join(' ');
+                    const normCand = normalizeTitle(cand);
+                    let score = 0;
+                    if (normalizeTitle(a.title) === normQ) score = 100;
+                    else if (normCand.includes(normQ) || normQ.includes(normalizeTitle(a.title||''))) score = 85;
+                    else if (String(a.title||'').toLowerCase().includes(qRaw.toLowerCase())) score = 65;
+                    const y = String(a.year||a.aired?.prop?.from?.year||'');
+                    if (year && y && String(y)===String(year)) score += 15;
+                    if (type && a.type && String(a.type).toLowerCase()===String(type).toLowerCase()) score += 10;
+                    if (imdbNorm && a.images && (a.images.jpg?.large_image_url||'').toLowerCase().includes(imdbNorm)) score += 20;
+                    if (score > bestScore) { bestScore = score; best = a; }
+                    if ((ai % 4) === 3) await new Promise(rr => setTimeout(rr, 0));
+                }
+                if (bestScore >= 70 && best && best.mal_id) return { id: String(best.mal_id), src: 'mal' };
+                const fallback = list.find(a=> String(a.title||'').toLowerCase().includes(qRaw.toLowerCase().slice(0,6)));
+                if (fallback && fallback.mal_id) return { id: String(fallback.mal_id), src: 'mal' };
+            }
+        } catch {}
+        // respect Jikan rate-limit (3 req/s) — small pause between queries
+        if (qi < queries.length - 1) await new Promise(r => setTimeout(r, 420));
+    }
+    // Last resort: a previously-seen reasonable AniList hit (idMal or the AniList id for /ani/)
+    if (anilistMal) return { id: String(anilistMal), src: 'mal' };
+    if (anilistId) return { id: String(anilistId), src: 'ani' };
+    return null;
+}
+// ==================== KissKH API (all genres — drama, movie, BL, kshow, anime) 
