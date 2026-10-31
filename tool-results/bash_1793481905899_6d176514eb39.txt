@@ -1,0 +1,738 @@
+FNF-ish entries: 737
+- Friday Night Funkin |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/8-fix2.html
+- Friday Night Funkin': V.S. Whitty |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/474-fix.html
+- Friday Night Funkin': B-Sides |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/475-fix.html
+- Friday Night Funkin': Vs. Hex |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/476-fix.html
+- Friday Night Funkin': Vs. Hatsune Miku |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/477-fix.html
+- Friday Night Funkin': Neo |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/478-fix.html
+- Friday Night Funkin': Sarvente's Mid-Fight Masses |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/480-fix.html
+- Friday Night Funkin': vs. Tricky |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/481-fix.html
+- Friday Night Funkin': Hit Single Real |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/483-fix.html
+- Friday Night Funkin': Creepypasta JP |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/484-fix.html
+- Friday Night Funkin': vs. Garcello |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/485-fix.html
+- Friday Night Funkin': Sonic Legacy |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/486-fix.html
+- Friday Night Funkin': vs. QT |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/487-fix.html
+- Friday Night Funkin': Mistful Crimson Morning Reboot |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/488-fix.html
+- Friday Night Funkin': Indie Cross |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/489-fix.html
+- Friday Night Funkin': Jeffy's Endless Aethos |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/496-fix.html
+- Friday Night Funkin': vs. BOPCITY |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/497-fix.html
+- Friday Night Funkin': 17 Bucks: Floor 1 |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/498-fix.html
+- Friday Night Funkin': FIRE IN THE HOLE: Lobotomy Dash Funkin' |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/499-fix.html
+- Friday Night Funkin': TWIDDLEFINGER |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/500-fix.html
+- Friday Night Funkin’ Soft |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/509-fix.html
+- Friday Night Funkin': Darkness Takeover |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/525-fix.html
+- Friday Night Funkin': Pibby: Apocalypse |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/541-fix.html
+- Friday Night Funkin VS. KAPI |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/555-fix.html
+- Friday Night Funkin VS. Sky |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/556-fix.html
+- Friday Night Funkin Vs. Cyber Sensation |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/558-fix.html
+- Friday Night Funkin vs Shaggy |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/559-fix.html
+- Friday Night Funkin': Mario's Madness |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/582-fix.html
+- Friday Night Funkin' vs Hypno Lullaby |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/583-fix.html
+- FNF Vs. Hypno's Lullaby v2 |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/600-fix.html
+- FNF Vs. Sonic.EXE 3.0/4.0 |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/601-fix.html
+- Friday Night Funkin VS Impostor v4 |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/608-fix.html
+- Friday Night Funkin vs Sunday Remastered HD |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/609-fix2.html
+- Friday Night Funkin vs Carol V2 |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/610-fix.html
+- Friday Night Funkin' Drop and Roll, but Playable |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/613-fix.html
+- Friday Night Funkin Vs. Dave and Bambi v3 |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/615.html-a
+- Friday Night Funkin’ Wednesday's Infidelity |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/616-fix.html
+- FNF vs Bob v2.0 (Bob’s Onslaught) |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/618-fix.html
+- Friday Night Funkin': Rev-Mixed |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/619-fix.html
+- Friday Night Funkin': Gumballs |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/621-fix.html
+- Friday Night Funkin': VS. Impostor: Alternated |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/633-fix.html
+- Friday Night Funkin': Chaos Nightmare - Sonic Vs. Fleetway |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/634-fix.html
+- Friday Night Funkin' D-Sides |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/636-fix.html
+- Friday Night Funkin' VS Impostor B-Sides |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/639-fix.html
+- Friday Night Funkin vs Nonsense |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/644-fix.html
+- Friday Night Funkin vs Undertale |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/657-fix.html
+- Friday Night Funkin': AKAGE |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/690-fix.html
+- Friday Night Funkin': Heartbreak Havoc [Vs. Sky: REDUX] |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/691-fix.html
+- FNF vs Pibby Corrupted |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/700-fix.html
+- Friday Night Funkin vs Tabi |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/714-fix.html
+- Friday Night Funkin vs Zardy |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/715-fix.html
+- Friday Night Funkin vs Shucks v2 |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/836.html
+- Friday Night Funkin': VS. Mario Ultra Rebooted |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/861.html
+- Friday Night Funkin': VS. Henry Stickmin V4 |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/862.html
+- Friday Night Funkin': VS. Super Mario Bros. Funk Mix DX |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/863.html
+- Friday Night Funkin': VS. Seek's Cool Deltarune |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/864-fix.html
+- creepynightfunkin |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clcreepynightfunkin.html
+- fnfaethos |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfaethos.html
+- fnfagoti |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfagoti.html
+- fnfakage |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfakage.html
+- fnfanimation |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfanimation.html
+- fnfannie |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfannie.html
+- fnfasdf |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfasdf.html
+- fnfbelowdepths |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfbelowdepths.html
+- fnfbfdi 26 |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfbfdi26.html
+- fnfbinarybreakdown |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfbinarybreakdown.html
+- fnfblackbetrayal |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfblackbetrayal.html
+- fnfbside |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfbside.html
+- fnfcamelliarudeblaster |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfcamelliarudeblaster.
+- fnfcandycarrier |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfcandycarrier.html
+- fnfchara |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfchara.html
+- fnfcitytales |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfcitytales.html
+- fnfclassified |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfclassified.html
+- fnfcorrosion |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfcorrosion.html
+- fnfcory |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfcory.html
+- fnfcrunchin |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfcrunchin.html
+- fnfdeciever |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfdeciever.html
+- fnfdesolation |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfdesolation.html
+- fnfdocumictxtv 3 |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfdocumictxtv3.html
+- fnfdokitakeoverplus |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfdokitakeoverplus.htm
+- fnfdropandroll |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfdropandroll.html
+- fnfdsides |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfdsides.html
+- fnfdustin |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfdustin.html
+- fnfdusttale |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfdusttale.html
+- fnffleetway |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnffleetway.html
+- fnfflippedout |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfflippedout.html
+- fnffnaf 1 |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnffnaf1.html
+- fnffnaf 2 |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnffnaf2.html
+- fnffnaf 3 |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnffnaf3.html
+- fnffnatpt |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnffnatpt.html
+- fnfgamebreakerbundle |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfgamebreakerbundle.ht
+- fnfgfmode |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfgfmode.html
+- fnfgodot |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfgodot.html
+- fnfgoldenapple |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfgoldenapple.html
+- fnfhank |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfhank.html
+- fnfheartbreakhavoc |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfheartbreakhavoc.html
+- fnfherobrine |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfherobrine.html
+- fnfhex |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfhex.html
+- fnfholiday |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfholiday.html
+- fnfhorkglorpgloop |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfhorkglorpgloop.html
+- fnfhotline |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfhotline.html
+- fnfhypnoslullaby |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfhypnoslullaby.html
+- fnfimposter 3 |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfimposter3.html
+- fnfimposterv 4 |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfimposterv4.html
+- fnfindiecross |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfindiecross.html
+- fnfinfernalbout |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfinfernalbout.html
+- fnfinfiniteirida |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfinfiniteirida.html
+- fnfironlung |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfironlung.html
+- fnfjapcreepypasta |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfjapcreepypasta.html
+- fnfmadnesspoop |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfmadnesspoop.html
+- fnfmaginagematches |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfmaginagematches.html
+- fnfmariomadnessdside |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfmariomadnessdside.ht
+- fnfmarioport |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfmarioport.html
+- fnfmcmadness |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfmcmadness.html
+- fnfmidfight |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfmidfight.html
+- fnfmiku |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfmiku.html
+- fnfmobmod |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfmobmod.html
+- fnfneo |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfneo.html
+- fnfpiggyfield |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfpiggyfield.html
+- fnfplutoshi |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfplutoshi.html
+- fnfpokepastaperdition |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfpokepastaperdition.h
+- fnfporifera |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfporifera.html
+- fnfqt |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfqt.html
+- fnfremnants |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfremnants.html
+- fnfretrospecter |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfretrospecter.html
+- fnfrevmixed |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfrevmixed.html
+- fnfrewrite |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfrewrite.html
+- fnfrhythmicrev |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfrhythmicrev.html
+- fnfrottensmoothie |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfrottensmoothie.html
+- fnfselfpaced |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfselfpaced.html
+- fnfshaggy 4keys |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfshaggy4keys.html
+- fnfshaggyxmatt |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfshaggyxmatt.html
+- fnfshucks-v 2 |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfshucks-v2.html
+- fnfshucksv 2 |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfshucksv2.html
+- fnfsky |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfsky.html
+- fnfsoft |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfsoft.html
+- fnfsonicexe |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfsonicexe.html
+- fnfsonicexe 4 |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfsonicexe4.html
+- fnfstarlightmayhem |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfstarlightmayhem.html
+- fnfstridentcrisis |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfstridentcrisis.html
+- fnftailsgetstrolled |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnftailsgetstrolled.htm
+- fnftooslowfran |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnftooslowfran.html
+- fnftricky |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnftricky.html
+- fnf TWIDDLEFINGER |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfTWIDDLEFINGER.html
+- fnfundertale |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfundertale.html
+- fnfvoid |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfvoid.html
+- fnfvstabi |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfvstabi.html
+- fnfwaltenfiles |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfwaltenfiles.html
+- fnfwednesday-infedility |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfwednesday-infedility
+- fnfwhitty |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfwhitty.html
+- fnfzardy |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfzardy.html
+- fridaynightfunkin |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfridaynightfunkin.html
+- funkinmix |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfunkinmix.html
+- fnfsohv 2 |  | https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/clfnfsohv2.html
+- Fnf |  | https://cdn.jsdelivr.net/gh/a456pur/seraph@main/games/fnf/index.html
+- Fnfmidfight |  | https://cdn.jsdelivr.net/gh/a456pur/seraph@main/games/fnfmidfight/index.html
+- Friday Night Funkin |  | https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Games/standalone/fridaynightfu
+- FNF vs Shaggy |  | https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Games/standalone/fridaynightfu
+- FNF Vs Undertale |  | https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Games/standalone/fnfundertale.
+- FNF vs neo |  | https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Games/standalone/fnfneo.html
+- FNF vs sonic legacy |  | https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Games/standalone/fnfsoniclegac
+- FNF vs tricky |  | https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Games/standalone/fnftricky.htm
+- FNF vs. Pibby Corrupted |  | https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Games/standalone/fnvspibbycorr
+- Friday Night Funkin' vs. Impostor B-Sides |  | https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Games/standalone/fridaynightfu
+- Friday Night Funkin' vs. Sunday |  | https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Games/standalone/fridaynightfu
+- Friday Night Funkin' vs. Hex |  | https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Games/standalone/fridaynightfu
+- FNF Vs. Hypno's Lullaby v2 |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/fnf-vs.-hypno's-lullaby-v2.html
+- FNF Vs. Sonic.EXE 3.0/4.0 |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/fnf-vs.-sonic.exe-3.0/4.0.html
+- FNF vs Bob v2.0 (Bob’s Onslaught) |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/fnf-vs-bob-v2.0-(bob’s-onslaught).html
+- FNF vs Pibby Corrupted |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/fnf-vs-pibby-corrupted.html
+- Fnf Hex |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/fnf-hex.html
+- Fnf Indie Cross |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/fnf-indie-cross.html
+- Fnf Mid Fight |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/fnf-mid-fight.html
+- Fnf Miku |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/fnf-miku.html
+- Fnf Neo |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/fnf-neo.html
+- Fnf Soft |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/fnf-soft.html
+- Fnf Tricky |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/fnf-tricky.html
+- Fnf Whitty |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/fnf-whitty.html
+- Friday Night Funkin |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin.html
+- Friday Night Funkin VS Impostor v4 |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin-vs-impostor-v4.htm
+- Friday Night Funkin VS. KAPI |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin-vs.-kapi.html
+- Friday Night Funkin Vs. Cyber Sensation |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin-vs.-cyber-sensatio
+- Friday Night Funkin Vs. Dave and Bambi v3 |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin-vs.-dave-and-bambi
+- Friday Night Funkin vs Carol V2 |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin-vs-carol-v2.html
+- Friday Night Funkin vs Nonsense |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin-vs-nonsense.html
+- Friday Night Funkin vs Shaggy |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin-vs-shaggy.html
+- Friday Night Funkin vs Sunday Remastered HD |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin-vs-sunday-remaster
+- Friday Night Funkin vs Tabi |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin-vs-tabi.html
+- Friday Night Funkin vs Undertale |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin-vs-undertale.html
+- Friday Night Funkin vs Zardy |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin-vs-zardy.html
+- Friday Night Funkin' D-Sides |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin'-d-sides.html
+- Friday Night Funkin' Drop and Roll, but Playable |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin'-drop-and-roll,-bu
+- Friday Night Funkin' Sunday Night Suicide: Rookies Edition |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin'-sunday-night-suic
+- Friday Night Funkin' VS Impostor B-Sides |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin'-vs-impostor-b-sid
+- Friday Night Funkin' vs Hypno Lullaby |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin'-vs-hypno-lullaby.
+- Friday Night Funkin': 17 Bucks: Floor 1 |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-17-bucks:-floor-
+- Friday Night Funkin': B-Sides |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-b-sides.html
+- Friday Night Funkin': Chaos Nightmare - Sonic Vs. Fleetway |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-chaos-nightmare-
+- Friday Night Funkin': Creepypasta JP |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-creepypasta-jp.h
+- Friday Night Funkin': Darkness Takeover |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-darkness-takeove
+- Friday Night Funkin': FIRE IN THE HOLE: Lobotomy Dash Funkin' |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-fire-in-the-hole
+- Friday Night Funkin': Gumballs |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-gumballs.html
+- Friday Night Funkin': Heartbreak Havoc [Vs. Sky: REDUX] |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-heartbreak-havoc
+- Friday Night Funkin': Hit Single Real |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-hit-single-real.
+- Friday Night Funkin': Indie Cross |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-indie-cross.html
+- Friday Night Funkin': Jeffy's Endless Aethos |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-jeffy's-endless-
+- Friday Night Funkin': Mario's Madness |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-mario's-madness.
+- Friday Night Funkin': Mistful Crimson Morning Reboot |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-mistful-crimson-
+- Friday Night Funkin': Pibby: Apocalypse |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-pibby:-apocalyps
+- Friday Night Funkin': Rev-Mixed |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-rev-mixed.html
+- Friday Night Funkin': Sarvente's Mid-Fight Masses |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-sarvente's-mid-f
+- Friday Night Funkin': Sonic Legacy |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-sonic-legacy.htm
+- Friday Night Funkin': TWIDDLEFINGER |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-twiddlefinger.ht
+- Friday Night Funkin': V.S. Whitty |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-v.s.-whitty.html
+- Friday Night Funkin': VS. Impostor: Alternated |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-vs.-impostor:-al
+- Friday Night Funkin': Vs. Hatsune Miku |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-vs.-hatsune-miku
+- Friday Night Funkin': vs. BOPCITY |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-vs.-bopcity.html
+- Friday Night Funkin': vs. Garcello |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-vs.-garcello.htm
+- Friday Night Funkin': vs. Tricky |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin':-vs.-tricky.html
+- Friday Night Funkin’ Wednesday's Infidelity |  | https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes/friday-night-funkin’-wednesday's-infid
+- FNF: CN Lost Episodes |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/cnlost.html
+- FNF: Sweet Licorice |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/licorice.html
+- FNF: Porifera Atoll |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/porifera.html
+- FNF: Tails Gets Trolled |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/tailstroll.html
+- FNF: ATROCITY 2025 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/atrocity.html
+- FNF: Chev (V-Slice One Shot) |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/assets/chev.html
+- FNF: Kick Kick Funk! |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/kick.html
+- FNF: an FNF Bocchi the Rock! mod (DEMO) |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/bocchi.html
+- FNF: Weekend 1: Girlfriend Mix |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/gfmix.html
+- FNF: Friday Night Funkin' |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/fnfspag.html
+- FNF: Friday Night Funkin' Girlfriend Mode |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/https://reading.yoylefake.org/gfmode.h
+- FNF: Friday Night Funkin' Spooky Mix️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/spooky.html
+- FNF: Friday Night Funkin' Child's Play Remake |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/child.html
+- FNF: Friday Night Funkin' HD |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/fnfhd.html
+- FNF: Friday Night Funkin' RTX On |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/rtx.html
+- FNF: Friday Night Funkin' Funkadelix |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/funkadelix.html
+- FNF: Friday Night Funkin' 3x3 Remixed |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/3x3.html
+- FNF: Friday Night Funkin' B-Sides |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/bsides.html
+- FNF: Friday Night Funkin' From The Top! |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/ftt.html
+- FNF: Get Digging - Fries vs. Needle |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/digging.html
+- FNF: Let There Be Light |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/ltbl.html
+- FNF: FNF x Steven Universe Mod - Gem Jam |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/gem.html
+- FNF: Mistful Crimson Morning Reboot |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/mcm.html
+- FNF: Untitled Femtanyl Mod |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/femtanyl.html
+- FNF: SUPXR |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/supxr.html
+- FNF: Vs. Momo: Ubume |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/ubume.html
+- FNF: Spookyboo! |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/spookyboo.html
+- FNF: Fancy Funking |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/fancy.html
+- FNF: Tetonic - Vs. Teto |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/tetonic.html
+- FNF: NONACCEPTANCE |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/nonacceptance.html
+- FNF: Darkwing Funkin' |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/darkwing.html
+- FNF: Cool Pokemon Mod |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/pokemon.html
+- FNF: AKAGE |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/akage.html
+- FNF: Tabi Revival |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/tabi.html
+- FNF: Creepypasta JP |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/yokai.html
+- FNF: EVIL NOOB |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/noob.html
+- FNF: Blueballed V2 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/blueball.html
+- FNF: Friday Night Dashin' |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/Dashin.html
+- FNF: Plants Vs Rappers |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/plants.html
+- FNF: Mokey |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/mokey.html
+- FNF: Pacman.exe |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/https://scientific.yoylefake.org/PACKI
+- FNF:Fake Jordans |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/https://scientific.yoylefake.org/fakej
+- FNF: Friday Night Funkin' Lovewrec'd |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/lovewrecd.html
+- FNF: Friday Night Funkin' D-Sides |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/dsides.html
+- FNF: Friday Night Funkin' Neo |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/neo.html
+- FNF: Friday Night Funkin' Upside |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/upside.html
+- FNF: Friday Night Funkin' Beatstreets |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/beat.html
+- FNF: Friday Night Funkin' But Bad |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/badfnf.html
+- FNF: Friday Night Funkin' Gooey Mix |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/gooey.html
+- FNF: Friday Night Funkin': Notice Me Senpai! |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/cloud.html
+- FNF: Friday Night Funkin' Deep-Sea Date |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/seadate.html
+- FNF: Friday Night Funkin' Hellbeats |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/hell.html
+- FNF: Friday Night Funkin' Soft v1 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/soft.html
+- Friday Night Funkin' Starcatcher |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/starcatcher.html
+- Friday Night Funkin' Starlight Mayhem |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/strlight.html
+- FNF: Friday Night Funkin' FT. The Ex |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/ex.html
+- FNF: Friday Night Funkin' Cheater |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/cheater.html
+- FNF: Friday Night Funkin' Hotline 024 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/hotline.html
+- FNF: Friday Night Funkin' CG5 Edition |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/cg5.html
+- FNF: Friday Night Funkin' Baddies |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/baddies.html
+- FNF: Friday Night Funkin' Kero |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/Kero.html
+- FNF: Friday Night Funkin': Cyber Sensation |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/cyber.html
+- FNF: Friday Night Funkin' Dusttale |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/dust.html
+- FNF: Friday Night Funkin' Lullaby |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/lullaby.html
+- FNF: Friday Night Fever |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/fever.html
+- FNF: Friday Night Fever: Skelly Story |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/fevers.html
+- FNF: FNF Weekly: Tweakmas |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: Holo Night Funkin' |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/holo.html
+- FNF: Viernes Night Funkin' |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/viernes.html
+- FNF: Another Friday Night |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/another.html
+- FNF: Funkin' Aside |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/funkinaside.html
+- FNF: Lite Funkin' |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/lite.html
+- FNF: Arrow Funk |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/arrow.html
+- FNF: VS. Whitty |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/whitty.html
+- FNF: VS. Whitty Erect |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/whitty.html
+- FNF: VS. Claire |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/claire.html
+- FNF: Pico Night Punkin |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/test.html
+- FNF: VS. Neo Whitty |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/neowhitty.html
+- FNF: VS. Agoti |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/agoti.html
+- FNF: VS. QT: Rewired |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/qtrewired.html
+- FNF: VS. Mami ️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/mami.html
+- FNF: VS. Virus R |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/virusr.html
+- FNF: VS. Pico |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/pico.html
+- FNF: VS. Retrospecter️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/retro.html
+- FNF: VS. Darwi V2 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/darwi.html
+- FNF: VS. Agoti Mic'd Up Engine |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/agotitest.html
+- FNF: VS.Peppino |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/pizzatown.html
+- FNF: VS.Maddness Erect |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/trickyerect.html
+- FNF: Sunday Night Suicide V2 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/smouse.html
+- FNF: VS.Black Betrayal |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/blackb.html
+- FNF: VS.Cheeky v3 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/cheeky.html
+- FNF: VS.Trollge V2 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/physics.html
+- FNF: Doki Doki Bad Ending |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/badending.html
+- FNF: CN Takeover |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/cntakeover.html
+- FNF: VS. Impostor |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/impo.html
+- FNF: VS. Big Brother |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/bigbro.html
+- FNF: VS. Camellia |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/camellia.html
+- FNF: VS. Accelerant Hank, but all bullets |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/hankgoeshard.html
+- FNF: VS. Annie |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/annie.html
+- FNF: VS. Hatsune Miku |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/miku.html
+- FNF: VS. Chara |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/chara.html
+- FNF: VS. K.K. Slider |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/vskk.html
+- FNF: VS. Super Idol |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/idol.html
+- FNF: VS. FNAF 3 ️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/FNAF.html
+- FNF: VS. Sky |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/sky.html
+- FNF: VS. 'FNF Kid' |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/kid.html
+- FNF: VS. Lime Green Imposter (Imposter v5 April Fools Week) |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/lime.html
+- FNF: VS. Sonic.exe ️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/sonic.exe.html
+- FNF: VS. Nero |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/nero.html
+- FNF: VS. Ron  ️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/Ron.3.0.html
+- FNF: VS. Rika |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/rika.html
+- FNF: VS. Speedrunner Mario |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/yas.html
+- FNF: VS. King |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/king.html
+- FNF: VS. Hex |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/hex.html
+- FNF: VS. Slenderman |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/slenderman.html
+- FNF: VS. Sunday |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/sunday.html
+- FNF: VS. Corrupted Tankman |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/cn.html
+- FNF: VS. Shaggy |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/shaggy.html
+- FNF: VS. Nonsense |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/nonsence.html
+- FNF: VS. Spong |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/spong.html
+- FNF: VS. Timmy |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/pwrhr.html
+- FNF: VS. Tord |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/tord.html
+- FNF: VS. Tabi |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/tabi.html
+- FNF: VS. QT |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/qt.html
+- FNF: VS. Doxxie |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/doxxie.html
+- FNF: VS. Zardy |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/zardyupdate.html
+- FNF: CORROSION |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/corrosion.html
+- FNF: CORROSION V2 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/corrosion.html
+- FNF: Twiddlefinger |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/twiddlefinger.html
+- FNF: ANOTHERBROTHER |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/anotherbrother.html
+- FNF: HORKGLORPGLOOP |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/hork.html
+- FNF: Konton Boogie ️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/konton.html
+- FNF: Bob and Bosip: The EX Update |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/bob.html
+- FNF: Dave and Bambi Golden Apple ️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/GoldenApple.html
+- FNF: Nyaw Erect |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/nyaw.html
+- FNF: VS. Tabi: Pico Mix |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/tabip.html
+- FNF: Silly Funkin' |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/silly.html
+- FNF: Strident Crisis |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/strident.html
+- FNF: Spookys Saturday Scare |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/spookyscare.html
+- FNF: Scratch Cat |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/scratch.html
+- FNF: Aflac Remaster |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/aflac.html
+- FNF: Mario's Madness V2 ️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/MM.html
+- FNF: Voiid Chronicles ️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/void.html
+- FNF: Yeah! - Internet Oneshot |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/yeah.html
+- FNF: Madness Incident: 0201A |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/madness.html
+- FNF: Nusky |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/nusky.html
+- FNF: Grafitti Groovin' |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/grafitti.html
+- FNF: The Full-Ass Tricky Mod ️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/tricky.html
+- FNF: 17Bucks |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/17bucks.html
+- FNF: Indie Cross ️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/indie.html
+- FNF: 2Hot: Freestyle |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/2hot.html
+- FNF: 2Hot: BF Mix |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/2hotbf.html
+- FNF: Spongebob's Classic Showdown |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/spongebob.html
+- FNF: Next Out of Robloxia |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/roadblocks.html
+- FNF: Hatsune Miku: Project Funkin' |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/project.html
+- FNF: Bopcity |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/bop.html
+- FNF: Arcade Showdown |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/kapi.html
+- FNF: Beats and Treats |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/beatstreats.html
+- FNF: Pibby Corrupted ️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/pibby.html
+- FNF: Jeffy's Endless Aethos |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/aethos.html
+- FNF: Shucks v2 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/shucks.html
+- FNF: Hazy River |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/hazy.html
+- FNF: Twinsomnia |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/twin.html
+- FNF: Breaking Point |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/jaiden.html
+- FNF: Mid Fight Masses |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/mfm.html
+- FNF: Tales from the Treehouse |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/tree.html
+- FNF: Sideline Blitz |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/sideline.html
+- FNF: The Date Week |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/date.html
+- FNF: Yeahman! |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/yeahman.html
+- FNF: Steven Universe Mini Mod Pack |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/steven.html
+- FNF: Roastin' on a Cartoon Cartoon Friday |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/roastin.html
+- FNF: Beach Party |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/beach.html
+- FNF: Chaos Nightmare |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/phantasm.html
+- FNF: Sprunkin' |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/sprunki.html
+- FNF: Funkin' for Hire |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/hire.html
+- FNF: Funkin' Peanuts |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/snoopy.html
+- FNF: Another Atrocity Fanmod |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/atrocity.html
+- FNF: Mistful Crimson Morning |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/MCM.html
+- FNF: The X-Event |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/x-event.html
+- FNF: Starving Artist |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/starve.html
+- FNF: Flavor Rave |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/flavor.html
+- FNF: RoFNF Funkin' |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/rofnf.html
+- FNF: Baldi's Basics in Funkin' |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/baldi.html
+- FNF: Deb8 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/deb8.html
+- FNF: Killshot |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/killshot.html
+- FNF: 13th Night Funk Blood️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/funkblood.html
+- FNF: Lobotomy Dash Funkin' ️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/lobotomy.html
+- FNF: Gamblecore |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/gamblecore.html
+- FNF: Parkpass |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/parkpass.html
+- FNF: OK K.O.! Let's Get Funky! |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/K.O.html
+- FNF: Hell Allany |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/alany.html
+- FNF: Darkness Takeover vs Pibby Family Guy |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/darkness-takeover.html
+- FNF: SMW: Power Star Melody |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/smw.html
+- FNF: COME OUT TO PLAY - Vs. MC-X |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/mc-x.html
+- FNF: FNF Vs Bad Piggies (Ross V2) |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/bad-pig.html
+- FNF: Funkin' In The Galaxy |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/in-the-gal.html
+- FNF: Funkin'Herobrine Reborn |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/herob.html
+- FNF: Pibby Legacy |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/pibby-legacy.html
+- FNF: Vs.Undertale |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/undertale.html
+- FNF: BFDI 26 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/bdfi26.html
+- FNF: The Return Funkin' Whitty Demo |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/return.html
+- FNF: Bob's Onslaught |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/bob.html
+- FNF: SMB Funk Mix DX |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/funk-mix.html
+- FNF: SMB Funk Mix DX Game Over |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/gameover.html
+- FNF: Salty's Sunday Night |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/salty.html
+- FNF: Fuckin Funkin' with Koi |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/koi.html
+- FNF: Doki Doki Takeover Plus ! |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/doki.html
+- FNF: MiFunkSide |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/livediesmos/mifunkside.html
+- FNF: Cartoon Clash |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/clash.html
+- FNF: Silly Billy |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/billy.html
+- FNF: Secret Histories |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/secretSonic.html
+- FNF: The Squidward Tricky Mod ️ |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/squidtricky.html
+- FNF: The Impossible Trio |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/IT.html
+- FNF: Doubling Down |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/doubleingdown.html
+- FNF: MOB MOD |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/mobmod.html
+- FNF: Digitalizing 2 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/digi.html
+- FNF: The Gacha Mod |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/gacha.html
+- FNF: Golf Minigame |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/golf.html
+- FNF: Funkin' for a BFDI |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/bfdi.html
+- FNF: Smoke Em' Out Struggle |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/garcello.html
+- FNF: Wii Funkin' REV-MIX |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/REV-MIX.html
+- FNF: Wii Funkin' B-Sides |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/mattbside.html
+- FNF: Wii Funkin' Wiik 3 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/matt3.html
+- FNF: Krusty Karoling |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/aDiesmos/krusty.html
+- FNF: Funk! Miss Nagatoro |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/funknaga.html
+- FNF: Pibby Apocalypse |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/maths/pibby2.html
+- FNF: Corruption Invasion |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnfmods/invadion.html
+- FNF: GUMMIBAR! |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/gummi.html
+- FNF: Heartbreak Havoc: Vs. Sky Redux |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@main/fnf/redux.html
+- FNF: Sonic Dash And Spin |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/fn
+- FNF: CN Lost Episodes |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/fn
+- FNF: Vs. Jeffy |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: CITYFUNK |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: Jeffy's Infinite Irida (SHUCKS DEMO) |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: Vs. Rewrite: Round 2 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: Vs. Impostor (2025): UPDOG |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: Vs Mouse: Rookies Edition (Disk 1) |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: Anemaniac – Bendy vs Ollie |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: Sky: REBORN |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: Funkin’ on the Heights! |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: DOCAD: 2-shot Demo |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: Annoying Orange: The Amazing Grace V2 |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: Vs Forsaken: DEMO |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: Throwback |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: Remnants |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- FNF: Hazier River |  | https://cdn.jsdelivr.net/gh/aDiesmos/HTMLFILES@beb263a7da1c968fd4d64b9bcd55a070c6ea7d17/20
+- Friday Night Funkin |  | https://cdn.jsdelivr.net/gh/WanoCapy/ChickenKingsVault@main/gamefiles/fnf.html
+- Friday Night Funkin' Vs. Hatsune Miku |  | https://cdn.jsdelivr.net/gh/WanoCapy/ChickenKingsVault@main/gamefiles/fnfvshatsunemiku.htm
+- FNF vs BFDI26 |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfbfdi26.html
+- FNF vs Bside |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfbside.html
+- FNF vs Garcello |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfgarcello.html
+- FNF vs Hex |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfhex.html
+- FNF vs Hit Single Real |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfhitsingle.html
+- FNF vs Indie Cross |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfindiecross.htm
+- FNF vs Kapi |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfkapi.html
+- FNF vs Lullaby |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnflullaby.html
+- FNF vs Mario |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfmario.html
+- FNF vs Mid Fight |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfmidfight.html
+- FNF vs Miku |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfmiku.html
+- FNF vs Neo |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfneo.html
+- FNF vs Ourple |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfourple.html
+- FNF vs Pibby |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfpibby.html
+- FNF vs QT |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfqt.html
+- FNF vs Shaggy |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfshaggy.html
+- FNF vs Sky |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfsky.html
+- FNF vs Soft |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfsoft.html
+- FNF vs Sonic.exe |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfsonicexe.html
+- FNF vs Tails |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnftails.html
+- FNF vs Tricky |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnftricky.html
+- FNF vs Whitty |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnfwhitty.html
+- Friday Night Funkin (FNF) |  | https://cdn.jsdelivr.net/gh/s0n-1m-cr1n3/sc13nc3@latest/assets/html/main/fnf.html
+- FNF DDTO Plus |  | https://cdn.jsdelivr.net/gh/daknux/html@main/18.html
+- Friday Night Funkin |  | https://cdn.jsdelivr.net/gh/daknux/html@main/22.html
+- Friday Night Funkin: Below The Depths |  | https://cdn.jsdelivr.net/gh/daknux/html@main/62.html
+- FNF: Sprunkin |  | https://cdn.jsdelivr.net/gh/daknux/html@main/69.html
+- FNF: City Funk |  | https://cdn.jsdelivr.net/gh/daknux/html@main/70.html
+- FNF vs Bob v2.0 (Bob’s Onslaught) |  | https://cdn.jsdelivr.net/gh/daknux/html@main/81.html
+- FNF vs Pibby Corrupted |  | https://cdn.jsdelivr.net/gh/daknux/html@main/82.html
+- FNF Vs. Sonic.EXE 3.0/4.0 |  | https://cdn.jsdelivr.net/gh/daknux/html@main/83.html
+- Friday Night Funkin' Sunday Night Suicide: Rookies Edition |  | https://cdn.jsdelivr.net/gh/daknux/html@main/84.html
+- Friday Night Funkin vs Carol V2 |  | https://cdn.jsdelivr.net/gh/daknux/html@main/85.html
+- Friday Night Funkin' VS Impostor B-Sides |  | https://cdn.jsdelivr.net/gh/daknux/html@main/86.html
+- Friday Night Funkin VS Impostor v4 |  | https://cdn.jsdelivr.net/gh/daknux/html@main/87.html
+- Friday Night Funkin vs Nonsense |  | https://cdn.jsdelivr.net/gh/daknux/html@main/88.html
+- Friday Night Funkin vs Shaggy |  | https://cdn.jsdelivr.net/gh/daknux/html@main/89.html
+- Friday Night Funkin vs Shucks v2 |  | https://cdn.jsdelivr.net/gh/daknux/html@main/90.html
+- Friday Night Funkin vs Sunday Remastered HD |  | https://cdn.jsdelivr.net/gh/daknux/html@main/91.html
+- Friday Night Funkin vs Tabi |  | https://cdn.jsdelivr.net/gh/daknux/html@main/92.html
+- Friday Night Funkin vs Undertale |  | https://cdn.jsdelivr.net/gh/daknux/html@main/93.html
+- Friday Night Funkin vs Zardy |  | https://cdn.jsdelivr.net/gh/daknux/html@main/94.html
+- Friday Night Funkin Vs. Cyber Sensation |  | https://cdn.jsdelivr.net/gh/daknux/html@main/95.html
+- Friday Night Funkin': 17 Bucks: Floor 1 |  | https://cdn.jsdelivr.net/gh/daknux/html@main/96.html
+- Friday Night Funkin': AKAGE |  | https://cdn.jsdelivr.net/gh/daknux/html@main/97.html
+- Friday Night Funkin': B-Sides |  | https://cdn.jsdelivr.net/gh/daknux/html@main/98.html
+- Friday Night Funkin': Chaos Nightmare - Sonic Vs. Fleetway |  | https://cdn.jsdelivr.net/gh/daknux/html@main/99.html
+- Friday Night Funkin': Creepypasta JP |  | https://cdn.jsdelivr.net/gh/daknux/html@main/100.html
+- Friday Night Funkin': Darkness Takeover |  | https://cdn.jsdelivr.net/gh/daknux/html@main/101.html
+- Friday Night Funkin': FIRE IN THE HOLE: Lobotomy Dash Funkin' |  | https://cdn.jsdelivr.net/gh/daknux/html@main/102.html
+- Friday Night Funkin': Gumballs |  | https://cdn.jsdelivr.net/gh/daknux/html@main/103.html
+- Friday Night Funkin': Heartbreak Havoc [Vs. Sky: REDUX] |  | https://cdn.jsdelivr.net/gh/daknux/html@main/104.html
+- Friday Night Funkin': Hit Single Real |  | https://cdn.jsdelivr.net/gh/daknux/html@main/105.html
+- Friday Night Funkin': Indie Cross |  | https://cdn.jsdelivr.net/gh/daknux/html@main/106.html
+- Friday Night Funkin': Jeffy's Endless Aethos |  | https://cdn.jsdelivr.net/gh/daknux/html@main/107.html
+- Friday Night Funkin': Mistful Crimson Morning Reboot |  | https://cdn.jsdelivr.net/gh/daknux/html@main/108.html
+- Friday Night Funkin': Neo |  | https://cdn.jsdelivr.net/gh/daknux/html@main/109.html
+- Friday Night Funkin': Pibby: Apocalypse |  | https://cdn.jsdelivr.net/gh/daknux/html@main/110.html
+- Friday Night Funkin': Sarvente's Mid-Fight Masses |  | https://cdn.jsdelivr.net/gh/daknux/html@main/111.html
+- Friday Night Funkin': Sonic Legacy |  | https://cdn.jsdelivr.net/gh/daknux/html@main/112.html
+- Friday Night Funkin': TWIDDLEFINGER |  | https://cdn.jsdelivr.net/gh/daknux/html@main/113.html
+- Friday Night Funkin': V.S. Whitty |  | https://cdn.jsdelivr.net/gh/daknux/html@main/114.html
+- Friday Night Funkin': vs. BOPCITY |  | https://cdn.jsdelivr.net/gh/daknux/html@main/115.html
+- Friday Night Funkin': vs. Garcello |  | https://cdn.jsdelivr.net/gh/daknux/html@main/116.html
+- Friday Night Funkin': Vs. Hatsune Miku |  | https://cdn.jsdelivr.net/gh/daknux/html@main/117.html
+- Friday Night Funkin': Vs. Hex |  | https://cdn.jsdelivr.net/gh/daknux/html@main/118.html
+- Friday Night Funkin': VS. Impostor: Alternated |  | https://cdn.jsdelivr.net/gh/daknux/html@main/119.html
+- Friday Night Funkin': vs. QT |  | https://cdn.jsdelivr.net/gh/daknux/html@main/120.html
+- Friday Night Funkin': vs. Tricky |  | https://cdn.jsdelivr.net/gh/daknux/html@main/121.html
+- Friday Night Funkin’ Soft |  | https://cdn.jsdelivr.net/gh/daknux/html@main/122.html
+- Friday Night Funkin’ Wednesday's Infidelity |  | https://cdn.jsdelivr.net/gh/daknux/html@main/123.html
+- Friday Night Funkin': VS. Henry Stickmin V4 |  | https://cdn.jsdelivr.net/gh/daknux/html@main/328.html
+- Friday Night Funkin': VS. Seek's Cool Deltarune |  | https://cdn.jsdelivr.net/gh/daknux/html@main/329.html
+- Friday Night Funkin': Mario's Madness |  | https://cdn.jsdelivr.net/gh/daknux/html@main/385.html
+- Friday Night Funkin' vs Hypno Lullaby |  | https://cdn.jsdelivr.net/gh/daknux/html@main/386.html
+- Friday Night Funkin': Rev-Mixed |  | https://cdn.jsdelivr.net/gh/daknux/html@main/387.html
+- Friday Night Funkin': VS. Mario Ultra Rebooted |  | https://cdn.jsdelivr.net/gh/daknux/html@main/388.html
+- Friday Night Funkin': VS. Super Mario Bros. Funk Mix DX |  | https://cdn.jsdelivr.net/gh/daknux/html@main/389.html
+- Friday Night Funkin' |  | https://cdn.jsdelivr.net/gh/ccported/games@main/game_993d_9e260f37d342c/index.html
+- Friday Night Funkin' |  | https://cdn.jsdelivr.net/gh/ccported/games@main/game_ea03_df7f93211fe368/index.html
+- fridaynightfunkin |  | https://cdn.jsdelivr.net/gh/tharun9772/3kh0-assets@main/fridaynightfunkin/index.html
+- Friday Night Funkin |  | https://cdn.jsdelivr.net/gh/carbonicality/ChickenKingsVault@main/g4mesfiles/fnf.html
+- Friday Night Funkin' Vs. Hatsune Miku |  | https://cdn.jsdelivr.net/gh/carbonicality/ChickenKingsVault@main/g4mesfiles/fnfvshatsunemi
+- Creepynightfunkin |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/creepynightfunkin.html
+- Fnf Twiddlefinger |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnf-twiddlefinger.html
+- Fnfaethos |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfaethos.html
+- Fnfagoti |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfagoti.html
+- Fnfakage |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfakage.html
+- Fnfanimation |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfanimation.html
+- Fnfannie |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfannie.html
+- Fnfasdf |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfasdf.html
+- Fnfbelowdepths |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfbelowdepths.html
+- Fnfbfdi 26 |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfbfdi26.html
+- Fnfbinarybreakdown |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfbinarybreakdown.html
+- Fnfblackbetrayal |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfblackbetrayal.html
+- Fnfbside |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfbside.html
+- Fnfcamelliarudeblaster |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfcamelliarudeblaster.html
+- Fnfcandycarrier |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfcandycarrier.html
+- Fnfchara |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfchara.html
+- Fnfcitytales |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfcitytales.html
+- Fnfclassified |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfclassified.html
+- Fnfcorrosion |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfcorrosion.html
+- Fnfcory |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfcory.html
+- Fnfcrunchin |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfcrunchin.html
+- Fnfdeciever |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfdeciever.html
+- Fnfdesolation |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfdesolation.html
+- Fnfdocumic Txtv 3 |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfdocumic-txtv3.html
+- Fnfdokitakeoverplus |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfdokitakeoverplus.html
+- Fnfdropandroll |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfdropandroll.html
+- Fnfdsides |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfdsides.html
+- Fnfdustin |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfdustin.html
+- Fnfdusttale |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfdusttale.html
+- Fnffleetway |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnffleetway.html
+- Fnfflippedout |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfflippedout.html
+- Fnffnaf 1 |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnffnaf1.html
+- Fnffnaf 2 |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnffnaf2.html
+- Fnffnaf 3 |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnffnaf3.html
+- Fnffnatpt |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnffnatpt.html
+- Fnfgamebreakerbundle |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfgamebreakerbundle.html
+- Fnfgfmode |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfgfmode.html
+- Fnfgodot |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfgodot.html
+- Fnfgoldenapple |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfgoldenapple.html
+- Fnfhank |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfhank.html
+- Fnfheartbreakhavoc |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfheartbreakhavoc.html
+- Fnfherobrine |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfherobrine.html
+- Fnfhex |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfhex.html
+- Fnfholiday |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfholiday.html
+- Fnfhorkglorpgloop |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfhorkglorpgloop.html
+- Fnfhotline |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfhotline.html
+- Fnfhypnoslullaby |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfhypnoslullaby.html
+- Fnfimposter 3 |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfimposter3.html
+- Fnfimposterv 4 |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfimposterv4.html
+- Fnfindiecross |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfindiecross.html
+- Fnfinfernalbout |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfinfernalbout.html
+- Fnfinfiniteirida |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfinfiniteirida.html
+- Fnfironlung |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfironlung.html
+- Fnfjapcreepypasta |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfjapcreepypasta.html
+- Fnfmadnesspoop |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfmadnesspoop.html
+- Fnfmaginagematches |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfmaginagematches.html
+- Fnfmariomadnessdside |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfmariomadnessdside.html
+- Fnfmarioport |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfmarioport.html
+- Fnfmcmadness |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfmcmadness.html
+- Fnfmidfight |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfmidfight.html
+- Fnfmiku |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfmiku.html
+- Fnfmobmod |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfmobmod.html
+- Fnfneo |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfneo.html
+- Fnfpiggyfield |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfpiggyfield.html
+- Fnfplutoshi |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfplutoshi.html
+- Fnfpokepastaperdition |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfpokepastaperdition.html
+- Fnfporifera |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfporifera.html
+- Fnfqt |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfqt.html
+- Fnfremnants |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfremnants.html
+- Fnfretrospecter |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfretrospecter.html
+- Fnfrevmixed |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfrevmixed.html
+- Fnfrewrite |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfrewrite.html
+- Fnfrhythmicrev |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfrhythmicrev.html
+- Fnfrottensmoothie |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfrottensmoothie.html
+- Fnfselfpaced |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfselfpaced.html
+- Fnfshaggy 4 Keys |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfshaggy4keys.html
+- Fnfshaggyxmatt |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfshaggyxmatt.html
+- Fnfshucks V2 |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfshucks-v2.html
+- Fnfsky |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfsky.html
+- Fnfsoft |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfsoft.html
+- Fnfsohv 2 |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfsohv2.html
+- Fnfsonicexe |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfsonicexe.html
+- Fnfsonicexe 4 |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfsonicexe4.html
+- Fnfstarlightmayhem |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfstarlightmayhem.html
+- Fnfstridentcrisis |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfstridentcrisis.html
+- Fnftailsgetstrolled |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnftailsgetstrolled.html
+- Fnftooslowfran |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnftooslowfran.html
+- Fnftricky |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnftricky.html
+- Fnfundertale |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfundertale.html
+- Fnfvoid |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfvoid.html
+- Fnfvstabi |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfvstabi.html
+- Fnfwaltenfiles |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfwaltenfiles.html
+- Fnfwednesday Infedility |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfwednesday-infedility.html
+- Fnfwhitty |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfwhitty.html
+- Fnfzardy |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fnfzardy.html
+- Fridaynightfunkin |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/fridaynightfunkin.html
+- Funkinmix |  | https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULA-CDN@main/games/funkinmix.html
+- FNF vs Shucks V2 |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/464
+- FNF Rewrite |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/154
+- FNF Agoti |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/125
+- FNF Black Betrayal |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/124
+- FNF B-Side |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/123
+- FNF Camellia |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/122
+- FNF Impostor V4 |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/121
+- FNF Indie Cross |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/120
+- FNF Kapi |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/119
+- FNF Mario Madness |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/118
+- FNF Pibby Apocalypse |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/117
+- FNF Shaggy X Matt |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/116
+- FNF Sonic.exe |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/115
+- FNF Garcello |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/114
+- FNF Hit Single |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/113
+- Friday Night Funkin |  | https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games/195
+- FNF |  | https://cdn.jsdelivr.net/gh/VoidNetworkOnTop/Void-v3@master/static/local%20games/fnf/index
+- Friday Night Funkin |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/8-wow.html
+- Friday Night Funkin': V.S. Whitty |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/474.html
+- Friday Night Funkin': B-Sides |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/475.html
+- Friday Night Funkin': Vs. Hex |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/476.html
+- Friday Night Funkin': Vs. Hatsune Miku |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/477.html
+- Friday Night Funkin': Neo |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/478.html
+- Friday Night Funkin': Sarvente's Mid-Fight Masses |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/480.html
+- Friday Night Funkin': vs. Tricky |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/481.html
+- Friday Night Funkin': Hit Single Real |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/483.html
+- Friday Night Funkin': Creepypasta JP |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/484.html
+- Friday Night Funkin': vs. Garcello |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/485.html
+- Friday Night Funkin': Sonic Legacy |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/486.html
+- Friday Night Funkin': vs. QT |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/487.html
+- Friday Night Funkin': Mistful Crimson Morning Reboot |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/488.html
+- Friday Night Funkin': Indie Cross |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/489.html
+- Friday Night Funkin': Jeffy's Endless Aethos |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/496.html
+- Friday Night Funkin': vs. BOPCITY |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/497.html
+- Friday Night Funkin': 17 Bucks: Floor 1 |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/498.html
+- Friday Night Funkin': FIRE IN THE HOLE: Lobotomy Dash Funkin' |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/499.html
+- Friday Night Funkin': TWIDDLEFINGER |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/500.html
+- Friday Night Funkin’ Soft |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/509.html
+- Friday Night Funkin': Darkness Takeover |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/525.html
+- Friday Night Funkin': Pibby: Apocalypse |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/541.html
+- Friday Night Funkin VS. KAPI |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/555.html
+- Friday Night Funkin VS. Sky |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/556.html
+- Friday Night Funkin Vs. Cyber Sensation |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/558.html
+- Friday Night Funkin vs Shaggy |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/559.html
+- Friday Night Funkin': Mario's Madness |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/582.html
+- Friday Night Funkin' vs Hypno Lullaby |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/583.html
+- FNF Vs. Hypno's Lullaby v2 |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/600.html
+- FNF Vs. Sonic.EXE 3.0/4.0 |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/601.html
+- Friday Night Funkin VS Impostor v4 |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/608.html
+- Friday Night Funkin vs Sunday Remastered HD |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/609-a.html
+- Friday Night Funkin vs Carol V2 |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/610.html
+- Friday Night Funkin' Drop and Roll, but Playable |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/613.html
+- Friday Night Funkin’ Wednesday's Infidelity |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/616.html
+- FNF vs Bob v2.0 (Bob’s Onslaught) |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/618.html
+- Friday Night Funkin': Rev-Mixed |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/619.html
+- Friday Night Funkin': Gumballs |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/621.html
+- Friday Night Funkin': VS. Impostor: Alternated |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/633.html
+- Friday Night Funkin': Chaos Nightmare - Sonic Vs. Fleetway |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/634.html
+- Friday Night Funkin' D-Sides |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/636.html
+- Friday Night Funkin' VS Impostor B-Sides |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/639.html
+- Friday Night Funkin' Sunday Night Suicide: Rookies Edition |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/642.html
+- Friday Night Funkin vs Nonsense |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/644.html
+- Friday Night Funkin vs Undertale |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/657.html
+- Friday Night Funkin': AKAGE |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/690.html
+- Friday Night Funkin': Heartbreak Havoc [Vs. Sky: REDUX] |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/691.html
+- FNF vs Pibby Corrupted |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/700.html
+- Friday Night Funkin vs Tabi |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/714.html
+- Friday Night Funkin vs Zardy |  | https://cdn.jsdelivr.net/gh/freebuisness/html@main/715.html
+- Friday Night Funkin |  | https://cdn.jsdelivr.net/gh/picklechiplover23/htmlgames@master/games/37.html
+- friday-night-funkin |  | https://cdn.jsdelivr.net/gh/CoolDude2349/Offline-HTML-Games-Pack@5dbfcd7a6e788101a8acab50a
+- Friday Night Funkin |  | https://cdn.jsdelivr.net/gh/sslightly/Html5-games@c167324c34402e6e22fe07e9d2db70c12849a2a9
+- Friday Night Funkin' |  | https://cdn.jsdelivr.net/gh/HTML5GameArchive/gfiles@870aeb6cd4d4d14ad8d7f0a537eb8d7a42fe1f
+- Friday Night Funkin |  | https://cdn.jsdelivr.net/gh/selenite-cc/selenite-old@9c743188888af0986c8c7b293dbac8f9e421a
+- Friday Night Funkin Twiddler Finger |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfnfTWIDDL
+- Friday Night Funkin Aethos |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfnfaethos
+- Friday Night Funkin Binary Breakdown |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfnfbinary
+- Friday Night Funkin Below depths |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfnfbelowd
+- Friday Night Funkin Black Betrayal |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfnfblackb
+- Friday Night Funkin Candy Carrier |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfnfcandyc
+- Friday Night Funkin Chara |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfnfchara.
+- Friday Night Funkin City Tales |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfnfcityta
+- Friday Night Funkin Corrision |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfridaynig
+- Friday Night Funkin Cory |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfnfcory.h
+- Friday Night Funkin Crunchin |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfnfcrunch
+- Friday Night Funkin'Deceiver |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfnfdeciev
+- Friday Night Funkin Desolation |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfnfdesola
+- Friday Night Funkin Golden Apple |  | https://cdn.jsdelivr.net/gh/Onex558/Ultimate-games-stash-games-@main/UGS-Files/clfnfgolden
+- Friday Night Funkin |  | https://cdn.jsdelivr.net/gh/55gms/assets@e6dafba78d77deea9bf03d88e4d94efec394ef58/misc/fnf
+- D-Sides FNF |  | https://cdn.jsdelivr.net/gh/slackerish/republica-sourca-lol@master/library/Friday%20Night%
