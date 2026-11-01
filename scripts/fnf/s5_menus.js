@@ -222,10 +222,10 @@ ST.results={
     g.fillStyle='rgba(10,14,30,.9)';
     g.beginPath();g.arc(0,0,110,0,TAU);g.fill();
     g.strokeStyle=s.rankCol;g.lineWidth=6;g.stroke();
-    txt(g,s.rank,0,8,120,s.rankCol,'center',14,'#000');
+    txt(g,s.rank,0,8,s.rank.length>1?84:120,s.rankCol,'center',12,'#000');
     g.restore();
     const rows=[
-      ['SCORE',s.score],
+      ['SCORE',Math.floor(s.score)],
       ['ACCURACY',s.acc.toFixed(2)+'%'],
       ['MAX COMBO',s.maxCombo+' / '+s.notes],
       ['MISSES',s.misses],
@@ -234,8 +234,8 @@ ST.results={
     ];
     for(let i=0;i<rows.length;i++){
       const y=210+i*52;
-      txt(g,rows[i][0],W/2-40,y,26,'#7688b8','left',4,'#000');
-      txt(g,rows[i][1],W/2+120,y,30,'#fff','right',5,'#000');
+      txt(g,rows[i][0],W/2-300,y,26,'#7688b8','left',4,'#000');
+      txt(g,rows[i][1],W/2+180,y,30,'#fff','right',5,'#000');
     }
     if(G.newBest&&G.t%700<450)
       txt(g,'NEW HIGHSCORE!',W/2,560,36,'#ffe14d','center',8,'#000');

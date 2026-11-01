@@ -98,8 +98,9 @@ function genSong(cfg){
         let steps;
         if(S.jack)steps=[0,4,8,12];
         else if(S.stairs)steps=[0,4,8,12];
-        else if(S.zig)steps=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+        else if(S.zig)steps=[0,1,2,3,4,5,6,7,8,9,10,11];
         else steps=RHYTHM[S.mel][(bar+(rng()<.5?0:2))%RHYTHM[S.mel].length];
+        if(S.burst&&!S.zig)steps=steps.filter(function(s){return s<12});
         const melRoot=cfg.key+12;
         for(let si=0;si<steps.length;si++){
           const st=steps[si];
@@ -131,9 +132,11 @@ function genSong(cfg){
             }
             dur=step*(S.zig?0.9:1.6);
           }
+          /* sustained note at the end of every other padded bar -> hold */
+          if(S.pad&&bar%2===1&&si===steps.length-1)dur=beat*2.6;
           const t=(barStep+st)*step;
           ev.push({t,ch:'lead',f:mtof(midi),d:Math.max(step*0.9,dur),v:.9,x:S.zig||S.jack});
-          pN.push({t,d:dur});
+          pN.push({t,d:dur,f:midi});
         }
         /* 32nd-note burst at end of bar (Applecore style) */
         if(S.burst){
@@ -142,14 +145,14 @@ function genSong(cfg){
           for(let k=0;k<8;k++){
             const t=(barStep+12)*step+k*step/2;
             ev.push({t,ch:'lead',f:mtof(midi+(k%2?12:0)),d:step*0.42,v:.9,x:true});
-            pN.push({t,d:step*0.3});
+            pN.push({t,d:step*0.3,f:midi+(k%2?12:0)});
           }
           const roll=rng()<.5;
           regs.push({from:bFrom,count:8,mode:roll?'roll':'trill'});
         }
         if(S.zig){
           const pa=rng()<.5?0:1;
-          regs.push({from:pStart,count:16,mode:'zig',pa,pb:pa+2});
+          regs.push({from:pStart,count:12,mode:'zig',pa,pb:pa+2});
         }
         if(S.jack)regs.push({from:pStart,count:4,mode:'jack'});
       }
@@ -163,7 +166,7 @@ function genSong(cfg){
           const tone=chordA[[0,1,2,1][si%4]]+(si===3?12:0);
           const t=(barStep+st)*step;
           ev.push({t,ch:'opp',f:mtof(oroot+tone),d:step*1.8,v:.85});
-          oN.push({t,d:step*1.4});
+          oN.push({t,d:step*1.4,f:oroot+tone});
         }
       }
     }
@@ -189,8 +192,8 @@ function genSong(cfg){
   for(const n of pN)n.h=n.d>=step*5.5?n.d-step*2.2:0;
 
   const hard  =pN.map(n=>({t:Math.round(n.t),l:n.l,d:Math.round(n.h||0)}));
-  const normal=filterChart(pN,step,1);
-  const easy  =filterChart(pN,step,2);
+  const normal=filterChart(pN,step,1,regs);
+  const easy  =filterChart(pN,step,2,regs);
   const opp   =oN.map(n=>({t:Math.round(n.t),l:n.l,d:0}));
 
   return{
@@ -230,16 +233,27 @@ function assignLanes(notes,regions,rng){
   }
 }
 
-/* difficulty thinning: lvl 1 = NORMAL, lvl 2 = EASY */
-function filterChart(notes,step,lvl){
-  const out=[];let lastT=-1e9,lastLane=-1,jackRun=0,ci=0;
-  for(const n of notes){
-    if(n.reg){ /* thin out spam patterns */
-      ci++;
-      if(lvl===1&&ci%2!==0)continue;
-      if(lvl===2&&ci%4!==0)continue;
-      out.push({t:n.t,l:n.l,d:n.h||0});
-      lastT=n.t;lastLane=n.l;
+/* difficulty thinning: lvl 1 = NORMAL, lvl 2 = EASY
+   spam patterns get re-laned by KEPT index so thinned trills/zigs still alternate */
+function filterChart(notes,step,lvl,regions){
+  const out=[];let lastT=-1e9,lastLane=-1,jackRun=0;
+  const rk={};
+  for(let i=0;i<notes.length;i++){
+    const n=notes[i];
+    const reg=regions?regions.find(r=>i>=r.from&&i<r.from+r.count):null;
+    if(reg){
+      const off=i-reg.from;
+      const mod2=reg.mode==='zig'||reg.mode==='jack';
+      if(lvl===1&&off%(mod2?2:4)!==0)continue;
+      if(lvl===2&&off%4!==0)continue;
+      const k=rk[reg.from]||0;rk[reg.from]=k+1;
+      let l=n.l;
+      if(reg.mode==='trill')l=k%2?2:1;
+      else if(reg.mode==='roll')l=k%4;
+      else if(reg.mode==='zig')l=k%2?reg.pb:reg.pa;
+      else if(reg.mode==='jack')l=Math.floor(k/(lvl===2?2:1))%4;
+      out.push({t:n.t,l,d:n.h||0});
+      lastT=n.t;lastLane=l;jackRun=0;
       continue;
     }
     const minGap=step*(lvl===2?2:1);

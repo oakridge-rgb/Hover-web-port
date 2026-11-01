@@ -37,6 +37,8 @@ function rankOf(acc,misses,sickOnly){
 
 /* ---------------- start / flow ---------------- */
 function startPlay(songIdx,diff){
+  AE.init();AE.resume();
+  if(!AE.ctx)return; /* audio needs one user gesture first */
   G.songIdx=songIdx;G.diff=diff;
   const cfg=SONGS[songIdx];
   if(!cfg.data)cfg.data=genSong(cfg);
@@ -391,7 +393,7 @@ function playDraw(){
   const acc=P.judged?(P.accSum/P.judged*100).toFixed(2)+'%':'N/A';
   let rankS='';
   if(P.judged>0){const so=P.ratings.sick===P.judged&&P.misses===0;rankS=' ['+rankOf(P.accSum/P.judged,P.misses,so)[0]+']';}
-  txt(g,'Score: '+P.score+' | Misses: '+P.misses+' | Accuracy: '+acc+rankS,
+  txt(g,'Score: '+Math.floor(P.score)+' | Misses: '+P.misses+' | Accuracy: '+acc+rankS,
       W/2,by+(down?-24:42),24,'#fff','center',6,'#000');
   if(G.options.bot&&(G.t%800<500))
     txt(g,'BOTPLAY',W/2,by+(down?52:-38),30,'#ffe14d','center',7,'#000');
