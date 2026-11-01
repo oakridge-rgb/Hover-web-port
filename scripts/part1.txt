@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>FUNKIN' HARD — Week 1 Unfair Cut</title>
+<style>
+html,body{margin:0;padding:0;height:100%;background:#000;overflow:hidden;touch-action:none;
+ -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+"use strict";
+/* ============================================================================
+   FUNKIN' HARD — Week 1 Unfair Cut
+   A single-file FNF-style rhythm game (Psych/Kade-inspired engine)
+   * DFJK keybinds (+ arrow keys)  * touch pads for iPad  * NO ESC required
+   * Songs: BOPEEBO / FRESH [HARD] / DAD BATTLE [SPAM]
+   * Judgements, accuracy, combos, health, splashes, botplay, downscroll,
+     middlescroll, ghost tapping, pause menu, game-over, results + saves
+============================================================================ */
+
+// ---------------------------------------------------------------- utils ----
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const lerp=(a,b,k)=>a+(b-a)*k;
+const rnd=(a,b)=>a+Math.random()*(b-a);
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function loadLS(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function fmtT(ms){ms=Math.max(0,ms);const s=Math.floor(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+
+// ------------------------------------------------------------- canvas ------
+const CV=document.getElementById('c'),CX=CV.getContext('2d');
+const W=1280,H=720;
+let SCV=1,OX=0,OY=0,DPR=1;
+function resize(){
+  DPR=Math.min(window.devicePixelRatio||1,2);
+  const w=window.innerWidth,h=window.innerHeight;
+  CV.width=Math.round(w*DPR);CV.height=Math.round(h*DPR);
+  SCV=Math.min(w/W,h/H);OX=(w-W*SCV)/2;OY=(h-H*SCV)/2;
+}
+window.addEventListener('resize',resize);resize();
+function beginFrame(){
+  CX.setTransform(1,0,0,1,0,0);
+  CX.fillStyle='#000';CX.fillRect(0,0,CV.width,CV.height);
+  CX.setTransform(DPR*SCV,0,0,DPR*SCV,DPR*OX,DPR*OY);
+}
+function gameXY(cx,cy){return[(cx-OX)/SCV,(cy-OY)/SCV]}
+function txt(s,x,y,size,col,align,italic,stroke,strokeW){
+  CX.font=(italic?'italic ':'')+'900 '+size+'px "Arial Black","Arial Rounded MT Bold",Arial,sans-serif';
+  CX.textAlign=align||'center';CX.textBaseline='middle';
+  if(stroke){CX.lineWidth=strokeW||Math.max(3,size/7);CX.strokeStyle=stroke;CX.lineJoin='round';CX.strokeText(s,x,y)}
+  CX.fillStyle=col;CX.fillText(s,x,y);
+}
+
+// ------------------------------------------------------------- options -----
+const OPT_DEF={down:false,middle:false,ghost:true,bot:false,hsound:false,cam:true,flash:true,pads:true};
+let opts=Object.assign({},OPT_DEF,loadLS('fhm_opts',{}));
+function saveOpts(){store('fhm_opts',opts)}
+let best=loadLS('fhm_best',{});
+let isTouch=('ontouchstart'in window)||navigator.maxTouchPoints>0;
+
+// ---------------------------------------------------------- audio core -----
+let AC=null,master,instBus,vocP,vocD,menuBus;
+function audio(){
+  if(AC)return AC;
+  try{
+    AC=new (window.AudioContext||window.webkitAudioContext)();
+    const comp=AC.createDynamicsCompressor();
+    comp.threshold.value=-14;comp.knee.value=20;comp.ratio.value=8;
+    master=AC.createGain();master.gain.value=0.9;
+    master.connect(comp);comp.connect(AC.destination);
+    instBus=AC.createGain();instBus.gain.value=0.9;instBus.connect(master);
+    vocP=AC.createGain();vocP.gain.value=1;vocP.connect(master);
+    vocD=AC.createGain();vocD.gain.value=0.85;vocD.connect(master);
+    menuBus=AC.createGain();menuBus.gain.value=0.42;menuBus.connect(master);
+  }catch(e){AC=null}
+  return AC;
+}
+function wake(){const c=audio();if(c&&c.state==='suspended')c.resume()}
+const m2f=m=>440*Math.pow(2,(m-69)/12);
+let noiseBuf=null;
+function noiseSrc(w,dur){
+  if(!noiseBuf){noiseBuf=AC.createBuffer(1,AC.sampleRate,AC.sampleRate);
+    const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}
+  const s=AC.createBufferSource();s.buffer=noiseBuf;s.loop=true;s.start(w);s.stop(w+dur+0.06);return s;
+}
+function envG(g,w,a,peak,d){
+  g.gain.setValueAtTime(0.0001,w);
+  g.gain.linearRampToValueAtTime(peak,w+a);
+  g.gain.exponentialRampToValueAtTime(0.0001,w+a+d);
+}
+// ---- drum / instrument voices (all scheduled, cheap, guard on AC) ----
+function kick(w,v){v=v||1;if(!AC)return;
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type='sine';o.frequency.setValueAtTime(170,w);o.frequency.exponentialRampToValueAtTime(46,w+0.09);
+  envG(g,w,0.002,0.9*v,0.16);o.connect(g);g.connect(instBus);o.start(w);o.stop(w+0.25);
+  const n=noiseSrc(w,0.02),ng=AC.createGain();envG(ng,w,0.001,0.22*v,0.02);
+  n.connect(ng);ng.connect(instBus);}
+function snare(w,v){v=v||1;if(!AC)return;
+  const n=noiseSrc(w,0.15),f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=1800;f.Q.value=0.7;
+  const g=AC.createGain();envG(g,w,0.001,0.5*v,0.13);n.connect(f);f.connect(g);g.connect(instBus);
+  const o=AC.createOscillator(),g2=AC.createGain();o.type='triangle';o.frequency.value=185;
+  envG(g2,w,0.001,0.28*v,0.07);o.connect(g2);g2.connect(instBus);o.start(w);o.stop(w+0.1);}
+function hat(w,open,v){v=v||1;if(!AC)return;
+  const n=noiseSrc(w,open?0.3:0.045),f=AC.createBiquadFilter();f.type='highpass';f.frequency.value=7500;
+  const g=AC.createGain();envG(g,w,0.001,(open?0.15:0.13)*v,open?0.26:0.04);
+  n.connect(f);f.connect(g);g.connect(instBus);}
+function crash(w,v){v=v||1;if(!AC)return;
+  const n=noiseSrc(w,1.3),f=AC.createBiquadFilter();f.type='highpass';f.frequency.value=4500;
+  const g=AC.createGain();envG(g,w,0.002,0.3*v,1.2);n.connect(f);f.connect(g);g.connect(instBus);}
+function bass(w,midi,dur,v){v=v||1;if(!AC)return;
+  const o=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain();
+  o.type='sawtooth';o.frequency.value=m2f(midi);
+  f.type='lowpass';f.frequency.setValueAtTime(1100,w);f.frequency.exponentialRampToValueAtTime(240,w+dur);
+  envG(g,w,0.004,0.3*v,dur);o.connect(f);f.connect(g);g.connect(instBus);o.start(w);o.stop(w+dur+0.08);
+  const o2=AC.createOscillator(),g2=AC.createGain();o2.type='square';o2.frequency.value=m2f(midi-12);
+  envG(g2,w,0.004,0.13*v,dur);o2.connect(g2);g2.connect(instBus);o2.start(w);o2.stop(w+dur+0.08);}
+function stab(w,midis,dur,v){v=v||1;if(!AC)return;
+  for(const m of midis){
+    const o=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain();
+    o.type='sawtooth';o.frequency.value=m2f(m);o.detune.value=rnd(-7,7);
+    f.type='lowpass';f.frequency.value=2400;
+    envG(g,w,0.004,0.085*v,dur);o.connect(f);f.connect(g);g.connect(instBus);o.start(w);o.stop(w+dur+0.06);}}
+function pad(w,midis,dur){if(!AC)return;
+  for(const m of midis){
+    const o=AC.createOscillator(),g=AC.createGain();
+    o.type='triangle';o.frequency.value=m2f(m);
+    g.gain.setValueAtTime(0.0001,w);g.gain.linearRampToValueAtTime(0.05,w+0.3);
+    g.gain.setValueAtTime(0.05,w+Math.max(0.3,dur-0.3));g.gain.linearRampToValueAtTime(0.0001,w+dur);
+    o.connect(g);g.connect(instBus);o.start(w);o.stop(w+dur+0.06);}}
+function pluck(w,midi,v){v=v||1;if(!AC)return;
+  const o=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain();
+  o.type='square';o.frequency.value=m2f(midi);
+  f.type='lowpass';f.frequency.value=3000;
+  envG(g,w,0.002,0.1*v,0.11);o.connect(f);f.connect(g);g.connect(instBus);o.start(w);o.stop(w+0.2);}
+function arpEv(w,root){if(!AC)return;
+  const seq=[root,root+7,root+12,root+7];
+  for(let i=0;i<4;i++)pluck(w+i*0.083,seq[i],0.8);}
+// ---- vocal blips ----
+function blipBF(w,midi,dur){if(!AC)return;dur=dur||0.13;
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type='square';const f=m2f(midi);
+  o.frequency.setValueAtTime(f*1.07,w);o.frequency.exponentialRampToValueAtTime(f,w+0.05);
+  envG(g,w,0.004,0.15,dur);o.connect(g);g.connect(vocP);o.start(w);o.stop(w+dur+0.06);}
+function blipDad(w,midi,dur){if(!AC)return;dur=dur||0.19;
+  const o=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain();
+  o.type='sawtooth';o.frequency.value=m2f(midi);f.type='lowpass';f.frequency.value=2100;
+  const lfo=AC.createOscillator(),lg=AC.createGain();
+  lfo.frequency.value=5.5;lg.gain.value=10;lfo.connect(lg);lg.connect(o.detune);
+  envG(g,w,0.008,0.2,dur);o.connect(f);f.connect(g);g.connect(vocD);
+  o.start(w);o.stop(w+dur+0.08);lfo.start(w);lfo.stop(w+dur+0.08);
+  const s=AC.createOscillator(),sg=AC.createGain();s.type='sine';s.frequency.value=m2f(midi-12);
+  envG(sg,w,0.008,0.12,dur);s.connect(sg);sg.connect(vocD);s.start(w);s.stop(w+dur+0.08);}
+function vocDuck(){if(!AC)return;const w=AC.currentTime;
+  try{vocP.gain.cancelScheduledValues(w);vocP.gain.setValueAtTime(vocP.gain.value,w);
+  vocP.gain.linearRampToValueAtTime(0.0,w+0.015);vocP.gain.linearRampToValueAtTime(1,w+0.2);}catch(e){}}
+// ---- immediate SFX ----
+function sfxTone(f0,f1,dur,type,vol){if(!AC)return;const w=AC.currentTime;
+  const o=AC.createOscillator(),g=AC.createGain();o.type=type||'square';
+  o.frequency.setValueAtTime(f0,w);if(f1)o.frequency.exponentialRampToValueAtTime(f1,w+dur);
+  envG(g,w,0.003,vol||0.15,dur);o.connect(g);g.connect(master);o.start(w);o.stop(w+dur+0.05);}
+const sScroll =()=>sfxTone(520,760,0.06,'square',0.1);
+const sBack   =()=>sfxTone(420,240,0.09,'square',0.1);
+function sConfirm(){sfxTone(600,600,0.07,'square',0.12);
+  if(AC){setTimeout(()=>sfxTone(760,760,0.07,'square',0.12),70);setTimeout(()=>sfxTone(950,950,0.1,'square',0.12),140)}}
+const sPause  =()=>sfxTone(700,320,0.14,'sine',0.2);
+const sTick   =()=>sfxTone(1900,1900,0.03,'square',0.08);
+function sMiss(){if(!AC)return;sfxTone(220,85,0.13,'square',0.22);
+  const w=AC.currentTime,n=noiseSrc(w,0.1),f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=900;
+  const g=AC.createGain();envG(g,w,0.001,0.2,0.1);n.connect(f);f.connect(g);g.connect(master);}
+function sDeath(){if(!AC)return;sfxTone(400,55,0.9,'sawtooth',0.3);
+  const w=AC.currentTime,n=noiseSrc(w,0.7),f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=800;
+  const g=AC.createGain();envG(g,w,0.01,0.3,0.65);n.connect(f);f.connect(g);g.connect(master);}
