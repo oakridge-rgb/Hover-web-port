@@ -9,22 +9,21 @@ os.makedirs(SITE, exist_ok=True)
 
 icons = json.load(open('/home/z/my-project/scripts/icons.json'))
 
-# ---------- 1) copy engine ----------
-shutil.copy2(f'{DL}/gn-math.html', f'{SITE}/gn-math.html')
-print('copied gn-math.html')
+# ---------- 1) copy engine (never overwrite a customized engine) ----------
+if not os.path.exists(f'{SITE}/gn-math.html'):
+    shutil.copy2(f'{DL}/gn-math.html', f'{SITE}/gn-math.html')
+    print('copied gn-math.html')
+else:
+    print('kept existing gn-math.html (already customized)')
 
 # ---------- 2) apps.html ----------
 APPS = [
-    ("music",     "Music",       "Stream any song — no login, no ads",                        "https://gn.local/music.html",          "music"),
-    ("movies",    "Movies & TV", "Free movies & shows, full streaming site",                  "https://www.movy.sx/",                 "movies"),
-    ("ai",        "AI",          "Chat assistant, instant answers",                           "https://www.tryingopen.com/",          "ai"),
-    ("drawing",   "Drawing",     "Full canvas studio — sketch & paint",                       "https://kreska.art/app/",              "drawing"),
-    ("books",     "Books",       "Huge free library, read in-browser",                        "https://bookracy.com/",                "books"),
-    ("YouTube",   "YouTube",     "Real YouTube — search, watch, everything",                  "https://www.youtube.com/",             "YouTube"),
-    ("TikTok",    "TikTok",      "The real For You feed, works in-browser",                   "https://www.tiktok.com/",              "TikTok"),
-    ("Instagram", "Instagram",   "Browse feeds & reels",                                      "https://www.instagram.com/",           "Instagram"),
-    ("discord",   "Discord",     "Full web app — log in and chat",                            "https://discord.com/app",              "discord"),
-    ("Reddit",    "Reddit",      "Fast reader mode for every subreddit",                      "https://www.reddit.com/?gn-reader=1",  "Reddit"),
+    ("movies",    "Movies & TV", "Free movies & shows, full streaming site", "https://www.movy.sx/",                 "movies"),
+    ("TikTok",    "TikTok",      "The real For You feed, works in-browser",  "https://www.tiktok.com/",              "TikTok"),
+    ("Instagram", "Instagram",   "Browse feeds & reels",                     "https://www.instagram.com/",           "Instagram"),
+    ("books",     "Books",       "Huge free library, read in-browser",       "https://bookracy.com/",                "books"),
+    ("YouTube",   "YouTube",     "Real YouTube — search, watch, everything", "https://www.youtube.com/",             "YouTube"),
+    ("discord",   "Discord",     "Full web app — log in and chat",           "https://discord.com/app",              "discord"),
 ]
 tiles = "\n".join(
     f'''      <button class="app-tile" data-app="{key}" data-url="{url}" data-label="{label}">
@@ -118,7 +117,7 @@ a{{color:inherit;text-decoration:none}}
 
 <section class="hero">
   <h1>Apps <em>— all in one place</em></h1>
-  <p>Music, movies &amp; TV, TikTok, YouTube and more — streamed straight through the built-in private proxy.
+  <p>Movies, TikTok, YouTube, Books and more — streamed straight through the built-in private proxy.
      First launch takes a few seconds while it connects; after that it's cached and fast.</p>
 </section>
 
@@ -130,8 +129,8 @@ a{{color:inherit;text-decoration:none}}
   <button class="deck-btn" onclick="location.href='gn-math.html'">
     <span class="tile-icon">{icons['browser']}</span>
     <span>
-      <span class="big">Open the full app deck</span>
-      <span class="sub" style="display:block">840 games — FNF, OvO, Bowmasters, 1v1.LoL… — plus the music player and every app above</span>
+      <span class="big">Open the app launcher</span>
+      <span class="sub" style="display:block">Everything above in one place — plus a built-in address bar to open ANY site through the proxy</span>
     </span>
     <span class="arrow">→</span>
   </button>
@@ -237,11 +236,19 @@ for page in ['tv.html', 's.html']:
         print(page, 'no nav-tabs found — skipped')
 
 # ---------- 4) DEPLOY notes ----------
-open(f'{SITE}/DEPLOY.txt', 'w').write('''FATE V6 — APPS SECTION (gn-math integration)
-============================================
+open(f'{SITE}/DEPLOY.txt', 'w').write('''FATE V6 — APPS SECTION (customized gn-math engine)
+===================================================
+WHAT CHANGED (engine rebrand)
+  gn-math.html is now "FATE": branding, title, favicon and accent color all
+  switched to FATE amber. Games completely removed. Only 6 apps:
+  Movies & TV (movy.sx) / TikTok / Instagram / Books / YouTube / Discord.
+  NEW: built-in address bar — type any site and it opens through the proxy
+  (works like a browser). Deep links still work:
+    gn-math.html#open=https%3A%2F%2Fwww.movy.sx%2F
+
 NEW FILES
-  apps.html      the Apps page (10 app tiles + full-deck button)
-  gn-math.html   the app engine (~17 MB, self-contained — keep this exact
+  apps.html      the Apps page (6 app tiles + launcher button)
+  gn-math.html   the app engine (~16.7 MB, self-contained — keep this exact
                  file name next to apps.html, or update the links)
 
 PATCHED FILES (copied from your originals, one line added to the nav)
@@ -252,20 +259,14 @@ TO HOOK UP THE REST OF YOUR SITE
     <button class="nav-tab" onclick="location.href='apps.html'">Apps</button>
   or a plain link: <a href="apps.html">Apps</a>
 
-DEEP LINKS (open straight into an app)
-  gn-math.html#open=https%3A%2F%2Fwww.movy.sx%2F        Movies & TV
-  gn-math.html#open=https%3A%2F%2Fgn.local%2Fmusic.html Music (embedded)
-  gn-math.html#open=https%3A%2F%2Fwww.tiktok.com%2F     TikTok
-  (URL-encode the target after #open=)
-
 NOTES
-  - Tested end-to-end: movies (movy.sx) and TikTok both load through the
-    built-in Wisp relays — no server config needed on your side.
+  - Tested end-to-end: Movies (movy.sx), TikTok feed, and YouTube via the
+    address bar all load through the built-in Wisp relays — no server
+    config needed on your side.
   - Serve over HTTPS (or localhost) so the WebSocket relays are never blocked.
-  - The 17 MB file is cached by the browser after the first load.
-  - First connect may take a few seconds: the client tries relays in order:
-    arctic.lat -> wisp.mercurywork.shop -> api.ixl.college -> api.sngdu.com
-    -> anura.pro, and auto-falls-over if one is down.
+  - The engine is cached by the browser after the first load.
+  - Relays auto-fall-over: arctic.lat -> wisp.mercurywork.shop ->
+    api.ixl.college -> api.sngdu.com -> anura.pro. Press Reload if a site stalls.
 ''')
 print('wrote DEPLOY.txt')
 print('\nSITE FOLDER:')

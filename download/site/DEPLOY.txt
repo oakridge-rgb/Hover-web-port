@@ -1,8 +1,16 @@
-FATE V6 — APPS SECTION (gn-math integration)
-============================================
+FATE V6 — APPS SECTION (customized gn-math engine)
+===================================================
+WHAT CHANGED (engine rebrand)
+  gn-math.html is now "FATE": branding, title, favicon and accent color all
+  switched to FATE amber. Games completely removed. Only 6 apps:
+  Movies & TV (movy.sx) / TikTok / Instagram / Books / YouTube / Discord.
+  NEW: built-in address bar — type any site and it opens through the proxy
+  (works like a browser). Deep links still work:
+    gn-math.html#open=https%3A%2F%2Fwww.movy.sx%2F
+
 NEW FILES
-  apps.html      the Apps page (10 app tiles + full-deck button)
-  gn-math.html   the app engine (~17 MB, self-contained — keep this exact
+  apps.html      the Apps page (6 app tiles + launcher button)
+  gn-math.html   the app engine (~16.7 MB, self-contained — keep this exact
                  file name next to apps.html, or update the links)
 
 PATCHED FILES (copied from your originals, one line added to the nav)
@@ -13,17 +21,11 @@ TO HOOK UP THE REST OF YOUR SITE
     <button class="nav-tab" onclick="location.href='apps.html'">Apps</button>
   or a plain link: <a href="apps.html">Apps</a>
 
-DEEP LINKS (open straight into an app)
-  gn-math.html#open=https%3A%2F%2Fwww.movy.sx%2F        Movies & TV
-  gn-math.html#open=https%3A%2F%2Fgn.local%2Fmusic.html Music (embedded)
-  gn-math.html#open=https%3A%2F%2Fwww.tiktok.com%2F     TikTok
-  (URL-encode the target after #open=)
-
 NOTES
-  - Tested end-to-end: movies (movy.sx) and TikTok both load through the
-    built-in Wisp relays — no server config needed on your side.
+  - Tested end-to-end: Movies (movy.sx), TikTok feed, and YouTube via the
+    address bar all load through the built-in Wisp relays — no server
+    config needed on your side.
   - Serve over HTTPS (or localhost) so the WebSocket relays are never blocked.
-  - The 17 MB file is cached by the browser after the first load.
-  - First connect may take a few seconds: the client tries relays in order:
-    arctic.lat -> wisp.mercurywork.shop -> api.ixl.college -> api.sngdu.com
-    -> anura.pro, and auto-falls-over if one is down.
+  - The engine is cached by the browser after the first load.
+  - Relays auto-fall-over: arctic.lat -> wisp.mercurywork.shop ->
+    api.ixl.college -> api.sngdu.com -> anura.pro. Press Reload if a site stalls.
