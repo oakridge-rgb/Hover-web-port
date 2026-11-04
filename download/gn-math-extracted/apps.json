@@ -1,0 +1,52 @@
+[
+ {
+  "id": "music",
+  "label": "music",
+  "url": "https://gn.local/music.html"
+ },
+ {
+  "id": "movies",
+  "label": "movies & tv",
+  "url": "https://www.movy.sx/"
+ },
+ {
+  "id": "ai",
+  "label": "ai",
+  "url": "https://www.tryingopen.com/"
+ },
+ {
+  "id": "drawing",
+  "label": "drawing",
+  "url": "https://kreska.art/app/"
+ },
+ {
+  "id": "books",
+  "label": "books",
+  "url": "https://bookracy.com/"
+ },
+ {
+  "id": "YouTube",
+  "label": "youtube",
+  "url": "https://www.youtube.com/"
+ },
+ {
+  "id": "TikTok",
+  "label": "tiktok",
+  "url": "https://www.tiktok.com/"
+ },
+ {
+  "id": "Instagram",
+  "label": "instagram",
+  "url": "https://www.instagram.com/"
+ },
+ {
+  "id": "discord",
+  "label": "discord",
+  "url": "https://discord.com/app"
+ },
+ {
+  "id": "Reddit",
+  "label": "reddit",
+  "url": "https://www.reddit.com/?gn-reader=1"
+ }
+]
