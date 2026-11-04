@@ -1,0 +1,163 @@
+<div id="app" hidden>
+  <header id="topbar">
+    <div class="tb-left">
+      <div id="logo"><span class="mark">F</span>FlipaClip<span class="sub">&nbsp;Studio</span></div>
+      <input id="projName" spellcheck="false" autocomplete="off" title="Project name">
+    </div>
+    <div class="tb-center">
+      <button class="tbtn" id="btnUndo" data-icon="undo" title="Undo (Ctrl+Z)"></button>
+      <button class="tbtn" id="btnRedo" data-icon="redo" title="Redo (Ctrl+Y)"></button>
+      <span class="vsep"></span>
+      <button class="tbtn" id="btnOnion" data-icon="onion" data-label="Onion" title="Onion skin (O)"></button>
+      <button class="tbtn" id="btnGrid" data-icon="grid" data-label="Grid" title="Grid"></button>
+      <span class="vsep"></span>
+      <button class="tbtn" id="btnAudio" data-icon="music" data-label="Audio" title="Add audio track (preview only)"></button>
+    </div>
+    <div class="tb-right">
+      <button class="tbtn" id="btnNew" data-label="New" title="New project"></button>
+      <button class="tbtn" id="btnOpen" data-icon="folder" data-label="Open" title="Open project file"></button>
+      <button class="tbtn" id="btnSaveProj" data-icon="save" data-label="Save" title="Save project file (.json)"></button>
+      <button class="tbtn" id="btnSettings" data-icon="settings" title="Settings"></button>
+      <button class="tbtn primary" id="btnExport" data-icon="download" data-label="Export"></button>
+    </div>
+  </header>
+
+  <div id="main">
+    <aside id="toolbar">
+      <button class="tool" data-tool="brush"   data-icon="brush"   title="Brush (B)"></button>
+      <button class="tool" data-tool="eraser"  data-icon="eraser"  title="Eraser (E)"></button>
+      <button class="tool" data-tool="fill"    data-icon="fill"    title="Fill bucket (G)"></button>
+      <button class="tool" data-tool="lasso"   data-icon="lasso"   title="Lasso select &amp; move (L)"></button>
+      <div class="tsep"></div>
+      <button class="tool" data-tool="line"    data-icon="line"    title="Line (V)"></button>
+      <button class="tool" data-tool="rect"    data-icon="rect"    title="Rectangle (R)"></button>
+      <button class="tool" data-tool="ellipse" data-icon="ellipse" title="Ellipse (C)"></button>
+      <button class="tool" data-tool="picker"  data-icon="picker"  title="Color picker (I)"></button>
+      <div class="tsep"></div>
+      <input type="color" id="colorSwatch" value="#111111" title="Brush color">
+      <div id="palette"></div>
+      <div class="tsep"></div>
+      <div class="topt"><input type="range" id="sizeRange" min="1" max="80" value="6"><div id="sizeVal">6 px</div></div>
+      <div class="topt" id="opacityOpt"><input type="range" id="opacityRange" min="5" max="100" value="100"><div id="opacityVal">100%</div></div>
+      <div class="topt" id="tolOpt" hidden><input type="range" id="tolRange" min="0" max="120" value="28"><div id="tolVal">tol 28</div></div>
+      <div class="topt" id="fillOpt" hidden><label><input type="checkbox" id="fillShape" style="accent-color:var(--accent)"> Fill</label></div>
+    </aside>
+
+    <div id="stagewrap">
+      <div id="stagebox">
+        <canvas id="disp" width="1280" height="720"></canvas>
+        <canvas id="ovl" width="1280" height="720"></canvas>
+      </div>
+      <div id="zoombar">
+        <button id="zoomOut" title="Zoom out">&minus;</button>
+        <span id="zoomPct">100%</span>
+        <button id="zoomIn" title="Zoom in">+</button>
+        <button id="zoomFit" title="Fit to screen">Fit</button>
+      </div>
+    </div>
+
+    <aside id="layerspanel">
+      <div class="lp-head"><span>Layers</span><button id="layerAdd" data-icon="plus" title="Add layer"></button></div>
+      <div id="layerList"></div>
+      <div class="lp-foot">
+        <div class="oprow"><span style="width:auto">Opacity</span><input type="range" id="layerOpacity" min="0" max="100" value="100"><span id="layerOpacityVal">100%</span></div>
+        <div class="lp-btns">
+          <button id="layerUp" data-icon="up" title="Move layer up"></button>
+          <button id="layerDown" data-icon="down" title="Move layer down"></button>
+          <button id="layerClear" data-icon="clear" title="Clear this layer"></button>
+          <button id="layerDel" data-icon="trash" title="Delete layer"></button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer id="timeline">
+    <div id="transport">
+      <button class="tbtn" id="btnStart" data-icon="start" title="First frame (Home)"></button>
+      <button class="tbtn" id="btnPrev" data-icon="prev" title="Previous frame (,)"></button>
+      <button class="tbtn" id="btnPlay" data-icon="play" title="Play / Pause (Space)"></button>
+      <button class="tbtn" id="btnNext" data-icon="next" title="Next frame (.)"></button>
+      <button class="tbtn" id="btnEnd" data-icon="end" title="Last frame (End)"></button>
+      <button class="tbtn on" id="btnLoop" data-icon="loop" data-label="Loop" title="Loop playback"></button>
+      <div class="fpsbox" title="Frames per second">
+        <button id="fpsMinus">&minus;</button><span id="fpsVal">12</span><span class="u">fps</span><button id="fpsPlus">+</button>
+      </div>
+      <div id="frameCounter">1 / 1</div>
+    </div>
+    <div id="framestrip"></div>
+  </footer>
+</div>
+
+<div id="modalRoot">
+  <div class="overlay" id="mNew" hidden>
+    <div class="dialog">
+      <h2>New project</h2>
+      <div class="frow"><label>Name</label><input id="npName" value="My Animation" maxlength="48" spellcheck="false"></div>
+      <div class="frow"><label>Canvas size</label>
+        <select id="npSize">
+          <option value="1280x720" selected>HD 1280 &times; 720 (16:9)</option>
+          <option value="1920x1080">Full HD 1920 &times; 1080</option>
+          <option value="1080x1080">Square 1080 &times; 1080</option>
+          <option value="720x1280">Portrait 720 &times; 1280 (9:16)</option>
+          <option value="800x600">Classic 800 &times; 600</option>
+        </select>
+      </div>
+      <div class="frow"><label>Frame rate</label>
+        <select id="npFps"><option>8</option><option selected>12</option><option>15</option><option>24</option><option>30</option></select>
+      </div>
+      <div class="frow"><label>Background</label><input type="color" id="npBg" value="#ffffff"></div>
+      <div class="dlg-actions">
+        <button class="btn" id="npRestore" hidden>Restore last session</button>
+        <span class="spacer"></span>
+        <button class="btn" id="npCancel" hidden>Cancel</button>
+        <button class="btn primary" id="npCreate">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="mSettings" hidden>
+    <div class="dialog">
+      <h2>Settings</h2>
+      <div class="frow"><label>Name</label><input id="stName" maxlength="48" spellcheck="false"></div>
+      <div class="frow"><label>Frame rate</label>
+        <select id="stFps"><option>8</option><option>12</option><option>15</option><option>24</option><option>30</option></select>
+      </div>
+      <div class="frow"><label>Background</label><input type="color" id="stBg"></div>
+      <p class="hint">Canvas size is fixed after the project is created. The audio track is preview-only (it is not stored in saved projects).</p>
+      <div class="dlg-actions">
+        <span class="spacer"></span>
+        <button class="btn primary" id="stDone">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="mExport" hidden>
+    <div class="dialog" style="width:min(560px,94vw)">
+      <h2>Export animation</h2>
+      <div class="excards">
+        <div class="excard on" data-fmt="gif" id="exGif"><span data-icon="gif"></span><b>GIF</b><small>Animated image</small></div>
+        <div class="excard" data-fmt="mp4" id="exMp4"><span data-icon="film"></span><b>MP4 / WebM</b><small>Video file</small></div>
+        <div class="excard" data-fmt="png" id="exPng"><span data-icon="image"></span><b>PNG frames</b><small>ZIP sequence</small></div>
+      </div>
+      <div class="frow"><label>Scale</label>
+        <select id="exScale">
+          <option value="1">100%</option>
+          <option value="0.5" selected>50%</option>
+          <option value="0.25">25%</option>
+        </select>
+      </div>
+      <div class="frow" id="exFpsRow"><label>Frame rate</label><select id="exFps"></select></div>
+      <div class="hint" id="exInfo"></div>
+      <div class="progress" id="exProgWrap" hidden><i id="exProg"></i></div>
+      <div class="dlg-actions">
+        <span class="hint" id="exStatus" style="flex:1;text-align:left"></span>
+        <button class="btn" id="exCancel">Cancel</button>
+        <button class="btn primary" id="exGo">Export</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+<input type="file" id="fileOpen" accept=".json,application/json" hidden>
+<input type="file" id="fileAudio" accept="audio/*" hidden>
