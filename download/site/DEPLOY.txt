@@ -13,13 +13,10 @@ NEW FILES
   gn-math.html   the app engine (~16.7 MB, self-contained — keep this exact
                  file name next to apps.html, or update the links)
 
-PATCHED FILES (copied from your originals, one line added to the nav)
-  tv.html, s.html  -> added an "Apps" button in the nav-tabs row
-
-TO HOOK UP THE REST OF YOUR SITE
-  Add this button to any other page's nav (e.g. your index.html / games.html):
-    <button class="nav-tab" onclick="location.href='apps.html'">Apps</button>
-  or a plain link: <a href="apps.html">Apps</a>
+PATCHED FILES (fab-menu now has: Home, Apps, Browser, then your links)
+  index.html      your hub (fate-portal-v2) with Apps + Browser added
+  tv.html, s.html -> +Apps tab in the nav row + Apps/Browser in fab menu
+  games.html, w.html, settings.html -> Apps/Browser in fab menu
 
 NOTES
   - Tested end-to-end: Movies (movy.sx), TikTok feed, and YouTube via the

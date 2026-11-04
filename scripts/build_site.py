@@ -235,6 +235,45 @@ for page in ['tv.html', 's.html']:
     else:
         print(page, 'no nav-tabs found — skipped')
 
+# ---------- 3b) index.html (from fate-portal-v2) + Apps/Browser in every fab-menu ----------
+FAB_ITEMS = '''<a href="apps.html" class="fab-item">
+      <svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+      <span>Apps</span>
+    </a>
+    <a href="gn-math.html" class="fab-item">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+      <span>Browser</span>
+    </a>
+    '''
+
+def add_fab_items(d):
+    """Insert Apps+Browser right after the Home item of the fab menu."""
+    if 'href="apps.html" class="fab-item"' in d:
+        return d, 'already'
+    m = re.search(r'<a href="index\.html" class="fab-item">', d)
+    if not m:
+        return d, 'no-home-item'
+    j = d.find('</a>', m.end())
+    if j < 0:
+        return d, 'no-home-close'
+    j += len('</a>')
+    return d[:j] + '\n    ' + FAB_ITEMS.rstrip() + d[j:], 'patched'
+
+# index = the portal hub
+d = open(f'{DL}/fate-portal-v2.html', encoding='utf-8', errors='replace').read()
+d, st = add_fab_items(d)
+open(f'{SITE}/index.html', 'w', encoding='utf-8').write(d)
+print('index.html:', st, '(built from fate-portal-v2.html)')
+
+# same two links on the other pages' fab menus
+for page in ['tv.html', 's.html', 'games.html', 'w.html', 'settings.html']:
+    src = f'{SITE}/{page}' if os.path.exists(f'{SITE}/{page}') else f'{UP}/{page}'
+    d = open(src, encoding='utf-8', errors='replace').read()
+    d, st = add_fab_items(d)
+    if st == 'patched':
+        open(f'{SITE}/{page}', 'w', encoding='utf-8').write(d)
+    print(page, 'fab-menu:', st)
+
 # ---------- 4) DEPLOY notes ----------
 open(f'{SITE}/DEPLOY.txt', 'w').write('''FATE V6 — APPS SECTION (customized gn-math engine)
 ===================================================
@@ -251,13 +290,10 @@ NEW FILES
   gn-math.html   the app engine (~16.7 MB, self-contained — keep this exact
                  file name next to apps.html, or update the links)
 
-PATCHED FILES (copied from your originals, one line added to the nav)
-  tv.html, s.html  -> added an "Apps" button in the nav-tabs row
-
-TO HOOK UP THE REST OF YOUR SITE
-  Add this button to any other page's nav (e.g. your index.html / games.html):
-    <button class="nav-tab" onclick="location.href='apps.html'">Apps</button>
-  or a plain link: <a href="apps.html">Apps</a>
+PATCHED FILES (fab-menu now has: Home, Apps, Browser, then your links)
+  index.html      your hub (fate-portal-v2) with Apps + Browser added
+  tv.html, s.html -> +Apps tab in the nav row + Apps/Browser in fab menu
+  games.html, w.html, settings.html -> Apps/Browser in fab menu
 
 NOTES
   - Tested end-to-end: Movies (movy.sx), TikTok feed, and YouTube via the
