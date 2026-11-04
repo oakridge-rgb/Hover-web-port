@@ -24,5 +24,18 @@ NOTES
     config needed on your side.
   - Serve over HTTPS (or localhost) so the WebSocket relays are never blocked.
   - The engine is cached by the browser after the first load.
-  - Relays auto-fall-over: arctic.lat -> wisp.mercurywork.shop ->
-    api.ixl.college -> api.sngdu.com -> anura.pro. Press Reload if a site stalls.
+  - NEW Nov 2026 - 80-relay scan pool: arctic.lat (the old primary) is
+    dead/blocked in many places, so the engine now ships with 80 public
+    wisp relays on 52 different hosts (all handshake + real HTTP verified
+    through the tunnel on 2026-11-04). On every first visit the engine
+    races them 64-at-a-time, picks the fastest that answers, and caches
+    it for 24h; if a relay dies mid-session it fails over automatically.
+    To add your own relay: open gn-math.html, find "FATE relay pool",
+    add a line "wss://your-host/path/" under the # comments.
+  - Homepage access gate: index.html asks for the FATE password once
+    (default 'fate2026' when pass.js is absent) and stores it; wrong
+    entries re-prompt, cancelling just stays on the page. games.html
+    still bounces unauthed visitors to the homepage.
+  - games.json (your 2021-game catalog) is now included; index/games
+    pages load it from the same folder. games3.json is optional - its
+    404 is harmless. Card images need your /media/ folder when deployed.
