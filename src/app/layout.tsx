@@ -14,37 +14,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fate v6 — Daily Fate Companion",
+  title: "FlipaDraw — Frame-by-Frame Animation",
   description:
-    "Installable, offline-capable, local-first PWA. Reveal your daily fate, ask the Oracle, and log your threads. All data stays on your device.",
-  applicationName: "Fate v6",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "Fate v6",
-  },
+    "Draw, animate and export. A frame-by-frame animation studio with layers, onion skinning, audio and GIF / MP4 export. Everything stays in your browser.",
+  applicationName: "FlipaDraw",
   formatDetection: {
     telephone: false,
-  },
-  icons: {
-    icon: [
-      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: "/apple-touch-icon.png",
-  },
-  openGraph: {
-    title: "Fate v6 — Daily Fate Companion",
-    description: "One draw per day. The same card for everyone, everywhere. Works offline.",
-    type: "website",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0c0a09",
+  themeColor: "#17181a",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
 };
 
