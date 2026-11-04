@@ -1,0 +1,448 @@
+#!/usr/bin/env python3
+"""Build download/site/wisp-scanner.html — standalone wisp endpoint scanner test file."""
+import json, os
+
+SITE = "/home/z/my-project/download/site"
+MASTER = "/tmp/wisp_master.txt"
+
+endpoints = [l.strip() for l in open(MASTER) if l.strip()]
+print(f"endpoints: {len(endpoints)}")
+
+TEMPLATE = r"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FATE — Wisp Endpoint Scanner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#12161f; --panel2:#171c27; --line:#232a38;
+    --text:#e8eaf0; --dim:#8b93a7; --amber:#f59e0b; --amber-dim:#f59e0b22;
+    --green:#22c55e; --red:#ef4444; --gray:#6b7280; --blue:#3b82f6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;padding:24px 18px 60px}
+  .wrap{max-width:1080px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;color:#0b0e14;font-size:19px}
+  h1{font-family:'Space Grotesk';font-size:21px;font-weight:600}
+  h1 span{color:var(--amber)}
+  .sub{color:var(--dim);font-size:12.5px;margin-top:2px;max-width:640px;line-height:1.5}
+  .badge-test{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);border:1px solid var(--amber);background:var(--amber-dim);padding:4px 10px;border-radius:99px;font-weight:700}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin-bottom:14px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .stat .n{font-family:'Space Grotesk';font-size:23px;font-weight:700}
+  .stat .l{font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
+  .n.alive{color:var(--green)} .n.blocked{color:var(--red)} .n.timeout{color:#9ca3af} .n.pending{color:var(--blue)}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+  .ctl{display:flex;flex-direction:column;gap:5px}
+  .ctl label{font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+  .ctl input[type=number]{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;width:100px;font-family:inherit}
+  .ctl.check{flex-direction:row;align-items:center;gap:7px;padding-bottom:9px}
+  .ctl.check input{accent-color:var(--amber);width:15px;height:15px}
+  .ctl.check label{text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--text);cursor:pointer;font-weight:500}
+  .grow{flex:1}
+  button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-size:13px;font-weight:600;padding:9px 15px;transition:filter .15s,transform .05s}
+  button:active{transform:scale(.97)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .btn-primary{background:var(--amber);color:#0b0e14}
+  .btn-ghost{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+  .btn-green{background:var(--green);color:#052e13}
+  .btn-red{background:transparent;color:var(--red);border:1px solid var(--red)}
+
+  .progress{height:7px;background:var(--panel2);border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-bottom:14px}
+  .progress .bar{height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#fbbf24);transition:width .25s}
+
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+  .chip{background:var(--panel2);border:1px solid var(--line);color:var(--dim);border-radius:99px;padding:6px 14px;font-size:12px;font-weight:600}
+  .chip.on{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
+  .search{margin-left:auto;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:99px;padding:7px 14px;font-size:12.5px;width:210px;font-family:inherit;outline:none}
+  .search:focus{border-color:var(--amber)}
+
+  table{width:100%;border-collapse:collapse}
+  th{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);font-weight:700}
+  td{padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+  tr:hover td{background:#ffffff05}
+  .url{font-family:ui-monospace,'Cascadia Code',Menlo,monospace;font-size:12px;word-break:break-all;color:var(--text)}
+  .url.dim{color:var(--dim)}
+  .status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap}
+  .st-checking{background:#3b82f622;color:var(--blue)} .st-alive{background:#22c55e22;color:var(--green)}
+  .st-blocked{background:#ef444422;color:var(--red)} .st-timeout{background:#6b728022;color:#9ca3af}
+  .st-queued{background:#6b72801a;color:#6b7280}
+  .dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+  .dot.checking{animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.2}}
+  .lat{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--dim);white-space:nowrap}
+  .wispok{color:var(--green);font-weight:700}
+  .empty{color:var(--dim);font-size:13px;text-align:center;padding:34px 0}
+  .hint{font-size:12px;color:var(--dim);line-height:1.6;margin-top:10px}
+  .hint b{color:var(--text)}
+  textarea{width:100%;min-height:150px;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:12px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;resize:vertical;line-height:1.7}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--amber);color:#0b0e14;font-weight:700;font-size:13px;padding:11px 22px;border-radius:99px;transition:transform .25s;z-index:50;box-shadow:0 8px 30px #0009;max-width:80vw}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  footer{margin-top:26px;color:#4d5566;font-size:11.5px;text-align:center;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">F</div>
+      <div>
+        <h1>FATE <span>Wisp Scanner</span></h1>
+        <div class="sub">Fires a real WebSocket upgrade at every wisp relay — working ones answer <b>101 Switching Protocols</b> (socket opens, green). Blocked ones fail TLS, reset, or answer 403/404. Alive sockets get a wisp CONNECT probe to confirm they actually speak wisp.</div>
+      </div>
+    </div>
+    <div class="badge-test">Test file</div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="n" id="s-total">0</div><div class="l">Total</div></div>
+    <div class="stat"><div class="n alive" id="s-alive">0</div><div class="l">Alive</div></div>
+    <div class="stat"><div class="n blocked" id="s-blocked">0</div><div class="l">Blocked</div></div>
+    <div class="stat"><div class="n timeout" id="s-timeout">0</div><div class="l">Timeout</div></div>
+    <div class="stat"><div class="n pending" id="s-pending">0</div><div class="l">Queued</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="controls">
+      <div class="ctl"><label>Concurrency</label><input type="number" id="concurrency" min="1" max="32" value="10"></div>
+      <div class="ctl"><label>Timeout (s)</label><input type="number" id="timeout" min="2" max="30" value="6"></div>
+      <div class="ctl check"><input type="checkbox" id="variants"><label for="variants">Auto-add <b>/wisp/</b> variant for root-only endpoints</label></div>
+      <div class="grow"></div>
+      <button class="btn-primary" id="btn-start">▶ Start scan</button>
+      <button class="btn-red" id="btn-stop" disabled>■ Stop</button>
+      <button class="btn-ghost" id="btn-retest">↻ Retest alive</button>
+      <button class="btn-green" id="btn-export" disabled>⧉ Copy alive</button>
+      <button class="btn-ghost" id="btn-dl" disabled>↓ Download alive</button>
+    </div>
+  </div>
+
+  <div class="progress"><div class="bar" id="bar"></div></div>
+
+  <div class="filters">
+    <button class="chip on" data-f="all">All</button>
+    <button class="chip" data-f="alive">Alive</button>
+    <button class="chip" data-f="blocked">Blocked</button>
+    <button class="chip" data-f="timeout">Timeout</button>
+    <input class="search" id="search" placeholder="Filter by host…">
+  </div>
+
+  <div class="panel" style="padding:0">
+    <table>
+      <thead><tr><th style="width:150px">Status</th><th>Endpoint</th><th style="width:110px">Latency</th><th style="width:70px">Wisp</th></tr></thead>
+      <tbody id="rows"><tr class="empty"><td colspan="4">No scan yet — press <b>Start scan</b>.</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="ctl" style="margin-bottom:10px">
+      <label>Endpoint list — one per line (wss://host/ or wss://host/wisp/). Edits are saved in this browser.</label>
+    </div>
+    <textarea id="ep-list" spellcheck="false"></textarea>
+    <div class="rowbtns">
+      <button class="btn-primary" id="btn-savelist">Save list</button>
+      <button class="btn-ghost" id="btn-resetlist">Reset to baked-in list</button>
+      <button class="btn-ghost" id="btn-cleancache">Clear cached results</button>
+    </div>
+    <p class="hint">
+      <b>Reading results:</b> <b style="color:var(--green)">ALIVE</b> = the upgrade reached 101 and the socket opened (usable lane).
+      A <b class="wispok">✓</b> in the Wisp column means it also answered a real wisp CONNECT frame — fully usable by the engine.
+      <b style="color:var(--red)">BLOCKED</b> = TLS failed / connection reset / 403+ interception page (that's your blocker killing it).
+      <b>TIMEOUT</b> = nothing came back in time — may still work on a different network.
+      Results cache in localStorage; <b>Copy alive</b> outputs a ready-to-paste JS failover array for the engine.
+    </p>
+  </div>
+
+  <footer>FATE wisp endpoint scanner · standalone test file · baked list: __COUNT__ endpoints from the engine's own discovery pool + community relays · rescan whenever apps stop loading</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const BAKED_ENDPOINTS = __ENDPOINTS_JSON__;
+
+const LS_EP  = "fate_wisp_endpoints";
+const LS_RES = "fate_wisp_results";
+
+let scanList = [];
+let results  = loadResults();
+let stopFlag = false;
+let filter   = "all";
+let searchTerm = "";
+
+const $ = id => document.getElementById(id);
+const rowsEl = $("rows");
+
+function loadList(){
+  try{
+    const s = localStorage.getItem(LS_EP);
+    if (s){ const a = JSON.parse(s); if (Array.isArray(a) && a.length) return a; }
+  }catch(e){}
+  return [...BAKED_ENDPOINTS];
+}
+function loadResults(){
+  try{ const s = localStorage.getItem(LS_RES); if (s) return JSON.parse(s); }catch(e){}
+  return {};
+}
+function saveResults(){
+  try{ localStorage.setItem(LS_RES, JSON.stringify(results)); }catch(e){}
+}
+
+function normalize(list){
+  const out = [];
+  for (let raw of list){
+    let u = (raw || "").trim();
+    if (!u || u.startsWith("#") || u.startsWith("//")) continue;
+    u = u.replace(/^wisp:\/\//i, "wss://").replace(/^http:\/\//i, "ws://").replace(/^https:\/\//i, "wss://");
+    if (!/^wss?:\/\//i.test(u)) u = "wss://" + u;
+    if (out.indexOf(u) === -1) out.push(u);
+  }
+  return out;
+}
+function variantsFor(list){
+  const add = [];
+  for (const u of list){
+    const m = u.match(/^wss:\/\/([^/]+)\/$/i);
+    if (m){
+      const v = "wss://" + m[1] + "/wisp/";
+      if (list.indexOf(v) === -1) add.push(v);
+    }
+  }
+  return add;
+}
+
+/* ---------- wisp v1 CONNECT probe (sent after socket opens) ---------- */
+function wispConnectFrame(host, port){
+  const enc = new TextEncoder().encode(host);
+  const buf = new ArrayBuffer(4 + 1 + 1 + 1 + enc.length + 2);
+  const dv  = new DataView(buf);
+  let o = 0;
+  dv.setUint32(o, 1, true); o += 4;          // stream id 1 (LE)
+  dv.setUint8(o, 0x01); o += 1;              // packet type: CONNECT
+  dv.setUint8(o, 0x01); o += 1;              // stream type: TCP
+  dv.setUint8(o, enc.length); o += 1;        // host length
+  new Uint8Array(buf).set(enc, o); o += enc.length;
+  dv.setUint16(o, port, true); o += 2;       // port (LE in v1 wire order used by servers)
+  return buf;
+}
+
+function testEndpoint(url, timeoutMs){
+  return new Promise(resolve => {
+    const t0 = performance.now();
+    let ws, done = false, wispConfirmed = false, opened = false;
+    const finish = (status) => {
+      if (done) return; done = true;
+      clearTimeout(timer); clearTimeout(wispTimer);
+      try{ if (ws && (ws.readyState === 0 || ws.readyState === 1)) ws.close(); }catch(e){}
+      resolve({status, ms: Math.round(performance.now() - t0), wisp: wispConfirmed});
+    };
+    const timer = setTimeout(() => finish(opened ? "alive" : "timeout"), timeoutMs);
+    let wispTimer = null;
+    try{
+      ws = new WebSocket(url);
+      ws.binaryType = "arraybuffer";
+      ws.onopen = () => {
+        opened = true;
+        // probe real wisp: send CONNECT for example.com:80, listen for a wisp frame
+        try{ ws.send(wispConnectFrame("example.com", 80)); }catch(e){}
+        wispTimer = setTimeout(() => finish("alive"), 2500);
+      };
+      ws.onmessage = (ev) => {
+        if (ev.data instanceof ArrayBuffer && ev.data.byteLength >= 5){
+          const t = new DataView(ev.data).getUint8(0);
+          if (t === 1 || t === 2 || t === 3) wispConfirmed = true;   // DATA / CONTINUE / CLOSE
+        }
+        if (wispConfirmed) finish("alive");
+      };
+      ws.onerror   = () => finish(opened ? "alive" : "blocked");
+      ws.onclose   = () => finish(opened ? "alive" : "blocked");
+    }catch(e){ finish("blocked"); }
+  });
+}
+
+async function runScan(list, timeoutMs, concurrency){
+  stopFlag = false;
+  $("btn-start").disabled = true; $("btn-stop").disabled = false;
+  const queue = list.slice();
+  let idx = 0;
+  const worker = async () => {
+    while (!stopFlag){
+      const i = idx++;
+      if (i >= queue.length) break;
+      const url = queue[i];
+      results[url] = {status:"checking", ms:null};
+      render();
+      const r = await testEndpoint(url, timeoutMs);
+      if (results[url] && results[url].status === "checking"){
+        results[url] = {status:r.status, ms:r.ms, wisp:r.wisp, t:Date.now()};
+        saveResults();
+      }
+      render();
+    }
+  };
+  const n = Math.max(1, Math.min(32, concurrency));
+  await Promise.all(Array.from({length:n}, worker));
+  $("btn-start").disabled = false; $("btn-stop").disabled = true;
+  const alive = Object.keys(results).filter(u => results[u].status === "alive");
+  const ok    = alive.filter(u => results[u].wisp);
+  toast(ok.length ? `Scan done — ${ok.length} confirmed wisp lane${ok.length>1?"s":""} (${alive.length} sockets open)` :
+        alive.length ? `Scan done — ${alive.length} socket${alive.length>1?"s":""} open, none confirmed wisp` :
+        "Scan done — none alive from this network. Paste more endpoints below.");
+}
+
+/* ---------- rendering ---------- */
+function render(){
+  const eps = scanList;
+  const counts = {alive:0, blocked:0, timeout:0, checking:0, queued:0};
+  for (const u of eps){
+    const r = results[u];
+    if (!r || !r.status || r.status === "queued") counts.queued++;
+    else if (r.status === "checking") counts.checking++;
+    else if (counts[r.status] !== undefined) counts[r.status]++;
+    else counts.queued++;
+  }
+  $("s-total").textContent   = eps.length;
+  $("s-alive").textContent   = counts.alive;
+  $("s-blocked").textContent = counts.blocked;
+  $("s-timeout").textContent = counts.timeout;
+  $("s-pending").textContent = counts.queued + counts.checking;
+  const done = counts.alive + counts.blocked + counts.timeout;
+  $("bar").style.width = eps.length ? Math.round(done / eps.length * 100) + "%" : "0%";
+  $("btn-export").disabled = counts.alive === 0;
+  $("btn-dl").disabled     = counts.alive === 0;
+
+  let rows = eps.map(u => ({u, r: results[u] || {status:"queued"}}));
+  if (filter !== "all") rows = rows.filter(x => x.r.status === filter);
+  if (searchTerm) rows = rows.filter(x => x.u.toLowerCase().includes(searchTerm));
+  const order = {checking:0, alive:1, blocked:2, timeout:3, queued:4};
+  rows.sort((a,b) =>
+    (order[(a.r.status||"queued")] - order[(b.r.status||"queued")]) ||
+    ((b.r.wisp?1:0) - (a.r.wisp?1:0)) ||
+    ((a.r.ms||9e9) - (b.r.ms||9e9)) ||
+    a.u.localeCompare(b.u));
+
+  if (!rows.length){
+    rowsEl.innerHTML = '<tr class="empty"><td colspan="4">Nothing matches this filter.</td></tr>';
+    return;
+  }
+  rowsEl.innerHTML = rows.map(({u,r}) => {
+    const st = r.status || "queued";
+    const label = {alive:"ALIVE", blocked:"BLOCKED", timeout:"TIMEOUT", checking:"TESTING…", queued:"QUEUED"}[st] || "QUEUED";
+    const lat = r.status === "alive" ? (r.ms != null ? r.ms + " ms" : "—")
+              : r.status === "blocked" ? (r.ms != null ? r.ms + " ms" : "fast-fail")
+              : r.status === "timeout" ? "no answer" : "—";
+    const wisp = st === "alive" ? (r.wisp ? '<span class="wispok">✓</span>' : '<span class="lat">—</span>') : "";
+    return `<tr>
+      <td><span class="status st-${st}"><span class="dot ${st==="checking"?"checking":""}"></span>${label}</span></td>
+      <td class="url ${st==="blocked"||st==="timeout"?"dim":""}">${escapeHtml(u)}</td>
+      <td class="lat">${lat}</td>
+      <td>${wisp}</td>
+    </tr>`;
+  }).join("");
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+/* ---------- export ---------- */
+function aliveList(){
+  return normalize(Object.keys(results)).filter(u => results[u] && results[u].status === "alive");
+}
+function exportText(){
+  const a = aliveList();
+  return "/* FATE wisp failover — scanned " + new Date().toISOString() + " — " + a.length + " alive */\n" +
+         a.map(u => JSON.stringify(u)).join(",\n");
+}
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+/* ---------- ui ---------- */
+$("btn-start").onclick = () => {
+  const list = normalize($("ep-list").value.split(/\r?\n/));
+  if (!list.length){ toast("No endpoints to scan"); return; }
+  if ($("variants").checked) for (const v of variantsFor(list)) list.push(v);
+  scanList = list;
+  const set = new Set(list);
+  for (const k of Object.keys(results)) if (!set.has(k)) delete results[k];
+  for (const u of list) if (!results[u]) results[u] = {status:"queued"};
+  saveResults(); render();
+  runScan(list, (parseInt($("timeout").value) || 6) * 1000, parseInt($("concurrency").value) || 10);
+};
+$("btn-stop").onclick = () => { stopFlag = true; toast("Stopping after in-flight tests…"); };
+$("btn-retest").onclick = () => {
+  const alive = aliveList();
+  if (!alive.length){ toast("No cached alive endpoints — run a scan first"); return; }
+  for (const u of alive) results[u] = {status:"queued"};
+  scanList = normalize($("ep-list").value.split(/\r?\n/));
+  if ($("variants").checked) for (const v of variantsFor(scanList.slice())) scanList.push(v);
+  render();
+  runScan(alive, (parseInt($("timeout").value) || 6) * 1000, parseInt($("concurrency").value) || 10);
+};
+$("btn-export").onclick = () => {
+  if (!aliveList().length){ toast("No alive endpoints yet"); return; }
+  navigator.clipboard.writeText(exportText())
+    .then(() => toast("Alive list copied as JS array"))
+    .catch(() => window.prompt("Copy the alive list:", exportText()));
+};
+$("btn-dl").onclick = () => {
+  if (!aliveList().length){ toast("No alive endpoints yet"); return; }
+  const blob = new Blob([aliveList().join("\n")], {type:"text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "wisp-alive-" + new Date().toISOString().slice(0,10) + ".txt";
+  a.click(); URL.revokeObjectURL(a.href);
+};
+$("btn-savelist").onclick = () => {
+  const list = normalize($("ep-list").value.split(/\r?\n/));
+  try{
+    localStorage.setItem(LS_EP, JSON.stringify(list));
+    toast("Saved " + list.length + " endpoints");
+    scanList = list; for (const u of list) if (!results[u]) results[u] = {status:"queued"};
+    render();
+  }catch(e){ toast("Could not save"); }
+};
+$("btn-resetlist").onclick = () => {
+  $("ep-list").value = BAKED_ENDPOINTS.join("\n");
+  try{ localStorage.setItem(LS_EP, JSON.stringify(BAKED_ENDPOINTS)); }catch(e){}
+  scanList = [...BAKED_ENDPOINTS];
+  for (const u of scanList) if (!results[u]) results[u] = {status:"queued"};
+  render(); toast("Reset to baked-in list");
+};
+$("btn-cleancache").onclick = () => {
+  results = {}; saveResults();
+  for (const u of scanList) results[u] = {status:"queued"};
+  render(); toast("Cached results cleared");
+};
+document.querySelectorAll(".chip").forEach(ch => ch.onclick = () => {
+  document.querySelectorAll(".chip").forEach(c => c.classList.remove("on"));
+  ch.classList.add("on"); filter = ch.dataset.f; render();
+});
+$("search").oninput = e => { searchTerm = e.target.value.trim().toLowerCase(); render(); };
+
+/* ---------- boot ---------- */
+scanList = loadList();
+$("ep-list").value = scanList.join("\n");
+for (const u of scanList) if (!results[u]) results[u] = {status:"queued"};
+render();
+</script>
+</body>
+</html>
+"""
+
+html = TEMPLATE.replace("__ENDPOINTS_JSON__", json.dumps(endpoints, indent=0)) \
+               .replace("__COUNT__", str(len(endpoints)))
+os.makedirs(SITE, exist_ok=True)
+out = os.path.join(SITE, "wisp-scanner.html")
+open(out, "w").write(html)
+print("wrote", out, len(html), "bytes")
+
+# plain master list for reference
+open("/home/z/my-project/download/wisp-endpoints.txt", "w").write("\n".join(endpoints) + "\n")
+print("wrote /home/z/my-project/download/wisp-endpoints.txt")
