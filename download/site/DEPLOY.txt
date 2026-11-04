@@ -1,0 +1,29 @@
+FATE V6 — APPS SECTION (gn-math integration)
+============================================
+NEW FILES
+  apps.html      the Apps page (10 app tiles + full-deck button)
+  gn-math.html   the app engine (~17 MB, self-contained — keep this exact
+                 file name next to apps.html, or update the links)
+
+PATCHED FILES (copied from your originals, one line added to the nav)
+  tv.html, s.html  -> added an "Apps" button in the nav-tabs row
+
+TO HOOK UP THE REST OF YOUR SITE
+  Add this button to any other page's nav (e.g. your index.html / games.html):
+    <button class="nav-tab" onclick="location.href='apps.html'">Apps</button>
+  or a plain link: <a href="apps.html">Apps</a>
+
+DEEP LINKS (open straight into an app)
+  gn-math.html#open=https%3A%2F%2Fwww.movy.sx%2F        Movies & TV
+  gn-math.html#open=https%3A%2F%2Fgn.local%2Fmusic.html Music (embedded)
+  gn-math.html#open=https%3A%2F%2Fwww.tiktok.com%2F     TikTok
+  (URL-encode the target after #open=)
+
+NOTES
+  - Tested end-to-end: movies (movy.sx) and TikTok both load through the
+    built-in Wisp relays — no server config needed on your side.
+  - Serve over HTTPS (or localhost) so the WebSocket relays are never blocked.
+  - The 17 MB file is cached by the browser after the first load.
+  - First connect may take a few seconds: the client tries relays in order:
+    arctic.lat -> wisp.mercurywork.shop -> api.ixl.college -> api.sngdu.com
+    -> anura.pro, and auto-falls-over if one is down.

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FATE V6 — Apps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#f59e0b;--secondary:#ef4444;--bg-deep:#050505;--bg2:#0a0a0c;--glass-border:rgba(255,255,255,.1);--text:#f8fafc;--text-muted:#cbd5e1;--card:rgba(255,255,255,.03)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg-deep);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:
+ radial-gradient(900px 500px at 15% -10%,rgba(245,158,11,.12),transparent 60%),
+ radial-gradient(800px 500px at 90% 0%,rgba(239,68,68,.10),transparent 60%),var(--bg-deep);z-index:-1}
+a{color:inherit;text-decoration:none}
+/* ---------- nav (matches FATE V6 glass nav) ---------- */
+.nav-glass{position:sticky;top:0;z-index:50;background:rgba(5,5,5,.72);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--glass-border);padding:14px 24px}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.nav-brand{display:flex;align-items:center;gap:12px}
+.nav-logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(245,158,11,.4)}
+.nav-logo span{font-weight:800;font-size:18px;color:#fff;font-family:'Space Grotesk',sans-serif}
+.nav-title{font-size:1.15rem;font-weight:700;background:linear-gradient(135deg,#fff,#fcd34d);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.nav-home{padding:10px 16px;border-radius:12px;font-weight:600;font-size:.85rem;color:var(--text-muted);background:rgba(255,255,255,.03);border:1px solid var(--glass-border);cursor:pointer;transition:all .3s;font-family:inherit}
+.nav-home:hover{color:#fff;border-color:rgba(245,158,11,.4)}
+/* ---------- hero ---------- */
+.hero{max-width:1200px;margin:0 auto;padding:52px 24px 18px}
+.hero h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.9rem,4.5vw,2.9rem);font-weight:800;letter-spacing:-.02em}
+.hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{margin-top:10px;color:var(--text-muted);font-size:.98rem;max-width:640px;line-height:1.6}
+/* ---------- grid ---------- */
+.grid{max-width:1200px;margin:26px auto 0;padding:0 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.app-tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:20px 18px;background:var(--card);border:1px solid var(--glass-border);border-radius:18px;cursor:pointer;text-align:left;font-family:inherit;color:var(--text);transition:all .25s;min-height:148px}
+.app-tile:hover{transform:translateY(-3px);border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.06);box-shadow:0 14px 40px rgba(0,0,0,.5)}
+.app-tile:active{transform:translateY(-1px)}
+.tile-icon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border:1px solid var(--glass-border);font-size:24px;color:var(--primary)}
+.tile-icon svg{width:24px;height:24px}
+.tile-name{font-weight:700;font-size:1.02rem;font-family:'Space Grotesk',sans-serif}
+.tile-desc{color:var(--text-muted);font-size:.8rem;line-height:1.45}
+/* ---------- deck card ---------- */
+.deck{max-width:1200px;margin:18px auto 0;padding:0 24px}
+.deck-btn{width:100%;display:flex;align-items:center;gap:16px;padding:20px 22px;border-radius:18px;border:1px solid rgba(245,158,11,.35);background:linear-gradient(135deg,rgba(245,158,11,.14),rgba(239,68,68,.10));cursor:pointer;color:var(--text);font-family:inherit;transition:all .25s;text-align:left}
+.deck-btn:hover{transform:translateY(-2px);box-shadow:0 16px 44px rgba(245,158,11,.15)}
+.deck-btn .big{font-weight:800;font-size:1.05rem;font-family:'Space Grotesk',sans-serif}
+.deck-btn .sub{color:var(--text-muted);font-size:.82rem;margin-top:3px}
+.deck-btn .arrow{margin-left:auto;font-size:1.3rem;color:var(--primary)}
+.foot{max-width:1200px;margin:26px auto 0;padding:0 24px 40px;color:#64748b;font-size:.75rem;line-height:1.6}
+/* ---------- fullscreen app overlay ---------- */
+.overlay{position:fixed;inset:0;z-index:100;display:none;background:var(--bg-deep)}
+.overlay.open{display:flex;flex-direction:column}
+.ov-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(10,10,12,.92);border-bottom:1px solid var(--glass-border);flex-shrink:0}
+.ov-btn{padding:9px 14px;border-radius:11px;background:rgba(255,255,255,.04);border:1px solid var(--glass-border);color:var(--text);font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .25s}
+.ov-btn:hover{border-color:rgba(245,158,11,.45)}
+.ov-title{font-weight:700;font-size:.92rem;font-family:'Space Grotesk',sans-serif;color:#fcd34d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov-status{margin-left:auto;color:#64748b;font-size:.75rem}
+.ov-frame-wrap{flex:1;position:relative}
+#ovFrame{position:absolute;inset:0;width:100%;height:100%;border:none;background:#050505}
+.ov-spin{position:absolute;inset:0;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;color:var(--text-muted);font-size:.9rem}
+.ov-spin .ring{width:42px;height:42px;border-radius:50%;border:3px solid rgba(245,158,11,.2);border-top-color:var(--primary);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:640px){.grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.app-tile{min-height:128px;padding:16px}.hero{padding:34px 18px 10px}.grid{padding:0 18px}.deck{padding:0 18px}}
+</style>
+</head>
+<body>
+
+<nav class="nav-glass">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">
+      <div class="nav-logo"><span>F</span></div>
+      <span class="nav-title">FATE Apps</span>
+    </a>
+    <div class="nav-right">
+      <button class="nav-home" onclick="location.href='index.html'">Home</button>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <h1>Apps <em>— all in one place</em></h1>
+  <p>Music, movies &amp; TV, TikTok, YouTube and more — streamed straight through the built-in private proxy.
+     First launch takes a few seconds while it connects; after that it's cached and fast.</p>
+</section>
+
+<section class="grid" id="appGrid">
+      <button class="app-tile" data-app="music" data-url="https://gn.local/music.html" data-label="Music">
+        <span class="tile-icon"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="8" cy="18" r="4"/><path d="M12 18V2l7 4"/></g></svg></span>
+        <span class="tile-name">Music</span>
+        <span class="tile-desc">Stream any song — no login, no ads</span>
+      </button>
+      <button class="app-tile" data-app="movies" data-url="https://www.movy.sx/" data-label="Movies & TV">
+        <span class="tile-icon"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12.296 3.464l3.02 3.956M20.2 6L3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3zM3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zm3.18-5.724l3.1 3.899"/></svg></span>
+        <span class="tile-name">Movies & TV</span>
+        <span class="tile-desc">Free movies & shows, full streaming site</span>
+      </button>
+      <button class="app-tile" data-app="ai" data-url="https://www.tryingopen.com/" data-label="AI">
+        <span class="tile-icon"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2m16 0h2m-7-1v2m-6-2v2"/></g></svg></span>
+        <span class="tile-name">AI</span>
+        <span class="tile-desc">Chat assistant, instant answers</span>
+      </button>
+      <button class="app-tile" data-app="drawing" data-url="https://kreska.art/app/" data-label="Drawing">
+        <span class="tile-icon"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.622 17.897l-10.68-2.913M18.376 2.622a1 1 0 1 1 3.002 3.002L17.36 9.643a.5.5 0 0 0 0 .707l.944.944a2.41 2.41 0 0 1 0 3.408l-.944.944a.5.5 0 0 1-.707 0L8.354 7.348a.5.5 0 0 1 0-.707l.944-.944a2.41 2.41 0 0 1 3.408 0l.944.944a.5.5 0 0 0 .707 0zM9 8c-1.804 2.71-3.97 3.46-6.583 3.948a.507.507 0 0 0-.302.819l7.32 8.883a1 1 0 0 0 1.185.204C12.735 20.405 16 16.792 16 15"/></svg></span>
+        <span class="tile-name">Drawing</span>
+        <span class="tile-desc">Full canvas studio — sketch & paint</span>
+      </button>
+      <button class="app-tile" data-app="books" data-url="https://bookracy.com/" data-label="Books">
+        <span class="tile-icon"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v16m8.001-2A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2a5 5 0 0 1 4-2z"/></svg></span>
+        <span class="tile-name">Books</span>
+        <span class="tile-desc">Huge free library, read in-browser</span>
+      </button>
+      <button class="app-tile" data-app="YouTube" data-url="https://www.youtube.com/" data-label="YouTube">
+        <span class="tile-icon"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M23.498 6.186a3.02 3.02 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.02 3.02 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.02 3.02 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.02 3.02 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814M9.545 15.568V8.432L15.818 12z"/></svg></span>
+        <span class="tile-name">YouTube</span>
+        <span class="tile-desc">Real YouTube — search, watch, everything</span>
+      </button>
+      <button class="app-tile" data-app="TikTok" data-url="https://www.tiktok.com/" data-label="TikTok">
+        <span class="tile-icon"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02c.08 1.53.63 3.09 1.75 4.17c1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97c-.57-.26-1.1-.59-1.62-.93c-.01 2.92.01 5.84-.02 8.75c-.08 1.4-.54 2.79-1.35 3.94c-1.31 1.92-3.58 3.17-5.91 3.21c-1.43.08-2.86-.31-4.08-1.03c-2.02-1.19-3.44-3.37-3.65-5.71c-.02-.5-.03-1-.01-1.49c.18-1.9 1.12-3.72 2.58-4.96c1.66-1.44 3.98-2.13 6.15-1.72c.02 1.48-.04 2.96-.04 4.44c-.99-.32-2.15-.23-3.02.37c-.63.41-1.11 1.04-1.36 1.75c-.21.51-.15 1.07-.14 1.61c.24 1.64 1.82 3.02 3.5 2.87c1.12-.01 2.19-.66 2.77-1.61c.19-.33.4-.67.41-1.06c.1-1.79.06-3.57.07-5.36c.01-4.03-.01-8.05.02-12.07"/></svg></span>
+        <span class="tile-name">TikTok</span>
+        <span class="tile-desc">The real For You feed, works in-browser</span>
+      </button>
+      <button class="app-tile" data-app="Instagram" data-url="https://www.instagram.com/" data-label="Instagram">
+        <span class="tile-icon"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M7.03.084c-1.277.06-2.149.264-2.91.563a5.9 5.9 0 0 0-2.124 1.388a5.9 5.9 0 0 0-1.38 2.127C.321 4.926.12 5.8.064 7.076s-.069 1.688-.063 4.947s.021 3.667.083 4.947c.061 1.277.264 2.149.563 2.911c.308.789.72 1.457 1.388 2.123a5.9 5.9 0 0 0 2.129 1.38c.763.295 1.636.496 2.913.552c1.278.056 1.689.069 4.947.063s3.668-.021 4.947-.082c1.28-.06 2.147-.265 2.91-.563a5.9 5.9 0 0 0 2.123-1.388a5.9 5.9 0 0 0 1.38-2.129c.295-.763.496-1.636.551-2.912c.056-1.28.07-1.69.063-4.948c-.006-3.258-.02-3.667-.081-4.947c-.06-1.28-.264-2.148-.564-2.911a5.9 5.9 0 0 0-1.387-2.123a5.9 5.9 0 0 0-2.128-1.38c-.764-.294-1.636-.496-2.914-.55C15.647.009 15.236-.006 11.977 0S8.31.021 7.03.084m.14 21.693c-1.17-.05-1.805-.245-2.228-.408a3.7 3.7 0 0 1-1.382-.895a3.7 3.7 0 0 1-.9-1.378c-.165-.423-.363-1.058-.417-2.228c-.06-1.264-.072-1.644-.08-4.848c-.006-3.204.006-3.583.061-4.848c.05-1.169.246-1.805.408-2.228c.216-.561.477-.96.895-1.382a3.7 3.7 0 0 1 1.379-.9c.423-.165 1.057-.361 2.227-.417c1.265-.06 1.644-.072 4.848-.08c3.203-.006 3.583.006 4.85.062c1.168.05 1.804.244 2.227.408c.56.216.96.475 1.382.895s.681.817.9 1.378c.165.422.362 1.056.417 2.227c.06 1.265.074 1.645.08 4.848c.005 3.203-.006 3.583-.061 4.848c-.051 1.17-.245 1.805-.408 2.23c-.216.56-.477.96-.896 1.38a3.7 3.7 0 0 1-1.378.9c-.422.165-1.058.362-2.226.418c-1.266.06-1.645.072-4.85.079s-3.582-.006-4.848-.06m9.783-16.192a1.44 1.44 0 1 0 1.437-1.442a1.44 1.44 0 0 0-1.437 1.442M5.839 12.012a6.161 6.161 0 1 0 12.323-.024a6.162 6.162 0 0 0-12.323.024M8 12.008A4 4 0 1 1 12.008 16A4 4 0 0 1 8 12.008"/></svg></span>
+        <span class="tile-name">Instagram</span>
+        <span class="tile-desc">Browse feeds & reels</span>
+      </button>
+      <button class="app-tile" data-app="discord" data-url="https://discord.com/app" data-label="Discord">
+        <span class="tile-icon"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M20.317 4.37a19.8 19.8 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.3 18.3 0 0 0-5.487 0a13 13 0 0 0-.617-1.25a.08.08 0 0 0-.079-.037A19.7 19.7 0 0 0 3.677 4.37a.1.1 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.08.08 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.08.08 0 0 0 .084-.028a14 14 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13 13 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10 10 0 0 0 .372-.292a.07.07 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.07.07 0 0 1 .078.01q.181.149.373.292a.077.077 0 0 1-.006.127a12.3 12.3 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.08.08 0 0 0 .084.028a19.8 19.8 0 0 0 6.002-3.03a.08.08 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03M8.02 15.33c-1.182 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418m7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418"/></svg></span>
+        <span class="tile-name">Discord</span>
+        <span class="tile-desc">Full web app — log in and chat</span>
+      </button>
+      <button class="app-tile" data-app="Reddit" data-url="https://www.reddit.com/?gn-reader=1" data-label="Reddit">
+        <span class="tile-icon"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M12 0C5.373 0 0 5.373 0 12c0 3.314 1.343 6.314 3.515 8.485l-2.286 2.286A.72.72 0 0 0 1.738 24H12c6.627 0 12-5.373 12-12S18.627 0 12 0m4.388 3.199a1.999 1.999 0 1 1-1.947 2.46v.002a2.37 2.37 0 0 0-2.032 2.341v.007c1.776.067 3.4.567 4.686 1.363a2.802 2.802 0 1 1 2.908 4.753c-.088 3.256-3.637 5.876-7.997 5.876c-4.361 0-7.905-2.617-7.998-5.87a2.8 2.8 0 0 1 1.189-5.34c.645 0 1.239.218 1.712.585c1.275-.79 2.881-1.291 4.64-1.365v-.01a3.23 3.23 0 0 1 2.88-3.207a2 2 0 0 1 1.959-1.595m-8.085 8.376c-.784 0-1.459.78-1.506 1.797s.64 1.429 1.426 1.429s1.371-.369 1.418-1.385s-.553-1.841-1.338-1.841m7.406 0c-.786 0-1.385.824-1.338 1.841s.634 1.385 1.418 1.385c.785 0 1.473-.413 1.426-1.429c-.046-1.017-.721-1.797-1.506-1.797m-3.703 4.013c-.974 0-1.907.048-2.77.135a.222.222 0 0 0-.183.305a3.2 3.2 0 0 0 2.953 1.964a3.2 3.2 0 0 0 2.953-1.964a.222.222 0 0 0-.184-.305a28 28 0 0 0-2.769-.135"/></svg></span>
+        <span class="tile-name">Reddit</span>
+        <span class="tile-desc">Fast reader mode for every subreddit</span>
+      </button>
+</section>
+
+<section class="deck">
+  <button class="deck-btn" onclick="location.href='gn-math.html'">
+    <span class="tile-icon"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 256 256"><g fill="currentColor"><path d="M224 56v40H32V56a8 8 0 0 1 8-8h176a8 8 0 0 1 8 8" opacity=".2"/><path d="M216 40H40a16 16 0 0 0-16 16v144a16 16 0 0 0 16 16h176a16 16 0 0 0 16-16V56a16 16 0 0 0-16-16m0 16v32H40V56Zm0 144H40v-96h176z"/></g></svg></span>
+    <span>
+      <span class="big">Open the full app deck</span>
+      <span class="sub" style="display:block">840 games — FNF, OvO, Bowmasters, 1v1.LoL… — plus the music player and every app above</span>
+    </span>
+    <span class="arrow">→</span>
+  </button>
+</section>
+
+<div class="foot">
+  Apps load through public Wisp relays (arctic.lat · mercurywork.shop · anura.pro). If one is down, the app automatically
+  retries the next relay — press Reload in the top bar if a site ever stalls. Tip: Ctrl+click any tile to open it in a new tab.
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="ov-bar">
+    <button class="ov-btn" onclick="closeApp()">← Back</button>
+    <span class="ov-title" id="ovTitle">app</span>
+    <button class="ov-btn" onclick="reloadApp()">↻ Reload</button>
+    <button class="ov-btn" onclick="popOut()">↗ New tab</button>
+    <span class="ov-status" id="ovStatus">connecting…</span>
+  </div>
+  <div class="ov-frame-wrap">
+    <div class="ov-spin" id="ovSpin"><div class="ring"></div><span id="ovSpinTxt">connecting to relay…</span></div>
+    <iframe id="ovFrame" title="app" allow="fullscreen; clipboard-read; clipboard-write; autoplay; encrypted-media"></iframe>
+  </div>
+</div>
+
+<script>
+var APPS = [{"key": "music", "label": "Music", "url": "https://gn.local/music.html"}, {"key": "movies", "label": "Movies & TV", "url": "https://www.movy.sx/"}, {"key": "ai", "label": "AI", "url": "https://www.tryingopen.com/"}, {"key": "drawing", "label": "Drawing", "url": "https://kreska.art/app/"}, {"key": "books", "label": "Books", "url": "https://bookracy.com/"}, {"key": "YouTube", "label": "YouTube", "url": "https://www.youtube.com/"}, {"key": "TikTok", "label": "TikTok", "url": "https://www.tiktok.com/"}, {"key": "Instagram", "label": "Instagram", "url": "https://www.instagram.com/"}, {"key": "discord", "label": "Discord", "url": "https://discord.com/app"}, {"key": "Reddit", "label": "Reddit", "url": "https://www.reddit.com/?gn-reader=1"}];
+var overlay = document.getElementById('overlay'),
+    frame = document.getElementById('ovFrame'),
+    title = document.getElementById('ovTitle'),
+    spin = document.getElementById('ovSpin'),
+    spinTxt = document.getElementById('ovSpinTxt'),
+    statusEl = document.getElementById('ovStatus'),
+    current = null;
+
+function openApp(app, newTab) {
+  var src = 'gn-math.html#open=' + encodeURIComponent(app.url);
+  if (newTab) { window.open(src, '_blank'); return; }
+  current = app;
+  title.textContent = app.label;
+  frame.src = src;
+  spinTxt.textContent = 'connecting to relay…';
+  statusEl.textContent = 'connecting…';
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  spin.style.display = 'flex';
+}
+function appReady() {
+  spin.style.display = 'none';
+  statusEl.textContent = 'connected';
+}
+function closeApp() {
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  frame.src = 'about:blank';
+  current = null;
+}
+function reloadApp() {
+  if (!current) return;
+  spin.style.display = 'flex';
+  statusEl.textContent = 'connecting…';
+  try { frame.contentWindow.location.href = 'gn-math.html#open=' + encodeURIComponent(current.url) + '&r=' + Date.now(); }
+  catch (err) { frame.src = 'gn-math.html#open=' + encodeURIComponent(current.url); }
+}
+function popOut() {
+  if (!current) return;
+  window.open('gn-math.html#open=' + encodeURIComponent(current.url), '_blank');
+}
+frame.addEventListener('load', function() {
+  var s = frame.src || '';
+  if (s && s !== 'about:blank' && s.indexOf('data:') !== 0) appReady();
+});
+document.getElementById('appGrid').addEventListener('click', function(e) {
+  var t = e.target.closest('.app-tile');
+  if (t) {
+    var app = APPS.filter(function(a) { return a.key === t.dataset.app; })[0];
+    if (app) openApp(app, e.ctrlKey || e.metaKey);
+  }
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && overlay.classList.contains('open')) closeApp();
+});
+</script>
+</body>
+</html>

@@ -293,7 +293,7 @@
   "cover": "{COVER_URL}/38.png",
   "url": "{HTML_URL}/38-fix2.html",
   "author": "Scott Cawthon",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 39,
@@ -301,7 +301,7 @@
   "cover": "{COVER_URL}/39.png",
   "url": "{HTML_URL}/39-fix2.html",
   "author": "Scott Cawthon",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 40,
@@ -309,7 +309,7 @@
   "cover": "{COVER_URL}/40.png",
   "url": "{HTML_URL}/40-fix2.html",
   "author": "Scott Cawthon",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 41,
@@ -317,7 +317,7 @@
   "cover": "{COVER_URL}/41.png",
   "url": "{HTML_URL}/41-fix2.html",
   "author": "Scott Cawthon",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 42,
@@ -349,7 +349,7 @@
   "cover": "{COVER_URL}/45.png",
   "url": "{HTML_URL}/45-fix2.html",
   "author": "Lorenzo De Carlo",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 46,
@@ -357,7 +357,7 @@
   "cover": "{COVER_URL}/46.png",
   "url": "{HTML_URL}/46-fix2.html",
   "author": "Lorenzo De Carlo",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 47,
@@ -365,7 +365,7 @@
   "cover": "{COVER_URL}/47.png",
   "url": "{HTML_URL}/47-fix2.html",
   "author": "Lorenzo De Carlo",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 48,
@@ -461,7 +461,7 @@
   "cover": "{COVER_URL}/60.png",
   "url": "{HTML_URL}/60-fix.html",
   "author": "jmtb02",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 61,
@@ -469,7 +469,7 @@
   "cover": "{COVER_URL}/61.png",
   "url": "{HTML_URL}/61-fix.html",
   "author": "jmtb02",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 62,
@@ -477,7 +477,7 @@
   "cover": "{COVER_URL}/62.png",
   "url": "{HTML_URL}/62-fix.html",
   "author": "jmtb02",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 63,
@@ -549,7 +549,7 @@
   "cover": "{COVER_URL}/71.png",
   "url": "{HTML_URL}/71-fix2.html",
   "author": "Ninja Kiwi",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 72,
@@ -557,7 +557,7 @@
   "cover": "{COVER_URL}/72.png",
   "url": "{HTML_URL}/72-fix.html",
   "author": "Ninja Kiwi",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 73,
@@ -565,7 +565,7 @@
   "cover": "{COVER_URL}/73.png",
   "url": "{HTML_URL}/73-fix2.html",
   "author": "Ninja Kiwi",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 74,
@@ -573,7 +573,7 @@
   "cover": "{COVER_URL}/74.png",
   "url": "{HTML_URL}/74-fix.html",
   "author": "Ninja Kiwi",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 75,
@@ -581,7 +581,7 @@
   "cover": "{COVER_URL}/75.png",
   "url": "{HTML_URL}/75-fix3.html",
   "author": "Ninja Kiwi",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 76,
@@ -605,7 +605,15 @@
   "cover": "{COVER_URL}/78.png",
   "url": "{HTML_URL}/78-fix2.html",
   "author": "Juicy Beast",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
+ },
+ {
+  "id": 79,
+  "name": "Cannon Basketball"
+ },
+ {
+  "id": 80,
+  "name": "Cannon Basketball 2"
  },
  {
   "id": 81,
@@ -637,7 +645,7 @@
   "cover": "{COVER_URL}/84.png",
   "url": "{HTML_URL}/84-fix.html",
   "author": "Max Abernethy",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 85,
@@ -661,7 +669,7 @@
   "cover": "{COVER_URL}/87.png",
   "url": "{HTML_URL}/87-fix2.html",
   "author": "Ethan O'Brien",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 88,
@@ -669,7 +677,7 @@
   "cover": "{COVER_URL}/88.png",
   "url": "{HTML_URL}/88-fix.html",
   "author": "Oslo Albet",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 89,
@@ -677,7 +685,7 @@
   "cover": "{COVER_URL}/89.png",
   "url": "{HTML_URL}/89-fix.html",
   "author": "Oslo Albet",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 90,
@@ -685,7 +693,7 @@
   "cover": "{COVER_URL}/90.png",
   "url": "{HTML_URL}/90-fix3.html",
   "author": "DVloper",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 91,
@@ -693,7 +701,7 @@
   "cover": "{COVER_URL}/91.png",
   "url": "{HTML_URL}/91-fix2.html",
   "author": "minijuegos.com",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 92,
@@ -725,7 +733,7 @@
   "cover": "{COVER_URL}/95.png",
   "url": "{HTML_URL}/95-fix.html",
   "author": "Bo\\u0161tjan \\u010Cade\\u017E",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 96,
@@ -789,7 +797,7 @@
   "cover": "{COVER_URL}/103.png",
   "url": "{HTML_URL}/103-fix2.html",
   "author": "Stevie Critoph",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 104,
@@ -797,7 +805,7 @@
   "cover": "{COVER_URL}/104.png",
   "url": "{HTML_URL}/104-fix2.html",
   "author": "Stevie Critoph",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 105,
@@ -805,7 +813,7 @@
   "cover": "{COVER_URL}/105.png",
   "url": "{HTML_URL}/105-fix.html",
   "author": "Stevie Critoph",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 106,
@@ -813,7 +821,7 @@
   "cover": "{COVER_URL}/106.png",
   "url": "{HTML_URL}/106-fix.html",
   "author": "jmtb02",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 107,
@@ -821,7 +829,7 @@
   "cover": "{COVER_URL}/107.png",
   "url": "{HTML_URL}/107-fix2.html",
   "author": "jmtb02",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 108,
@@ -845,7 +853,7 @@
   "cover": "{COVER_URL}/110.png",
   "url": "{HTML_URL}/110-fix2.html",
   "author": "GonzoSSM",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 111,
@@ -869,7 +877,7 @@
   "cover": "{COVER_URL}/113.png",
   "url": "{HTML_URL}/113-fix.html",
   "author": "Mike Welsh",
-  "special": "special:[\"emulator\",\"flash\"]"
+  "special": "special:\"emulator\"\"flash\""
  },
  {
   "id": 114,
@@ -1149,7 +1157,7 @@
   "cover": "{COVER_URL}/164.png",
   "url": "{HTML_URL}/164-fix3.html",
   "author": "4nn4t4t",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 165,
@@ -1158,6 +1166,10 @@
   "url": "{HTML_URL}/165-fix2.html",
   "author": "NavaNoid",
   "special": ""
+ },
+ {
+  "id": 166,
+  "name": "Bad Parenting 1"
  },
  {
   "id": 167,
@@ -1189,7 +1201,7 @@
   "cover": "{COVER_URL}/170.png",
   "url": "{HTML_URL}/170-fix2.html",
   "author": "EO Interactive",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 171,
@@ -1221,7 +1233,7 @@
   "cover": "{COVER_URL}/174.png",
   "url": "{HTML_URL}/174-fix.html",
   "author": "Kendja",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 175,
@@ -1229,7 +1241,7 @@
   "cover": "{COVER_URL}/175.png",
   "url": "{HTML_URL}/175-fix.html",
   "author": "Joseph Cloutier",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 176,
@@ -1237,7 +1249,7 @@
   "cover": "{COVER_URL}/176.png",
   "url": "{HTML_URL}/176-fix.html",
   "author": "Joseph Cloutier",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 177,
@@ -1245,7 +1257,7 @@
   "cover": "{COVER_URL}/177.png",
   "url": "{HTML_URL}/177-fix.html",
   "author": "Joseph Cloutier",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 178,
@@ -1253,7 +1265,11 @@
   "cover": "{COVER_URL}/178.png",
   "url": "{HTML_URL}/178-fix.html",
   "author": "Armor Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
+ },
+ {
+  "id": 179,
+  "name": "Soundboard"
  },
  {
   "id": 180,
@@ -1272,12 +1288,20 @@
   "special": ""
  },
  {
+  "id": 182,
+  "name": "Minecraft 1.12.2"
+ },
+ {
   "id": 183,
   "name": "Minecraft 1.21.4",
   "cover": "{COVER_URL}/183.png",
   "url": "{HTML_URL}/183.html",
   "author": "zardoy",
   "special": ""
+ },
+ {
+  "id": 185,
+  "name": "Five Nights at Freddy's: Sister Location"
  },
  {
   "id": 186,
@@ -1293,7 +1317,7 @@
   "cover": "{COVER_URL}/187.png",
   "url": "{HTML_URL}/187-fix.html",
   "author": "Lucas Pope",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 188,
@@ -1309,7 +1333,11 @@
   "cover": "{COVER_URL}/190.png",
   "url": "{HTML_URL}/190-fix2.html",
   "author": "Scott Cawthon",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 191,
+  "name": "Five Nights at Freddy's: Pizza Simulator"
  },
  {
   "id": 192,
@@ -1317,7 +1345,7 @@
   "cover": "{COVER_URL}/192.png",
   "url": "{HTML_URL}/192-fix2.html",
   "author": "Scott Cawthon",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 193,
@@ -1325,7 +1353,19 @@
   "cover": "{COVER_URL}/193.png",
   "url": "{HTML_URL}/193-fix2.html",
   "author": "Pixelliminal",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 194,
+  "name": "People Playground"
+ },
+ {
+  "id": 195,
+  "name": "R.E.P.O"
+ },
+ {
+  "id": 196,
+  "name": "ULTRAKILL"
  },
  {
   "id": 197,
@@ -1390,6 +1430,10 @@
   "url": "{HTML_URL}/204-fix2.html",
   "author": "lax1dude",
   "special": ""
+ },
+ {
+  "id": 205,
+  "name": "Buckshot Roulette"
  },
  {
   "id": 206,
@@ -1464,12 +1508,20 @@
   "special": ""
  },
  {
+  "id": 215,
+  "name": "Bendy and the Ink Machine"
+ },
+ {
+  "id": 216,
+  "name": "That's Not My Neighbor"
+ },
+ {
   "id": 217,
   "name": "Hotline Miami",
   "cover": "{COVER_URL}/217.png",
   "url": "{HTML_URL}/217-fix2.html",
   "author": "Dennaton Games",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 218,
@@ -1477,7 +1529,7 @@
   "cover": "{COVER_URL}/218.png",
   "url": "{HTML_URL}/218-fix.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 219,
@@ -1485,7 +1537,7 @@
   "cover": "{COVER_URL}/219.png",
   "url": "{HTML_URL}/219-fix2.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 220,
@@ -1493,7 +1545,7 @@
   "cover": "{COVER_URL}/220.png",
   "url": "{HTML_URL}/220-fix2.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 221,
@@ -1501,7 +1553,7 @@
   "cover": "{COVER_URL}/221.png",
   "url": "{HTML_URL}/221-fix2.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 222,
@@ -1509,7 +1561,7 @@
   "cover": "{COVER_URL}/222.png",
   "url": "{HTML_URL}/222-fix.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 223,
@@ -1517,7 +1569,7 @@
   "cover": "{COVER_URL}/223.png",
   "url": "{HTML_URL}/223-fix.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 224,
@@ -1525,7 +1577,7 @@
   "cover": "{COVER_URL}/224.png",
   "url": "{HTML_URL}/224-fix2.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 225,
@@ -1533,7 +1585,7 @@
   "cover": "{COVER_URL}/225.png",
   "url": "{HTML_URL}/225-fix2.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 226,
@@ -1541,7 +1593,7 @@
   "cover": "{COVER_URL}/226.png",
   "url": "{HTML_URL}/226-fix2.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 227,
@@ -1549,7 +1601,7 @@
   "cover": "{COVER_URL}/227.png",
   "url": "{HTML_URL}/227-fix.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 228,
@@ -1557,7 +1609,7 @@
   "cover": "{COVER_URL}/228.png",
   "url": "{HTML_URL}/228-fix2.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 229,
@@ -1565,7 +1617,7 @@
   "cover": "{COVER_URL}/229.png",
   "url": "{HTML_URL}/229-fix2.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 230,
@@ -1573,7 +1625,7 @@
   "cover": "{COVER_URL}/230.png",
   "url": "{HTML_URL}/230-fix2.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 231,
@@ -1581,7 +1633,7 @@
   "cover": "{COVER_URL}/231.png",
   "url": "{HTML_URL}/231-fix2.html",
   "author": "Flipline Studios",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 232,
@@ -1589,7 +1641,7 @@
   "cover": "{COVER_URL}/232.png",
   "url": "{HTML_URL}/232-fix2.html",
   "author": "PopCap Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 233,
@@ -1605,7 +1657,7 @@
   "cover": "{COVER_URL}/234.png",
   "url": "{HTML_URL}/234-fix2.html",
   "author": "Mad.com",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 235,
@@ -1613,7 +1665,7 @@
   "cover": "{COVER_URL}/235.png",
   "url": "{HTML_URL}/235-fix2.html",
   "author": "Mad.com",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 236,
@@ -1621,7 +1673,7 @@
   "cover": "{COVER_URL}/236.png",
   "url": "{HTML_URL}/236-fix2.html",
   "author": "Mad.com",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 237,
@@ -1629,7 +1681,7 @@
   "cover": "{COVER_URL}/237.png",
   "url": "{HTML_URL}/237-fix2.html",
   "author": "Mad.com",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 238,
@@ -1637,7 +1689,7 @@
   "cover": "{COVER_URL}/238.png",
   "url": "{HTML_URL}/238-fix.html",
   "author": "Mad.com",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 239,
@@ -1645,7 +1697,7 @@
   "cover": "{COVER_URL}/239.png",
   "url": "{HTML_URL}/239-fix2.html",
   "author": "Yohoho Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 240,
@@ -1653,7 +1705,7 @@
   "cover": "{COVER_URL}/240.png",
   "url": "{HTML_URL}/240-fix2.html",
   "author": "Yohoho Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 241,
@@ -1661,7 +1713,7 @@
   "cover": "{COVER_URL}/241.png",
   "url": "{HTML_URL}/241-fix.html",
   "author": "Yohoho Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 242,
@@ -1669,7 +1721,7 @@
   "cover": "{COVER_URL}/242.png",
   "url": "{HTML_URL}/242-fix2.html",
   "author": "Yohoho Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 243,
@@ -1677,7 +1729,7 @@
   "cover": "{COVER_URL}/243.png",
   "url": "{HTML_URL}/243-fix.html",
   "author": "Yohoho Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 244,
@@ -1685,7 +1737,7 @@
   "cover": "{COVER_URL}/244.png",
   "url": "{HTML_URL}/244-fix.html",
   "author": "Yohoho Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 245,
@@ -1693,7 +1745,7 @@
   "cover": "{COVER_URL}/245.png",
   "url": "{HTML_URL}/245-fix.html",
   "author": "Pegas Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 246,
@@ -1701,7 +1753,7 @@
   "cover": "{COVER_URL}/246.png",
   "url": "{HTML_URL}/246-fix.html",
   "author": "Pegas Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 247,
@@ -1709,7 +1761,7 @@
   "cover": "{COVER_URL}/247.png",
   "url": "{HTML_URL}/247-fix.html",
   "author": "Pegas Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 248,
@@ -1717,7 +1769,7 @@
   "cover": "{COVER_URL}/248.png",
   "url": "{HTML_URL}/248-fix.html",
   "author": "Pegas Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 249,
@@ -1725,7 +1777,7 @@
   "cover": "{COVER_URL}/249.png",
   "url": "{HTML_URL}/249-fix.html",
   "author": "Pegas Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 250,
@@ -1733,7 +1785,7 @@
   "cover": "{COVER_URL}/250.png",
   "url": "{HTML_URL}/250-fix.html",
   "author": "Pegas Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 251,
@@ -1741,7 +1793,7 @@
   "cover": "{COVER_URL}/251.png",
   "url": "{HTML_URL}/251-fix.html",
   "author": "Pegas Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 252,
@@ -1749,7 +1801,11 @@
   "cover": "{COVER_URL}/252.png",
   "url": "{HTML_URL}/252-fix.html",
   "author": "Pegas Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
+ },
+ {
+  "id": 253,
+  "name": "Chat Bot AI (A.I GPT)"
  },
  {
   "id": 255,
@@ -1781,7 +1837,7 @@
   "cover": "{COVER_URL}/258.png",
   "url": "{HTML_URL}/258-fix.html",
   "author": "Garrett McKay",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 259,
@@ -1789,7 +1845,7 @@
   "cover": "{COVER_URL}/259.png",
   "url": "{HTML_URL}/259-fix2.html",
   "author": "sbn3",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 260,
@@ -1797,7 +1853,7 @@
   "cover": "{COVER_URL}/260.png",
   "url": "{HTML_URL}/260-fix.html",
   "author": "DaniDev",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 261,
@@ -1808,12 +1864,16 @@
   "special": ""
  },
  {
+  "id": 262,
+  "name": "Half Life"
+ },
+ {
   "id": 263,
   "name": "Quake III Arena",
   "cover": "{COVER_URL}/263.png",
   "url": "{HTML_URL}/263-fix3.html",
   "author": "Id Software",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 264,
@@ -1837,7 +1897,11 @@
   "cover": "{COVER_URL}/266.png",
   "url": "{HTML_URL}/266-fix2.html",
   "author": "Luke Doukakis",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 267,
+  "name": "Pizza Tower"
  },
  {
   "id": 268,
@@ -1989,7 +2053,7 @@
   "cover": "{COVER_URL}/286.png",
   "url": "{HTML_URL}/286-fix.html",
   "author": "Deep Root Interactive",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 287,
@@ -1997,7 +2061,7 @@
   "cover": "{COVER_URL}/287.png",
   "url": "{HTML_URL}/287-fix2.html",
   "author": "JonBro",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 288,
@@ -2005,7 +2069,7 @@
   "cover": "{COVER_URL}/288.png",
   "url": "{HTML_URL}/288-fix2.html",
   "author": "JonBro",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 289,
@@ -2013,7 +2077,7 @@
   "cover": "{COVER_URL}/289.png",
   "url": "{HTML_URL}/289-fix2.html",
   "author": "JonBro",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 290,
@@ -2021,7 +2085,7 @@
   "cover": "{COVER_URL}/290.png",
   "url": "{HTML_URL}/290-fix2.html",
   "author": "JonBro",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 291,
@@ -2029,7 +2093,7 @@
   "cover": "{COVER_URL}/291.png",
   "url": "{HTML_URL}/291-fix2.html",
   "author": "JonBro",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 292,
@@ -2037,7 +2101,7 @@
   "cover": "{COVER_URL}/292.png",
   "url": "{HTML_URL}/292-fix2.html",
   "author": "JonBro",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 293,
@@ -2045,7 +2109,7 @@
   "cover": "{COVER_URL}/293.png",
   "url": "{HTML_URL}/293-fix2.html",
   "author": "JonBro",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 294,
@@ -2125,7 +2189,7 @@
   "cover": "{COVER_URL}/304.png",
   "url": "{HTML_URL}/304-fix.html",
   "author": "Tom Fulp, Dan Paladin",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 305,
@@ -2349,7 +2413,7 @@
   "cover": "{COVER_URL}/333.png",
   "url": "{HTML_URL}/333-fix2.html",
   "author": "Brad Borne",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 334,
@@ -2357,7 +2421,7 @@
   "cover": "{COVER_URL}/334.png",
   "url": "{HTML_URL}/334-fix.html",
   "author": "Brad Borne",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 335,
@@ -2365,7 +2429,7 @@
   "cover": "{COVER_URL}/335.png",
   "url": "{HTML_URL}/335-fix.html",
   "author": "Brad Borne",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 336,
@@ -2373,7 +2437,7 @@
   "cover": "{COVER_URL}/336.png",
   "url": "{HTML_URL}/336-fix2.html",
   "author": "Brad Borne",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 337,
@@ -2381,7 +2445,7 @@
   "cover": "{COVER_URL}/337.png",
   "url": "{HTML_URL}/337-fix.html",
   "author": "Brad Borne",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 338,
@@ -2405,7 +2469,7 @@
   "cover": "{COVER_URL}/340.png",
   "url": "{HTML_URL}/340-fix.html",
   "author": "Light Bringer Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 341,
@@ -2413,7 +2477,7 @@
   "cover": "{COVER_URL}/341.png",
   "url": "{HTML_URL}/341-fix2.html",
   "author": "Light Bringer Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 342,
@@ -2421,7 +2485,7 @@
   "cover": "{COVER_URL}/342.png",
   "url": "{HTML_URL}/342-fix.html",
   "author": "Light Bringer Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 343,
@@ -2429,7 +2493,7 @@
   "cover": "{COVER_URL}/343.png",
   "url": "{HTML_URL}/343-fix.html",
   "author": "Light Bringer Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 344,
@@ -2437,7 +2501,7 @@
   "cover": "{COVER_URL}/344.png",
   "url": "{HTML_URL}/344-fix2.html",
   "author": "GaZZer Game",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 345,
@@ -2445,7 +2509,7 @@
   "cover": "{COVER_URL}/345.png",
   "url": "{HTML_URL}/345-fix.html",
   "author": "GaZZer Game",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 346,
@@ -2485,7 +2549,7 @@
   "cover": "{COVER_URL}/350.png",
   "url": "{HTML_URL}/350-fix.html",
   "author": "Edmund McMillen",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 351,
@@ -2501,7 +2565,7 @@
   "cover": "{COVER_URL}/352.png",
   "url": "{HTML_URL}/352-fix.html",
   "author": "GD Colon",
-  "special": "special:[\"tools\"]"
+  "special": "special:\"tools\""
  },
  {
   "id": 353,
@@ -3056,12 +3120,20 @@
   "special": ""
  },
  {
+  "id": 423,
+  "name": "WebFishing"
+ },
+ {
   "id": 426,
   "name": "Andy's Apple Farm",
   "cover": "{COVER_URL}/426.png",
   "url": "{HTML_URL}/426-fix2.html",
   "author": "M36games",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 427,
+  "name": "OMORI"
  },
  {
   "id": 428,
@@ -3069,7 +3141,7 @@
   "cover": "{COVER_URL}/428.png",
   "url": "{HTML_URL}/428-fix2.html",
   "author": "Scott Cawthon",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 429,
@@ -3077,7 +3149,7 @@
   "cover": "{COVER_URL}/429.png",
   "url": "{HTML_URL}/429-ff.html",
   "author": "gn-math",
-  "special": "special:[\"tools\"]"
+  "special": "special:\"tools\""
  },
  {
   "id": 430,
@@ -3102,6 +3174,10 @@
   "url": "{HTML_URL}/432-fix.html",
   "author": "krutovig",
   "special": ""
+ },
+ {
+  "id": 433,
+  "name": "Yume Nikki"
  },
  {
   "id": 434,
@@ -3192,12 +3268,16 @@
   "special": ""
  },
  {
+  "id": 445,
+  "name": "Kindergarten"
+ },
+ {
   "id": 446,
   "name": "Kindergarten 2",
   "cover": "{COVER_URL}/446.png",
   "url": "{HTML_URL}/446-fix2.html",
   "author": "Con Man Games, SmashGames and Sean Young",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 447,
@@ -3229,7 +3309,7 @@
   "cover": "{COVER_URL}/450.png",
   "url": "{HTML_URL}/450-fix2.html",
   "author": "MANGLEDmaw Games, DreadXP",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 451,
@@ -3237,7 +3317,7 @@
   "cover": "{COVER_URL}/451.png",
   "url": "{HTML_URL}/451-fix2.html",
   "author": "Parsec Productions",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 452,
@@ -3261,7 +3341,7 @@
   "cover": "{COVER_URL}/454.png",
   "url": "{HTML_URL}/454-fix2.html",
   "author": "SHROOMYCHRIST-STUDIOS",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 455,
@@ -3269,7 +3349,7 @@
   "cover": "{COVER_URL}/455.png",
   "url": "{HTML_URL}/455-fix2.html",
   "author": "Paledoptera",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 456,
@@ -3277,7 +3357,7 @@
   "cover": "{COVER_URL}/456.png",
   "url": "{HTML_URL}/456-fix2.html",
   "author": "Team Undertale Yellow",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 457,
@@ -3285,7 +3365,7 @@
   "cover": "{COVER_URL}/457.png",
   "url": "{HTML_URL}/457-fix2.html",
   "author": "Redbeet Interactive, Axolot Games, Ashen Arrow",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 458,
@@ -3293,7 +3373,7 @@
   "cover": "{COVER_URL}/458.png",
   "url": "{HTML_URL}/458-fix2.html",
   "author": "Curious Fox Sox",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 459,
@@ -3301,7 +3381,7 @@
   "cover": "{COVER_URL}/459.png",
   "url": "{HTML_URL}/459-fix2.html",
   "author": "Zed Technician",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 460,
@@ -3309,7 +3389,7 @@
   "cover": "{COVER_URL}/460.png",
   "url": "{HTML_URL}/460-fix2.html",
   "author": "Rayll",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 461,
@@ -3325,7 +3405,7 @@
   "cover": "{COVER_URL}/462.png",
   "url": "{HTML_URL}/462-fix2.html",
   "author": "racheldrawsthis",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 463,
@@ -3333,7 +3413,7 @@
   "cover": "{COVER_URL}/463.png",
   "url": "{HTML_URL}/463-fix2.html",
   "author": "ghosttundra, Euroclipse, Brand New Groove",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 464,
@@ -3344,12 +3424,24 @@
   "special": ""
  },
  {
+  "id": 465,
+  "name": "Cuphead"
+ },
+ {
   "id": 466,
   "name": "Baldi's Basics Classic Remastered",
   "cover": "{COVER_URL}/466.png",
   "url": "{HTML_URL}/466-fix2.html",
   "author": "Basically Games",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 467,
+  "name": "Baldi's Basics Plus"
+ },
+ {
+  "id": 468,
+  "name": "Hollow Knight"
  },
  {
   "id": 469,
@@ -3357,7 +3449,7 @@
   "cover": "{COVER_URL}/469.png",
   "url": "{HTML_URL}/469-fix.html",
   "author": "ading2210",
-  "special": "special:[\"tools\"]"
+  "special": "special:\"tools\""
  },
  {
   "id": 470,
@@ -3373,7 +3465,7 @@
   "cover": "{COVER_URL}/471.png",
   "url": "{HTML_URL}/471-fix.html",
   "author": "Krinkels, The-Swain, cheshyre, Luis, Rebel666",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 472,
@@ -3461,7 +3553,7 @@
   "cover": "{COVER_URL}/482.png",
   "url": "{HTML_URL}/482-fix2.html",
   "author": "SHROOMYCHRIST-STUDIOS",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 483,
@@ -3613,7 +3705,7 @@
   "cover": "{COVER_URL}/501.png",
   "url": "{HTML_URL}/501-fix.html",
   "author": "Con Man Games, SmashGames and Sean Young",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 502,
@@ -3621,7 +3713,15 @@
   "cover": "{COVER_URL}/502.png",
   "url": "{HTML_URL}/502-fix2.html",
   "author": "Sam Hogan",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 503,
+  "name": "Five Nights at Candy's"
+ },
+ {
+  "id": 504,
+  "name": "Five Nights at Candy's 2"
  },
  {
   "id": 505,
@@ -3629,7 +3729,7 @@
   "cover": "{COVER_URL}/505.png",
   "url": "{HTML_URL}/505-fix2.html",
   "author": "Nintendo",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 506,
@@ -3637,7 +3737,7 @@
   "cover": "{COVER_URL}/506.png",
   "url": "{HTML_URL}/506-fix2.html",
   "author": "Nintendo",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 507,
@@ -3645,7 +3745,7 @@
   "cover": "{COVER_URL}/507.png",
   "url": "{HTML_URL}/507-fix2.html",
   "author": "SPLAPP-ME-DO",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 508,
@@ -3653,7 +3753,7 @@
   "cover": "{COVER_URL}/508.png",
   "url": "{HTML_URL}/508-fix2.html",
   "author": "Nintendo",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 509,
@@ -3669,7 +3769,7 @@
   "cover": "{COVER_URL}/510.png",
   "url": "{HTML_URL}/510-fix2.html",
   "author": "Nintendo",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 511,
@@ -3725,7 +3825,7 @@
   "cover": "{COVER_URL}/517.png",
   "url": "{HTML_URL}/517-fix2.html",
   "author": "MogDogBlog Productions",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 518,
@@ -3773,7 +3873,7 @@
   "cover": "{COVER_URL}/523.png",
   "url": "{HTML_URL}/523-fix2.html",
   "author": "vgperson",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 524,
@@ -3781,7 +3881,7 @@
   "cover": "{COVER_URL}/524.png",
   "url": "{HTML_URL}/524-fix2.html",
   "author": "NanaOn-Sha",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 525,
@@ -3920,12 +4020,16 @@
   "special": ""
  },
  {
+  "id": 542,
+  "name": "Karlson"
+ },
+ {
   "id": 543,
   "name": "Jelly Drift",
   "cover": "{COVER_URL}/543.png",
   "url": "{HTML_URL}/543-fix2.html",
   "author": "DaniDev",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 544,
@@ -4013,7 +4117,7 @@
   "cover": "{COVER_URL}/554.png",
   "url": "{HTML_URL}/554-fix2.html",
   "author": "YandereDev",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 555,
@@ -4037,7 +4141,7 @@
   "cover": "{COVER_URL}/557.png",
   "url": "{HTML_URL}/557-fix2.html",
   "author": "Bennett Foddy",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 558,
@@ -4061,7 +4165,7 @@
   "cover": "{COVER_URL}/560.png",
   "url": "{HTML_URL}/560-fix2.html",
   "author": "VyletBunni",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 561,
@@ -4253,7 +4357,7 @@
   "cover": "{COVER_URL}/585.png",
   "url": "{HTML_URL}/585-fix.html",
   "author": "Bethesda Softworks",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 586,
@@ -4269,7 +4373,7 @@
   "cover": "{COVER_URL}/587.png",
   "url": "{HTML_URL}/587-fix2.html",
   "author": "NegativeONE, Luis, MindChamber",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 588,
@@ -4277,7 +4381,7 @@
   "cover": "{COVER_URL}/588.png",
   "url": "{HTML_URL}/588-fix.html",
   "author": "Nintendo",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 589,
@@ -4285,7 +4389,7 @@
   "cover": "{COVER_URL}/589.png",
   "url": "{HTML_URL}/589-fix3.html",
   "author": "SEGA",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 590,
@@ -4293,7 +4397,11 @@
   "cover": "{COVER_URL}/590.png",
   "url": "{HTML_URL}/590-fix3.html",
   "author": "SEGA, crunch arcade",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 591,
+  "name": "Slime Rancher"
  },
  {
   "id": 592,
@@ -4301,7 +4409,7 @@
   "cover": "{COVER_URL}/592.png",
   "url": "{HTML_URL}/592-fix3.html",
   "author": "Full Fat Games",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 593,
@@ -4309,7 +4417,7 @@
   "cover": "{COVER_URL}/593.png",
   "url": "{HTML_URL}/593-fix2.html",
   "author": "Full Fat Games",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 594,
@@ -4328,6 +4436,10 @@
   "special": ""
  },
  {
+  "id": 596,
+  "name": "[!] COMMENTS"
+ },
+ {
   "id": 597,
   "name": "Plants vs. Zombies 2 Gardenless",
   "cover": "{COVER_URL}/597.png",
@@ -4341,7 +4453,7 @@
   "cover": "{COVER_URL}/598.png",
   "url": "{HTML_URL}/598-fix2.html",
   "author": " Cinossu",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 599,
@@ -4349,7 +4461,7 @@
   "cover": "{COVER_URL}/599.png",
   "url": "{HTML_URL}/599-fix3.html",
   "author": " Konami Computer Entertainment Japan",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 600,
@@ -4357,7 +4469,7 @@
   "cover": "{COVER_URL}/600.png",
   "url": "{HTML_URL}/600-fix.html",
   "author": "Hypno's Lullaby Team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 601,
@@ -4365,7 +4477,7 @@
   "cover": "{COVER_URL}/601.png",
   "url": "{HTML_URL}/601-fix.html",
   "author": "FNF Vs. Sonic.EXE Team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 602,
@@ -4373,7 +4485,7 @@
   "cover": "{COVER_URL}/602.png",
   "url": "{HTML_URL}/602-fix.html",
   "author": "id Software",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 603,
@@ -4389,7 +4501,11 @@
   "cover": "{COVER_URL}/604.png",
   "url": "{HTML_URL}/604-fix2.html",
   "author": "Jorel Simpson",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 605,
+  "name": "Schoolboy Runaway"
  },
  {
   "id": 606,
@@ -4397,7 +4513,11 @@
   "cover": "{COVER_URL}/606.png",
   "url": "{HTML_URL}/606-fix2.html",
   "author": "MY5TCrimson",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 607,
+  "name": "Tattletail"
  },
  {
   "id": 608,
@@ -4405,7 +4525,7 @@
   "cover": "{COVER_URL}/608.png",
   "url": "{HTML_URL}/608-fix.html",
   "author": "Imposter v4 team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 609,
@@ -4413,7 +4533,7 @@
   "cover": "{COVER_URL}/609.png",
   "url": "{HTML_URL}/609-fix2.html",
   "author": "Sunday Remastered team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 610,
@@ -4421,7 +4541,7 @@
   "cover": "{COVER_URL}/610.png",
   "url": "{HTML_URL}/610-fix.html",
   "author": "Carol V2 team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 611,
@@ -4429,7 +4549,7 @@
   "cover": "{COVER_URL}/611.png",
   "url": "{HTML_URL}/611-fix2.html",
   "author": "Nintendo",
-  "special": "special:[\"emulator\",\"n64\"]"
+  "special": "special:\"emulator\"\"n64\""
  },
  {
   "id": 612,
@@ -4437,7 +4557,7 @@
   "cover": "{COVER_URL}/612.png",
   "url": "{HTML_URL}/612-fix2.html",
   "author": "Nintendo",
-  "special": "special:[\"emulator\",\"n64\"]"
+  "special": "special:\"emulator\"\"n64\""
  },
  {
   "id": 613,
@@ -4445,7 +4565,7 @@
   "cover": "{COVER_URL}/613.png",
   "url": "{HTML_URL}/613-fix.html",
   "author": "Drop and roll team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 614,
@@ -4461,7 +4581,7 @@
   "cover": "{COVER_URL}/615.png",
   "url": "{HTML_URL}/615.html-a",
   "author": "Dave and Bambi team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 616,
@@ -4469,7 +4589,7 @@
   "cover": "{COVER_URL}/616.png",
   "url": "{HTML_URL}/616-fix.html",
   "author": "Wednesday's Infidelity team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 617,
@@ -4485,7 +4605,7 @@
   "cover": "{COVER_URL}/618.png",
   "url": "{HTML_URL}/618-fix.html",
   "author": "bob v2.0 team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 619,
@@ -4493,7 +4613,7 @@
   "cover": "{COVER_URL}/619.png",
   "url": "{HTML_URL}/619-fix.html",
   "author": "Rev-Mixed team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 620,
@@ -4509,7 +4629,15 @@
   "cover": "{COVER_URL}/621.png",
   "url": "{HTML_URL}/621-fix.html",
   "author": "Gumballs team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
+ },
+ {
+  "id": 622,
+  "name": "Oneshot (LEGACY)"
+ },
+ {
+  "id": 623,
+  "name": "Celeste"
  },
  {
   "id": 624,
@@ -4533,7 +4661,7 @@
   "cover": "{COVER_URL}/626.png",
   "url": "{HTML_URL}/626-fix2.html",
   "author": "id Software, 98corbins",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 627,
@@ -4549,7 +4677,7 @@
   "cover": "{COVER_URL}/628.png",
   "url": "{HTML_URL}/628-fix2.html",
   "author": "only1indigo, burnedpopcorn",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 629,
@@ -4589,7 +4717,7 @@
   "cover": "{COVER_URL}/633.png",
   "url": "{HTML_URL}/633-fix.html",
   "author": "Alternated team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 634,
@@ -4597,7 +4725,7 @@
   "cover": "{COVER_URL}/634.png",
   "url": "{HTML_URL}/634-fix.html",
   "author": "Fleetway team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 635,
@@ -4613,7 +4741,7 @@
   "cover": "{COVER_URL}/636.png",
   "url": "{HTML_URL}/636-fix.html",
   "author": "d-sides team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 637,
@@ -4621,7 +4749,7 @@
   "cover": "{COVER_URL}/637.png",
   "url": "{HTML_URL}/637-fix3.html",
   "author": "Cary Huang",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 638,
@@ -4629,7 +4757,7 @@
   "cover": "{COVER_URL}/638.gif",
   "url": "{HTML_URL}/638-fix2.html",
   "author": "Mawilite, Cary Huang",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 639,
@@ -4637,7 +4765,7 @@
   "cover": "{COVER_URL}/639.png",
   "url": "{HTML_URL}/639-fix.html",
   "author": "Imposter b-sides team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 640,
@@ -4645,7 +4773,7 @@
   "cover": "{COVER_URL}/640.png",
   "url": "{HTML_URL}/640-fix.html",
   "author": "SilverGames",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 641,
@@ -4653,7 +4781,7 @@
   "cover": "{COVER_URL}/641.png",
   "url": "{HTML_URL}/641-fix.html",
   "author": "AWM Studio Productions LLC",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 642,
@@ -4661,7 +4789,7 @@
   "cover": "{COVER_URL}/642.png",
   "url": "{HTML_URL}/642-fix.html",
   "author": "Rookies team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 643,
@@ -4677,7 +4805,7 @@
   "cover": "{COVER_URL}/644.png",
   "url": "{HTML_URL}/644-fix.html",
   "author": "NonsenseNH",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 645,
@@ -4685,7 +4813,7 @@
   "cover": "{COVER_URL}/645.png",
   "url": "{HTML_URL}/645-fix2.html",
   "author": "Varun R.",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 646,
@@ -4693,7 +4821,7 @@
   "cover": "{COVER_URL}/646.png",
   "url": "{HTML_URL}/646-fix2.html",
   "author": "TALL GLASS",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 647,
@@ -4701,7 +4829,7 @@
   "cover": "{COVER_URL}/647.png",
   "url": "{HTML_URL}/647-fix2.html",
   "author": "McLeodGaming",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 648,
@@ -4709,7 +4837,7 @@
   "cover": "{COVER_URL}/648.png",
   "url": "{HTML_URL}/648-fix2.html",
   "author": "HoloHammer",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 649,
@@ -4717,7 +4845,7 @@
   "cover": "{COVER_URL}/649.png",
   "url": "{HTML_URL}/649-fix.html",
   "author": "Francis Coulombe",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 650,
@@ -4725,7 +4853,7 @@
   "cover": "{COVER_URL}/650.png",
   "url": "{HTML_URL}/650-fix2.html",
   "author": "Nikita Kryukov",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 651,
@@ -4733,7 +4861,7 @@
   "cover": "{COVER_URL}/651.png",
   "url": "{HTML_URL}/651-fix.html",
   "author": "Nikita Kryukov",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 653,
@@ -4781,7 +4909,7 @@
   "cover": "{COVER_URL}/658.png",
   "url": "{HTML_URL}/658-fix.html",
   "author": "Phantom GD",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 659,
@@ -4789,7 +4917,7 @@
   "cover": "{COVER_URL}/659.png",
   "url": "{HTML_URL}/659-fix.html",
   "author": "Matzerath",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 660,
@@ -4840,12 +4968,16 @@
   "special": ""
  },
  {
+  "id": 666,
+  "name": "Stick War: Legacy"
+ },
+ {
   "id": 667,
   "name": "In Stars and Time",
   "cover": "{COVER_URL}/667.png",
   "url": "{HTML_URL}/667-fix2.html",
   "author": "insertdisc5",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 668,
@@ -4853,7 +4985,11 @@
   "cover": "{COVER_URL}/668.png",
   "url": "{HTML_URL}/668-fix3.html",
   "author": "Another Axiom Inc, Boolonx",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 669,
+  "name": "Terraria"
  },
  {
   "id": 670,
@@ -4861,7 +4997,7 @@
   "cover": "{COVER_URL}/670.png",
   "url": "{HTML_URL}/670-fix.html",
   "author": "RCHTeam, Grayson",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 671,
@@ -4877,7 +5013,7 @@
   "cover": "{COVER_URL}/672.png",
   "url": "{HTML_URL}/672-fix2.html",
   "author": "Pontypants",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 673,
@@ -4885,7 +5021,7 @@
   "cover": "{COVER_URL}/673.png",
   "url": "{HTML_URL}/673-fix.html",
   "author": "SeethingSwarm",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 674,
@@ -4893,7 +5029,7 @@
   "cover": "{COVER_URL}/674.png",
   "url": "{HTML_URL}/674-fix.html",
   "author": "SeethingSwarm",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 675,
@@ -4901,7 +5037,7 @@
   "cover": "{COVER_URL}/675.png",
   "url": "{HTML_URL}/675-fix.html",
   "author": "SeethingSwarm",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 676,
@@ -4909,7 +5045,7 @@
   "cover": "{COVER_URL}/676.png",
   "url": "{HTML_URL}/676-fix.html",
   "author": "SeethingSwarm",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 677,
@@ -4917,7 +5053,7 @@
   "cover": "{COVER_URL}/677.png",
   "url": "{HTML_URL}/677-fix.html",
   "author": "SeethingSwarm",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 678,
@@ -4925,7 +5061,7 @@
   "cover": "{COVER_URL}/678.png",
   "url": "{HTML_URL}/678-fix.html",
   "author": "SeethingSwarm",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 679,
@@ -4933,7 +5069,7 @@
   "cover": "{COVER_URL}/679.png",
   "url": "{HTML_URL}/679-fix.html",
   "author": "SeethingSwarm",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 680,
@@ -4941,7 +5077,7 @@
   "cover": "{COVER_URL}/680.png",
   "url": "{HTML_URL}/680-fix3.html",
   "author": "Nintendo",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 681,
@@ -4949,7 +5085,7 @@
   "cover": "{COVER_URL}/681.png",
   "url": "{HTML_URL}/681-fix2.html",
   "author": "Office Create",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 682,
@@ -4957,7 +5093,7 @@
   "cover": "{COVER_URL}/682.png",
   "url": "{HTML_URL}/682-fix2.html",
   "author": "Office Create",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 683,
@@ -4965,7 +5101,7 @@
   "cover": "{COVER_URL}/683.png",
   "url": "{HTML_URL}/683-fix2.html",
   "author": "Office Create",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 684,
@@ -4973,7 +5109,7 @@
   "cover": "{COVER_URL}/684.png",
   "url": "{HTML_URL}/684-fix3.html",
   "author": "Nintendo",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 685,
@@ -4981,7 +5117,7 @@
   "cover": "{COVER_URL}/685.png",
   "url": "{HTML_URL}/685-fix2.html",
   "author": "EA Sports",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 686,
@@ -4989,7 +5125,7 @@
   "cover": "{COVER_URL}/686.png",
   "url": "{HTML_URL}/686-fix2.html",
   "author": "EA Sports",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 687,
@@ -4997,7 +5133,7 @@
   "cover": "{COVER_URL}/687.png",
   "url": "{HTML_URL}/687-fix.html",
   "author": "Tom Fulp",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 688,
@@ -5005,7 +5141,7 @@
   "cover": "{COVER_URL}/688.png",
   "url": "{HTML_URL}/688-fix.html",
   "author": "PopCap Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 689,
@@ -5013,7 +5149,7 @@
   "cover": "{COVER_URL}/689.png",
   "url": "{HTML_URL}/689-fix.html",
   "author": "Jonathan McEntee",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 690,
@@ -5021,7 +5157,7 @@
   "cover": "{COVER_URL}/690.png",
   "url": "{HTML_URL}/690-fix.html",
   "author": "owoskitty etc",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 691,
@@ -5029,7 +5165,7 @@
   "cover": "{COVER_URL}/691.png",
   "url": "{HTML_URL}/691-fix.html",
   "author": "REDUX Team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 692,
@@ -5037,7 +5173,7 @@
   "cover": "{COVER_URL}/692.png",
   "url": "{HTML_URL}/692-fix.html",
   "author": "Strimp's Kitchen",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 693,
@@ -5045,7 +5181,7 @@
   "cover": "{COVER_URL}/693.png",
   "url": "{HTML_URL}/693-fix.html",
   "author": "Valve",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 694,
@@ -5053,7 +5189,7 @@
   "cover": "{COVER_URL}/694.png",
   "url": "{HTML_URL}/694-fix2.html",
   "author": "Nintendo",
-  "special": "special:[\"emulator\",\"gba\"]"
+  "special": "special:\"emulator\"\"gba\""
  },
  {
   "id": 695,
@@ -5061,7 +5197,7 @@
   "cover": "{COVER_URL}/695.png",
   "url": "{HTML_URL}/695-fix.html",
   "author": "Wix Games",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 696,
@@ -5069,7 +5205,7 @@
   "cover": "{COVER_URL}/696.png",
   "url": "{HTML_URL}/696-fix3.html",
   "author": "Nintendo",
-  "special": "special:[\"emulator\",\"nds\"]"
+  "special": "special:\"emulator\"\"nds\""
  },
  {
   "id": 697,
@@ -5101,7 +5237,7 @@
   "cover": "{COVER_URL}/700.png",
   "url": "{HTML_URL}/700-fix.html",
   "author": "Pibby Corrupted team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 701,
@@ -5125,7 +5261,7 @@
   "cover": "{COVER_URL}/703.png",
   "url": "{HTML_URL}/703-fix.html",
   "author": "Rewrite team",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 704,
@@ -5133,7 +5269,11 @@
   "cover": "{COVER_URL}/704.png",
   "url": "{HTML_URL}/704-fix2.html",
   "author": "Pyturret, Willowy (squall.cc)",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 705,
+  "name": "Iron Lung"
  },
  {
   "id": 706,
@@ -5141,7 +5281,7 @@
   "cover": "{COVER_URL}/706.png",
   "url": "{HTML_URL}/706-fix2.html",
   "author": "Miro Haverinen, Happy Paintings",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 707,
@@ -5157,7 +5297,7 @@
   "cover": "{COVER_URL}/708.png",
   "url": "{HTML_URL}/708-fix2.html",
   "author": "WSS playground, EDURocks",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 709,
@@ -5173,7 +5313,11 @@
   "cover": "{COVER_URL}/710.png",
   "url": "{HTML_URL}/710-fix2.html",
   "author": "EvanProductions",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 711,
+  "name": "Antonblast"
  },
  {
   "id": 712,
@@ -5181,7 +5325,7 @@
   "cover": "{COVER_URL}/712.png",
   "url": "{HTML_URL}/712-fix2.html",
   "author": "wik",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 713,
@@ -5189,7 +5333,7 @@
   "cover": "{COVER_URL}/713.png",
   "url": "{HTML_URL}/713-fix2.html",
   "author": "Konami, Team Silent",
-  "special": "special:[\"emulator\"]"
+  "special": "special:\"emulator\""
  },
  {
   "id": 714,
@@ -5197,7 +5341,7 @@
   "cover": "{COVER_URL}/714.png",
   "url": "{HTML_URL}/714-fix.html",
   "author": "SangMareZG",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 715,
@@ -5205,7 +5349,11 @@
   "cover": "{COVER_URL}/715.png",
   "url": "{HTML_URL}/715-fix.html",
   "author": "SwankyBox",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
+ },
+ {
+  "id": 716,
+  "name": "Clover Pit"
  },
  {
   "id": 717,
@@ -5213,7 +5361,11 @@
   "cover": "{COVER_URL}/717.png",
   "url": "{HTML_URL}/717-fix3.html",
   "author": "Anders Grube Jensen",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 718,
+  "name": "Untitled Goose Game"
  },
  {
   "id": 719,
@@ -5237,7 +5389,7 @@
   "cover": "{COVER_URL}/721.png",
   "url": "{HTML_URL}/721-fix.html",
   "author": "Bun Muen, Slqnt",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 722,
@@ -5245,7 +5397,7 @@
   "cover": "{COVER_URL}/722.png",
   "url": "{HTML_URL}/722-fix2.html",
   "author": "Mike Klubnika, shxyder",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 723,
@@ -5253,7 +5405,7 @@
   "cover": "{COVER_URL}/723.png",
   "url": "{HTML_URL}/723-fix.html",
   "author": "Blobfish, Individual/Stinkalistic",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 724,
@@ -5261,7 +5413,7 @@
   "cover": "{COVER_URL}/724.png",
   "url": "{HTML_URL}/724-fix.html",
   "author": "Miziziziz, Deep Root Interactive, Individual/Stinkalistic",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 725,
@@ -5277,7 +5429,7 @@
   "cover": "{COVER_URL}/726.png",
   "url": "{HTML_URL}/726-fix2.html",
   "author": "unknown",
-  "special": "special:[\"emulator\",\"nds\"]"
+  "special": "special:\"emulator\"\"nds\""
  },
  {
   "id": 727,
@@ -5325,7 +5477,7 @@
   "cover": "{COVER_URL}/732.png",
   "url": "{HTML_URL}/732-fix.html",
   "author": "idk",
-  "special": "special:[\"emulator\",\"nes\"]"
+  "special": "special:\"emulator\"\"nes\""
  },
  {
   "id": 733,
@@ -5333,7 +5485,7 @@
   "cover": "{COVER_URL}/733.png",
   "url": "{HTML_URL}/733-fix2.html",
   "author": "Nintendo",
-  "special": "special:[\"emulator\",\"gba\"]"
+  "special": "special:\"emulator\"\"gba\""
  },
  {
   "id": 734,
@@ -5341,7 +5493,7 @@
   "cover": "{COVER_URL}/734.png",
   "url": "{HTML_URL}/734-fix.html",
   "author": "Puppet Combo",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 735,
@@ -5349,7 +5501,7 @@
   "cover": "{COVER_URL}/735.png",
   "url": "{HTML_URL}/735-fix2.html",
   "author": "Zephyrside",
-  "special": "special:[\"emulator\",\"nes\"]"
+  "special": "special:\"emulator\"\"nes\""
  },
  {
   "id": 736,
@@ -5357,7 +5509,7 @@
   "cover": "{COVER_URL}/736.png",
   "url": "{HTML_URL}/736-fix.html",
   "author": "Zephyrside",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 737,
@@ -5365,7 +5517,7 @@
   "cover": "{COVER_URL}/737.png",
   "url": "{HTML_URL}/737-fix.html",
   "author": "\\u3073\\u3076/viv",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 738,
@@ -5397,7 +5549,7 @@
   "cover": "{COVER_URL}/741.png",
   "url": "{HTML_URL}/741-fix3.html",
   "author": "Capcom",
-  "special": "special:[\"emulator\",\"psx\"]"
+  "special": "special:\"emulator\"\"psx\""
  },
  {
   "id": 742,
@@ -5405,7 +5557,7 @@
   "cover": "{COVER_URL}/742.png",
   "url": "{HTML_URL}/742-fix2.html",
   "author": "Capcom",
-  "special": "special:[\"emulator\",\"psx\"]"
+  "special": "special:\"emulator\"\"psx\""
  },
  {
   "id": 743,
@@ -5413,7 +5565,7 @@
   "cover": "{COVER_URL}/743.png",
   "url": "{HTML_URL}/743-fix.html",
   "author": "ODDROK",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 744,
@@ -5429,7 +5581,7 @@
   "cover": "{COVER_URL}/745.png",
   "url": "{HTML_URL}/745-fix2.html",
   "author": "Nintendo",
-  "special": "special:[\"emulator\",\"nes\"]"
+  "special": "special:\"emulator\"\"nes\""
  },
  {
   "id": 746,
@@ -5437,7 +5589,7 @@
   "cover": "{COVER_URL}/746.png",
   "url": "{HTML_URL}/746-fix.html",
   "author": "yakubell",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 747,
@@ -5469,7 +5621,7 @@
   "cover": "{COVER_URL}/750.png",
   "url": "{HTML_URL}/750-fix2.html",
   "author": "Free_Breath",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 751,
@@ -5477,7 +5629,7 @@
   "cover": "{COVER_URL}/751.png",
   "url": "{HTML_URL}/751-fix.html",
   "author": "Zakaria_ALZ",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 752,
@@ -5485,7 +5637,7 @@
   "cover": "{COVER_URL}/752.png",
   "url": "{HTML_URL}/752-fix.html",
   "author": "Rovio Entertainment, EDURocks",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 753,
@@ -5501,7 +5653,7 @@
   "cover": "{COVER_URL}/754.png",
   "url": "{HTML_URL}/754-fix2.html",
   "author": "Mojang",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 755,
@@ -5517,7 +5669,7 @@
   "cover": "{COVER_URL}/756.png",
   "url": "{HTML_URL}/756-fix2.html",
   "author": "IZ (BLUE STAR Entertainment)",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 757,
@@ -5525,7 +5677,7 @@
   "cover": "{COVER_URL}/757.png",
   "url": "{HTML_URL}/757-fix2.html",
   "author": "Icedrop Games, mysmic",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 758,
@@ -5533,7 +5685,7 @@
   "cover": "{COVER_URL}/758.png",
   "url": "{HTML_URL}/758-fix2.html",
   "author": "Ronezkj15",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 759,
@@ -5541,7 +5693,7 @@
   "cover": "{COVER_URL}/759.png",
   "url": "{HTML_URL}/759-fix.html",
   "author": "countlessnights, 2 Left Thumbs, NotRexed",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 760,
@@ -5549,7 +5701,7 @@
   "cover": "{COVER_URL}/760.png",
   "url": "{HTML_URL}/760-fix2.html",
   "author": "notsospecialgames, shxyder",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 761,
@@ -5557,7 +5709,7 @@
   "cover": "{COVER_URL}/761.png",
   "url": "{HTML_URL}/761-fix.html",
   "author": "dmcaguy",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 762,
@@ -5565,7 +5717,7 @@
   "cover": "{COVER_URL}/762.png",
   "url": "{HTML_URL}/762-fix.html",
   "author": "The Interviewed, wasm.com",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 763,
@@ -5573,7 +5725,7 @@
   "cover": "{COVER_URL}/763.png",
   "url": "{HTML_URL}/763-fix.html",
   "author": "Pinbit LLC",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 764,
@@ -5632,12 +5784,16 @@
   "special": ""
  },
  {
+  "id": 771,
+  "name": "Hollow Knight: Silksong"
+ },
+ {
   "id": 772,
   "name": "Sam & Max Hit the Road",
   "cover": "{COVER_URL}/772.png",
   "url": "{HTML_URL}/772-fix.html",
   "author": "Lucasfilm",
-  "special": "special:[\"dos\"]"
+  "special": "special:\"dos\""
  },
  {
   "id": 773,
@@ -5645,7 +5801,7 @@
   "cover": "{COVER_URL}/773.png",
   "url": "{HTML_URL}/773-fix.html",
   "author": "Westwood Studios",
-  "special": "special:[\"dos\"]"
+  "special": "special:\"dos\""
  },
  {
   "id": 774,
@@ -5662,6 +5818,10 @@
   "url": "{HTML_URL}/775-fix.html",
   "author": "TeleSTOP",
   "special": ""
+ },
+ {
+  "id": 776,
+  "name": "Your Only Move Is HUSTLE"
  },
  {
   "id": 777,
@@ -5685,7 +5845,7 @@
   "cover": "{COVER_URL}/779.png",
   "url": "{HTML_URL}/779-fix.html",
   "author": "Cyberdreams",
-  "special": "special:[\"dos\"]"
+  "special": "special:\"dos\""
  },
  {
   "id": 780,
@@ -5693,7 +5853,7 @@
   "cover": "{COVER_URL}/780.png",
   "url": "{HTML_URL}/780-fix.html",
   "author": "Weasel",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 781,
@@ -5709,7 +5869,7 @@
   "cover": "{COVER_URL}/782.png",
   "url": "{HTML_URL}/782-fix3.html",
   "author": "NanaOn-Sha",
-  "special": "special:[\"emulator\",\"psx\"]"
+  "special": "special:\"emulator\"\"psx\""
  },
  {
   "id": 783,
@@ -5717,7 +5877,7 @@
   "cover": "{COVER_URL}/783.png",
   "url": "{HTML_URL}/783-fix.html",
   "author": "mdtowerz",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 784,
@@ -5725,7 +5885,7 @@
   "cover": "{COVER_URL}/784.png",
   "url": "{HTML_URL}/784-fix.html",
   "author": "Gabriel115GJ",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 785,
@@ -5733,7 +5893,7 @@
   "cover": "{COVER_URL}/785.png",
   "url": "{HTML_URL}/785-upd3.html",
   "author": "RobTop Games",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 786,
@@ -5749,7 +5909,7 @@
   "cover": "{COVER_URL}/787.png",
   "url": "{HTML_URL}/787-fix.html",
   "author": "BubbleTabby, sunsuke",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 788,
@@ -5757,7 +5917,7 @@
   "cover": "{COVER_URL}/788.png",
   "url": "{HTML_URL}/788-fix2.html",
   "author": "NanaOn-Sha, Japan Studio",
-  "special": "special:[\"emulator\",\"psx\"]"
+  "special": "special:\"emulator\"\"psx\""
  },
  {
   "id": 789,
@@ -5765,7 +5925,7 @@
   "cover": "{COVER_URL}/789.png",
   "url": "{HTML_URL}/789-fix2.html",
   "author": "The Secret Police Limited, ConcernedApe, Cirsius",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 790,
@@ -5773,7 +5933,7 @@
   "cover": "{COVER_URL}/790.png",
   "url": "{HTML_URL}/790-fix.html",
   "author": "Vanripper, wasm.rip",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 791,
@@ -5781,7 +5941,7 @@
   "cover": "{COVER_URL}/791.png",
   "url": "{HTML_URL}/791-fix2.html",
   "author": "Evil Tortilla Games, reeyuki",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 792,
@@ -5797,7 +5957,7 @@
   "cover": "{COVER_URL}/793.png",
   "url": "{HTML_URL}/793-fix.html",
   "author": "StellaDev",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 794,
@@ -5805,7 +5965,7 @@
   "cover": "{COVER_URL}/794.png",
   "url": "{HTML_URL}/794-fix2.html",
   "author": "Miro Haverinen, Happy Paintings",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 795,
@@ -5813,7 +5973,7 @@
   "cover": "{COVER_URL}/795.png",
   "url": "{HTML_URL}/795-fix.html",
   "author": "Zakaria_ALZ",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 796,
@@ -5821,7 +5981,7 @@
   "cover": "{COVER_URL}/796.png",
   "url": "{HTML_URL}/796-fix.html",
   "author": "Sean Toman",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 797,
@@ -5829,7 +5989,7 @@
   "cover": "{COVER_URL}/797.png",
   "url": "{HTML_URL}/797-fix.html",
   "author": "starrymari",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 798,
@@ -5869,7 +6029,7 @@
   "cover": "{COVER_URL}/802.png",
   "url": "{HTML_URL}/802-fix.html",
   "author": "sad_bread, shyxder",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 803,
@@ -5877,7 +6037,7 @@
   "cover": "{COVER_URL}/803.png",
   "url": "{HTML_URL}/803-fix2.html",
   "author": "Joey Drew Studios",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 804,
@@ -5893,7 +6053,7 @@
   "cover": "{COVER_URL}/805.png",
   "url": "{HTML_URL}/805-fix.html",
   "author": "Ndemic Creations, Reeyuki",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 806,
@@ -5901,7 +6061,7 @@
   "cover": "{COVER_URL}/806.png",
   "url": "{HTML_URL}/806-fix.html",
   "author": "Sean Toman",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 807,
@@ -5909,7 +6069,7 @@
   "cover": "{COVER_URL}/807.png",
   "url": "{HTML_URL}/807-fix.html",
   "author": "Sean Toman",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 808,
@@ -5917,7 +6077,7 @@
   "cover": "{COVER_URL}/808.png",
   "url": "{HTML_URL}/808-fix.html",
   "author": "Team Curiosity",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 809,
@@ -5925,7 +6085,7 @@
   "cover": "{COVER_URL}/809.png",
   "url": "{HTML_URL}/809-f.html",
   "author": "Kazuyoshi Osawa, Nintendo",
-  "special": "special:[\"emulator\",\"nds\"]"
+  "special": "special:\"emulator\"\"nds\""
  },
  {
   "id": 810,
@@ -5933,7 +6093,7 @@
   "cover": "{COVER_URL}/810.png",
   "url": "{HTML_URL}/810-fix2.html",
   "author": "EA Sports",
-  "special": "special:[\"emulator\",\"nds\"]"
+  "special": "special:\"emulator\"\"nds\""
  },
  {
   "id": 811,
@@ -5941,7 +6101,7 @@
   "cover": "{COVER_URL}/811.png",
   "url": "{HTML_URL}/811-f.html",
   "author": "EA Sports",
-  "special": "special:[\"emulator\",\"gba\"]"
+  "special": "special:\"emulator\"\"gba\""
  },
  {
   "id": 812,
@@ -5949,7 +6109,7 @@
   "cover": "{COVER_URL}/812.png",
   "url": "{HTML_URL}/812-f.html",
   "author": "EA Sports",
-  "special": "special:[\"emulator\",\"gba\"]"
+  "special": "special:\"emulator\"\"gba\""
  },
  {
   "id": 813,
@@ -5957,7 +6117,7 @@
   "cover": "{COVER_URL}/813.png",
   "url": "{HTML_URL}/813-f3.html",
   "author": "SpookyRick, Reeyuki",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 814,
@@ -5965,7 +6125,7 @@
   "cover": "{COVER_URL}/814.png",
   "url": "{HTML_URL}/814.html",
   "author": "AIHASTO",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 815,
@@ -5981,7 +6141,7 @@
   "cover": "{COVER_URL}/816.png",
   "url": "{HTML_URL}/816.html",
   "author": "Mauzer2137",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 817,
@@ -5989,7 +6149,7 @@
   "cover": "{COVER_URL}/817.png",
   "url": "{HTML_URL}/817-f.html",
   "author": "bermud",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 818,
@@ -5997,7 +6157,7 @@
   "cover": "{COVER_URL}/818.png",
   "url": "{HTML_URL}/818.html",
   "author": "Blidb",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 819,
@@ -6005,7 +6165,7 @@
   "cover": "{COVER_URL}/819.png",
   "url": "{HTML_URL}/819-fix2.html",
   "author": "Flanne, Rah, Bog",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 820,
@@ -6013,7 +6173,7 @@
   "cover": "{COVER_URL}/820.png",
   "url": "{HTML_URL}/820-fix2.html",
   "author": "Capcom",
-  "special": "special:[\"emulator\",\"nds\"]"
+  "special": "special:\"emulator\"\"nds\""
  },
  {
   "id": 821,
@@ -6021,7 +6181,7 @@
   "cover": "{COVER_URL}/821.png",
   "url": "{HTML_URL}/821-fix2.html",
   "author": "Capcom",
-  "special": "special:[\"emulator\",\"nds\"]"
+  "special": "special:\"emulator\"\"nds\""
  },
  {
   "id": 822,
@@ -6029,7 +6189,7 @@
   "cover": "{COVER_URL}/822.png",
   "url": "{HTML_URL}/822-fix.html",
   "author": "Capcom",
-  "special": "special:[\"emulator\",\"nds\"]"
+  "special": "special:\"emulator\"\"nds\""
  },
  {
   "id": 823,
@@ -6037,7 +6197,7 @@
   "cover": "{COVER_URL}/823.png",
   "url": "{HTML_URL}/823-fix2.html",
   "author": "Capcom",
-  "special": "special:[\"emulator\",\"nds\"]"
+  "special": "special:\"emulator\"\"nds\""
  },
  {
   "id": 824,
@@ -6045,7 +6205,7 @@
   "cover": "{COVER_URL}/824.png",
   "url": "{HTML_URL}/824-fix.html",
   "author": "Capcom",
-  "special": "special:[\"emulator\",\"nds\"]"
+  "special": "special:\"emulator\"\"nds\""
  },
  {
   "id": 825,
@@ -6053,7 +6213,15 @@
   "cover": "{COVER_URL}/825.png",
   "url": "{HTML_URL}/825.html",
   "author": "Consumer Softproducts, dizzy",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 826,
+  "name": "Just Shapes & Beats"
+ },
+ {
+  "id": 827,
+  "name": "Totally Accurate Battle Simulator (TABS)"
  },
  {
   "id": 828,
@@ -6061,7 +6229,31 @@
   "cover": "{COVER_URL}/828.png",
   "url": "{HTML_URL}/828.html",
   "author": "Nintendo, turtlekiosk",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 829,
+  "name": "Touhou 1 Touhou-Reiiden"
+ },
+ {
+  "id": 830,
+  "name": "Touhou 2 Touhou-Fuumaroku"
+ },
+ {
+  "id": 831,
+  "name": "Touhou 3 Touhou-Yumejikuu"
+ },
+ {
+  "id": 832,
+  "name": "Touhou 4 Touhou-Gensokyou"
+ },
+ {
+  "id": 833,
+  "name": "Touhou 5 Touhou-Kaikidan"
+ },
+ {
+  "id": 834,
+  "name": "I Wanna Be The Guy"
  },
  {
   "id": 835,
@@ -6077,7 +6269,7 @@
   "cover": "{COVER_URL}/836.png",
   "url": "{HTML_URL}/836.html",
   "author": "CurtisDev",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 837,
@@ -6085,7 +6277,7 @@
   "cover": "{COVER_URL}/837.png",
   "url": "{HTML_URL}/837-fix2.html",
   "author": "Armor Games",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 838,
@@ -6101,7 +6293,7 @@
   "cover": "{COVER_URL}/839.png",
   "url": "{HTML_URL}/839.html",
   "author": "Mike Klubnika",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 840,
@@ -6109,7 +6301,7 @@
   "cover": "{COVER_URL}/840.png",
   "url": "{HTML_URL}/840-fix2.html",
   "author": "Outfit7",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 841,
@@ -6117,7 +6309,7 @@
   "cover": "{COVER_URL}/841.png",
   "url": "{HTML_URL}/841-f.html",
   "author": "Nintendo",
-  "special": "special:[\"emulator\",\"nds\"]"
+  "special": "special:\"emulator\"\"nds\""
  },
  {
   "id": 842,
@@ -6125,7 +6317,7 @@
   "cover": "{COVER_URL}/842.png",
   "url": "{HTML_URL}/842.html",
   "author": "PopCap Games",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 843,
@@ -6133,7 +6325,7 @@
   "cover": "{COVER_URL}/843.png",
   "url": "{HTML_URL}/843.html",
   "author": "camiloh488",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 844,
@@ -6149,7 +6341,7 @@
   "cover": "{COVER_URL}/845.png",
   "url": "{HTML_URL}/845-fix2.html",
   "author": "eGames",
-  "special": "special:[\"flash\"]"
+  "special": "special:\"flash\""
  },
  {
   "id": 846,
@@ -6157,7 +6349,7 @@
   "cover": "{COVER_URL}/846.png",
   "url": "{HTML_URL}/846.html",
   "author": "Future Cat LLC, shxyder",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 847,
@@ -6165,7 +6357,7 @@
   "cover": "{COVER_URL}/847.png",
   "url": "{HTML_URL}/847.html",
   "author": "Aggro Crab, dasher",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 848,
@@ -6173,7 +6365,7 @@
   "cover": "{COVER_URL}/848.png",
   "url": "{HTML_URL}/848.html",
   "author": "Landfall, NotRexed",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 849,
@@ -6181,7 +6373,11 @@
   "cover": "{COVER_URL}/849.png",
   "url": "{HTML_URL}/849.html",
   "author": "Azahar Contributors, Sexyplankton",
-  "special": "special:[\"emulator\",\"tools\"]"
+  "special": "special:\"emulator\"\"tools\""
+ },
+ {
+  "id": 850,
+  "name": "Lobotomy Corporation"
  },
  {
   "id": 851,
@@ -6189,7 +6385,7 @@
   "cover": "{COVER_URL}/851.png",
   "url": "{HTML_URL}/851.html",
   "author": "Rockstar Games, shxyder",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 852,
@@ -6197,7 +6393,7 @@
   "cover": "{COVER_URL}/852.png",
   "url": "{HTML_URL}/852.html",
   "author": "DVLoper, crax",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 853,
@@ -6205,7 +6401,7 @@
   "cover": "{COVER_URL}/853.png",
   "url": "{HTML_URL}/853.html",
   "author": "Undertow Games, q8j",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 854,
@@ -6213,7 +6409,7 @@
   "cover": "{COVER_URL}/854.png",
   "url": "{HTML_URL}/854.html",
   "author": "SteelRaven7, gurtmuncher",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 855,
@@ -6221,7 +6417,7 @@
   "cover": "{COVER_URL}/855.png",
   "url": "{HTML_URL}/855.html",
   "author": "Holy Wow Studios, gurtmuncher",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 856,
@@ -6229,7 +6425,7 @@
   "cover": "{COVER_URL}/856.png",
   "url": "{HTML_URL}/856.html",
   "author": "Arnaud De Bock, Remi Forcadell, and bog",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 857,
@@ -6237,7 +6433,11 @@
   "cover": "{COVER_URL}/857.png",
   "url": "{HTML_URL}/857.html",
   "author": "Daniel Mullins, Reeyuki",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 858,
+  "name": "60 Seconds! Reatomized"
  },
  {
   "id": 859,
@@ -6245,7 +6445,7 @@
   "cover": "{COVER_URL}/859.png",
   "url": "{HTML_URL}/859-f.html",
   "author": "Capcom",
-  "special": "special:[\"emulator\",\"psx\"]"
+  "special": "special:\"emulator\"\"psx\""
  },
  {
   "id": 860,
@@ -6261,7 +6461,7 @@
   "cover": "{COVER_URL}/861.png",
   "url": "{HTML_URL}/861.html",
   "author": "Crappy Productions",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 862,
@@ -6269,7 +6469,7 @@
   "cover": "{COVER_URL}/862.png",
   "url": "{HTML_URL}/862.html",
   "author": "SpiderThiago",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 863,
@@ -6277,7 +6477,7 @@
   "cover": "{COVER_URL}/863.png",
   "url": "{HTML_URL}/863.html",
   "author": "Traveler_Snak",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 864,
@@ -6285,7 +6485,7 @@
   "cover": "{COVER_URL}/864.png",
   "url": "{HTML_URL}/864-fix.html",
   "author": "seeksstuff",
-  "special": "special:[\"fnf\"]"
+  "special": "special:\"fnf\""
  },
  {
   "id": 865,
@@ -6293,7 +6493,7 @@
   "cover": "{COVER_URL}/865.png",
   "url": "{HTML_URL}/865.html",
   "author": "Zeekerss",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 866,
@@ -6301,7 +6501,7 @@
   "cover": "{COVER_URL}/866.png",
   "url": "{HTML_URL}/866.html",
   "author": "Valve",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
  },
  {
   "id": 867,
@@ -6309,6 +6509,10 @@
   "cover": "{COVER_URL}/867.png",
   "url": "{HTML_URL}/867.html",
   "author": "Boneloaf, Rocket Science",
-  "special": "special:[\"port\"]"
+  "special": "special:\"port\""
+ },
+ {
+  "id": 868,
+  "name": "Geometry Dash"
  }
 ]
