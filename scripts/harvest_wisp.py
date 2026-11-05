@@ -61,35 +61,56 @@ def grep_wisp(root):
                 urls[u] = line[:0]  # no need keep line
     return sorted(urls)
 
-if __name__ == "__main__":
-    queries = sys.argv[1:] or ['wisp%20servers', 'scramjet%20proxy', 'epoxy%20proxy',
-                               'unblocked%20games%20proxy', 'ultraviolet%20scramjet']
-    all_repos = []
-    seen = set()
-    for q in queries:
-        for r in gh_repo_search(q):
-            if r.lower() not in seen:
-                seen.add(r.lower())
-                all_repos.append(r)
-    print(f"{len(all_repos)} repos discovered", flush=True)
+OUT = "/tmp/wisp_harvest.json"
 
-    tmpdir = "/tmp/wispharvest"
-    os.makedirs(tmpdir, exist_ok=True)
-    found = {}
-    for i, repo in enumerate(all_repos):
-        safe = repo.replace("/", "__")
-        d = fetch_tarball(repo, tmpdir)
-        if not d:
-            print(f"[{i+1}/{len(all_repos)}] {repo}: FETCH FAIL", flush=True)
-            continue
-        urls = grep_wisp(d)
-        subprocess.run(["rm", "-rf", d])
-        if urls:
-            found[repo] = urls
-            print(f"[{i+1}/{len(all_repos)}] {repo}: {len(urls)} URLs -> {urls[:6]}", flush=True)
-        else:
-            print(f"[{i+1}/{len(all_repos)}] {repo}: -", flush=True)
+def load_found():
+    try:
+        return json.load(open(OUT))
+    except Exception:
+        return {}
 
-    with open("/tmp/wisp_harvest.json", "w") as f:
+def save_found(found):
+    with open(OUT, "w") as f:
         json.dump(found, f, indent=1)
-    print("saved /tmp/wisp_harvest.json")
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    if args and args[0] == "--discover":
+        queries = args[1:] or ['wisp%20servers', 'scramjet%20proxy', 'epoxy%20proxy',
+                               'unblocked%20games%20proxy', 'ultraviolet%20scramjet',
+                               'wisp%20client', 'interstellar%20proxy']
+        all_repos, seen = [], set()
+        for q in queries:
+            for r in gh_repo_search(q):
+                if r.lower() not in seen:
+                    seen.add(r.lower())
+                    all_repos.append(r)
+        done = set(load_found().keys())
+        todo = [r for r in all_repos if r not in done]
+        print("\n".join(todo))
+        print(f"# {len(all_repos)} discovered, {len(todo)} to process", flush=True)
+    elif args and args[0] == "--process":
+        repos = args[1:]
+        found = load_found()
+        tmpdir = "/tmp/wispharvest"
+        os.makedirs(tmpdir, exist_ok=True)
+        for i, repo in enumerate(repos):
+            if repo in found:
+                print(f"[{i+1}/{len(repos)}] {repo}: cached", flush=True)
+                continue
+            d = fetch_tarball(repo, tmpdir)
+            if not d:
+                print(f"[{i+1}/{len(repos)}] {repo}: FETCH FAIL", flush=True)
+                continue
+            urls = grep_wisp(d)
+            subprocess.run(["rm", "-rf", d])
+            if urls:
+                found[repo] = urls
+                print(f"[{i+1}/{len(repos)}] {repo}: {len(urls)} URLs -> {urls[:6]}", flush=True)
+            else:
+                print(f"[{i+1}/{len(repos)}] {repo}: -", flush=True)
+        save_found(found)
+        print("saved", flush=True)
+    else:
+        queries = args or ['wisp%20servers', 'scramjet%20proxy']
+        __import__('os').execv(sys.executable, [sys.executable, __file__, '--discover'] + queries)

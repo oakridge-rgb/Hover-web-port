@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0c0a09" />
+<title>FATE Browser</title>
+<link rel="shortcut icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2338bdf8'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='800' text-anchor='middle' fill='%23050505'%3EF%3C/text%3E%3C/svg%3E" type="image/x-icon" />
+<script src="pass.js"></script>
+<script>
+/* ===== V6 ACCESS GATE (same auth as the portal — opens straight through if you're logged in) ===== */
+(function(){
+  var AUTH_KEY='fate_v6_auth';
+  function passes(){
+    if(typeof FATE_PASS==='undefined')return['fate2026'];
+    return Array.isArray(FATE_PASS)?FATE_PASS.map(String):[String(FATE_PASS)];
+  }
+  function hash(s){
+    var h=5381;
+    for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;
+    return h.toString(36);
+  }
+  function isAuthed(){
+    try{
+      var v=localStorage.getItem(AUTH_KEY);
+      return !!v&&passes().map(hash).indexOf(v)>-1;
+    }catch(e){return false}
+  }
+  if(!isAuthed()){
+    location.replace('index.html');
+  }
+})();
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root{--primary:#f59e0b;--secondary:#ef4444;--accent:#10b981;--bg-deep:#050505;--glass:rgba(0,0,0,0.55);--glass-border:rgba(255,255,255,0.1);--text:#f8fafc;--text-muted:#cbd5e1}
+*{box-sizing:border-box;margin:0;padding:0}
+html{height:100%}
+body{height:100%;position:fixed;inset:0;overflow:hidden;background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;padding-top:calc(60px + env(safe-area-inset-top,0px));-webkit-tap-highlight-color:transparent}
+.bg-image{position:fixed;inset:0;z-index:0;background:url("/img/background.png") center center/cover no-repeat}
+.bg-overlay{position:fixed;inset:0;z-index:1;background:rgba(5,5,5,0.55);backdrop-filter:blur(4px)}
+/* ---- top nav ---- */
+.nav-glass{position:fixed;top:0;left:0;right:0;z-index:50;height:calc(60px + env(safe-area-inset-top,0px));padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:rgba(5,5,5,0.6);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--glass-border)}
+.nav-inner{height:100%;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.nav-brand{display:flex;align-items:center;gap:11px;min-width:0}
+.nav-logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(245,158,11,0.4);flex-shrink:0}
+.nav-logo span{font-weight:800;font-size:16px;color:white;font-family:"Space Grotesk",sans-serif}
+.nav-title{font-family:"Space Grotesk",sans-serif;font-size:1.05rem;font-weight:700;background:linear-gradient(135deg,#fff,#fcd34d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap}
+.nav-links{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}
+.nav-link{padding:8px 14px;border-radius:11px;font-weight:500;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:7px;transition:all .3s cubic-bezier(.4,0,.2,1);background:none;border:none;cursor:pointer;font-family:inherit;font-size:.82rem;white-space:nowrap}
+.nav-link:hover{background:rgba(56,189,248,0.1);color:#fff}
+.fm-chip{padding:7px 12px;border-radius:11px;font-size:.68rem;font-weight:700;border:1px solid rgba(148,163,184,.25);white-space:nowrap;background:rgba(0,0,0,0.4);display:flex;align-items:center;gap:7px;color:#cbd5e1;font-family:"Space Grotesk",sans-serif;max-width:300px;overflow:hidden}
+.fm-chip .dot{width:9px;height:9px;border-radius:50%;background:#64748b;flex-shrink:0;transition:background .3s}
+.fm-chip.s-sweep .dot,.fm-chip.s-reg .dot{background:#f59e0b;animation:pulse 1.1s ease-in-out infinite}
+.fm-chip.s-ok .dot{background:#10b981;box-shadow:0 0 8px rgba(16,185,129,.7)}
+.fm-chip.s-fail .dot{background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,.6)}
+.fm-chip .host{overflow:hidden;text-overflow:ellipsis}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+.panic-btn{padding:8px 14px;border-radius:11px;background:linear-gradient(135deg,#dc2626,#991b1b);color:white;font-weight:700;font-size:.78rem;border:none;cursor:pointer;display:flex;align-items:center;gap:7px;box-shadow:0 4px 18px rgba(220,38,38,0.4);transition:all .3s ease;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.panic-btn:hover{transform:scale(1.05);box-shadow:0 8px 28px rgba(220,38,38,0.6)}
+/* ---- app frame ---- */
+#fbApp{position:relative;z-index:4;display:flex;flex-direction:column;height:calc(100% - 60px - env(safe-area-inset-top,0px))}
+#fbTabstrip{display:flex;align-items:flex-end;gap:7px;padding:8px 10px 0;flex-shrink:0}
+#fbTabs{display:flex;gap:6px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:0}
+#fbTabs::-webkit-scrollbar{display:none}
+.fb-tab{display:flex;align-items:center;gap:7px;flex:0 0 auto;min-width:104px;max-width:184px;height:38px;padding:0 8px 0 7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-bottom:none;border-radius:12px 12px 0 0;cursor:pointer;transition:background .2s,border-color .2s,box-shadow .2s}
+.fb-tab:hover{background:rgba(255,255,255,.09)}
+.fb-tab.active{background:rgba(245,158,11,.13);border-color:rgba(245,158,11,.55);box-shadow:0 -6px 18px rgba(245,158,11,.12)}
+.fb-tab-ic{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:.64rem;font-weight:800;flex-shrink:0;overflow:hidden}
+.fb-tab-ic.loading{background:transparent}
+.fb-tab-ic.loading::after{content:"";width:13px;height:13px;border:2px solid rgba(245,158,11,.25);border-top-color:#f59e0b;border-radius:50%;animation:spin 1s linear infinite}
+.fb-tab-title{flex:1;font-size:.72rem;font-weight:600;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fb-tab.active .fb-tab-title{color:#fff}
+.fb-tab-x{width:18px;height:18px;border-radius:5px;display:grid;place-items:center;color:#64748b;font-size:.9rem;flex-shrink:0;line-height:1}
+.fb-tab-x:hover{background:rgba(239,68,68,.3);color:#f87171}
+#fbNewTabBtn{width:34px;height:34px;flex:0 0 auto;margin-bottom:2px;border-radius:10px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:#fcd34d;font-size:1.15rem;cursor:pointer;line-height:1}
+#fbNewTabBtn:hover{background:rgba(245,158,11,.25)}
+/* ---- toolbar ---- */
+#fbToolbar{display:flex;gap:7px;align-items:center;padding:8px 10px;background:rgba(8,7,6,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(245,158,11,.28);flex-shrink:0}
+.fb-tbgroup{display:flex;gap:2px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:2px}
+.fb-tb{width:36px;height:34px;flex:0 0 auto;border-radius:9px;background:none;border:none;color:#e2e8f0;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.fb-tb:hover{background:rgba(245,158,11,.18);color:#fcd34d}
+.fb-tb:disabled{opacity:.32;cursor:default}
+.fb-tb:disabled:hover{background:none;color:#e2e8f0}
+.fb-addrwrap{flex:1;display:flex;align-items:center;height:38px;background:rgba(0,0,0,.55);border:1px solid rgba(148,163,184,.3);border-radius:11px;padding:0 6px 0 12px;min-width:50px;transition:border-color .2s,box-shadow .2s;gap:8px}
+.fb-addrwrap:focus-within{border-color:rgba(245,158,11,.5);box-shadow:0 0 0 3px rgba(245,158,11,.12)}
+.fb-addrwrap .tun{display:grid;place-items:center;width:16px;height:16px;flex-shrink:0;color:#fcd34d;opacity:.85}
+.fb-addrwrap .tun svg{width:14px;height:14px;fill:currentColor}
+.fb-addr{flex:1;height:100%;background:none;border:none;padding:0;color:#e2e8f0;font-size:.88rem;outline:none;min-width:50px;font-family:inherit}
+.fb-addr::placeholder{color:#64748b}
+#fbGoBtn{height:28px;padding:0 13px;border-radius:8px;font-weight:800;font-size:.74rem;color:#fcd34d;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.4);cursor:pointer;white-space:nowrap;font-family:"Space Grotesk",sans-serif;flex-shrink:0}
+#fbGoBtn:hover{background:rgba(245,158,11,.28)}
+/* ---- panes ---- */
+#fbPanes{flex:1;position:relative;background:#0a0908;min-height:0}
+.fb-pane{position:absolute;inset:0;display:none;background:#fff}
+.fb-pane.active{display:block}
+.fb-frame{position:absolute;inset:0;width:100%;height:100%;border:none;background:#fff}
+.fb-progress{position:absolute;top:0;left:0;right:0;height:3px;z-index:7;display:none;background:linear-gradient(90deg,transparent 0%,rgba(245,158,11,.95) 50%,transparent 100%);background-size:50% 100%;background-repeat:no-repeat;animation:fbSlide 1.1s linear infinite}
+.fb-pane.loading .fb-progress{display:block}
+@keyframes fbSlide{0%{background-position:-60% 0}100%{background-position:160% 0}}
+.fb-connect{position:absolute;inset:0;z-index:8;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(8,7,6,.96);text-align:center;padding:2rem}
+.fb-pane.connecting .fb-connect{display:flex}
+.fb-spin{width:42px;height:42px;border:3px solid rgba(245,158,11,.2);border-top-color:#f59e0b;border-radius:50%;animation:spin 1s linear infinite}
+.fb-pane.err .fb-spin{display:none}
+.fb-connect b{color:#fcd34d;font-size:.95rem;font-family:"Space Grotesk",sans-serif}
+.fb-pane.err .fb-connect b{color:#f87171}
+.fb-connect span{color:#94a3b8;font-size:.78rem;max-width:430px;line-height:1.55}
+.fb-cbtns{display:none;gap:10px;margin-top:6px}
+.fb-pane.err .fb-cbtns{display:flex}
+.fb-cbtns button{background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.45);color:#fcd34d;font-weight:700;font-size:.78rem;padding:.55rem 1.1rem;border-radius:10px;cursor:pointer;font-family:inherit}
+.fb-cbtns button:hover{background:rgba(245,158,11,.28)}
+/* ---- start page (new tab) ---- */
+.fb-start{position:absolute;inset:0;z-index:5;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0a0908}
+.fb-pane.at-home .fb-start{display:block}
+.fb-start-scroll{max-width:720px;margin:0 auto;padding:42px 22px 64px}
+.fb-brandrow{display:flex;align-items:center;gap:15px;margin-bottom:1.5rem}
+.fb-logo{width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:grid;place-items:center;font:800 25px "Space Grotesk",sans-serif;color:#fff;box-shadow:0 0 26px rgba(245,158,11,.4);flex-shrink:0}
+.fb-brandrow h1{font-family:"Space Grotesk",sans-serif;font-size:1.65rem;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#fff 0%,#fcd34d 55%,#38bdf8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15}
+.fb-brandrow p{color:#94a3b8;font-size:.84rem;margin-top:2px}
+.fb-srow{display:flex;gap:.6rem;margin-bottom:1.5rem}
+.fb-search{flex:1;height:52px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:16px;color:var(--text);font-size:.98rem;outline:none;transition:all .3s ease;font-family:inherit;padding:0 20px}
+.fb-search:focus{border-color:rgba(245,158,11,0.45);box-shadow:0 0 0 3px rgba(245,158,11,0.1)}
+.fb-search::placeholder{color:#64748b}
+.fb-go{padding:0 24px;height:52px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;font-weight:800;font-size:.92rem;cursor:pointer;white-space:nowrap;box-shadow:0 8px 25px rgba(245,158,11,0.35);transition:all .3s ease;font-family:inherit}
+.fb-go:hover{transform:translateY(-2px);box-shadow:0 12px 35px rgba(245,158,11,0.5)}
+.fb-lanecard{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.3);border-radius:16px;padding:14px 18px;margin-bottom:1.5rem;flex-wrap:wrap}
+.fb-lanecard.err{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.35)}
+.fb-lanecard .lc-title{display:flex;align-items:center;gap:8px;font-family:"Space Grotesk",sans-serif;font-weight:800;font-size:.86rem;color:#fff}
+.fb-lanecard .lc-title svg{width:15px;height:15px;fill:#10b981;flex-shrink:0}
+.fb-lanecard.err .lc-title svg{fill:#f87171}
+.fb-lanecard .lc-line{display:block;font-size:.72rem;color:#94a3b8;margin-top:3px;word-break:break-all}
+.fb-lanecard .lc-actions{display:flex;gap:8px;flex-shrink:0}
+.lc-btn{padding:8px 14px;border-radius:10px;font-size:.72rem;font-weight:700;border:1px solid rgba(16,185,129,.45);background:rgba(16,185,129,.12);color:#6ee7b7;cursor:pointer;text-decoration:none;font-family:inherit;white-space:nowrap;transition:all .2s}
+.lc-btn:hover{background:rgba(16,185,129,.25)}
+.lc-btn.ghost{border-color:rgba(148,163,184,.3);background:rgba(255,255,255,.04);color:#cbd5e1}
+.lc-btn.ghost:hover{border-color:rgba(245,158,11,.5);color:#fcd34d;background:rgba(245,158,11,.08)}
+.fb-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:.7rem;margin-bottom:1.5rem}
+.fb-tile{display:flex;flex-direction:column;align-items:center;gap:.5rem;background:rgba(255,255,255,.04);border:1px solid rgba(148,163,184,.22);border-radius:14px;padding:.9rem .3rem;cursor:pointer;transition:all .2s}
+.fb-tile:hover{border-color:rgba(245,158,11,.55);background:rgba(245,158,11,.08);transform:translateY(-2px)}
+.fb-tile .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(0,0,0,.5);font-weight:800;font-size:1rem}
+.fb-tile .ic svg{width:20px;height:20px}
+.fb-tile .lbl{font-size:.66rem;font-weight:700;color:#e2e8f0;text-align:center}
+.fb-recent{margin-bottom:1.5rem}
+.fb-recent h3{font-family:"Space Grotesk",sans-serif;font-size:.74rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:.65rem}
+.fb-recent-row{display:flex;flex-wrap:wrap;gap:.5rem}
+.fb-recent-chip{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(148,163,184,.25);color:#cbd5e1;font-size:.73rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;max-width:250px}
+.fb-recent-chip:hover{border-color:rgba(245,158,11,.5);color:#fff;background:rgba(245,158,11,.08)}
+.fb-recent-chip .dot{width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0}
+.fb-recent-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fb-note{font-size:.7rem;color:#64748b;line-height:1.55;background:rgba(0,0,0,.35);border:1px solid rgba(148,163,184,.18);border-radius:12px;padding:.7rem .95rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+/* ---- toast ---- */
+#fbToast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);z-index:90;background:rgba(12,10,9,.95);border:1px solid rgba(245,158,11,.45);color:#fcd34d;font-size:.76rem;font-weight:600;padding:.6rem 1.1rem;border-radius:999px;opacity:0;pointer-events:none;transition:all .3s;box-shadow:0 8px 30px rgba(0,0,0,.5);max-width:88vw;text-align:center}
+#fbToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* ---- responsive ---- */
+@media(max-width:760px){
+  .nav-glass{padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px}
+  .nav-title{display:none}
+  .nav-link{padding:7px 10px;font-size:.74rem}
+  .panic-btn{padding:7px 10px}
+  .fm-chip{display:none}
+  .fb-tab{min-width:88px;max-width:150px}
+  .fb-tb{width:32px;height:32px;font-size:.9rem}
+  #fbGoBtn{padding:0 10px;font-size:.68rem}
+  .fb-addr{font-size:.8rem}
+  #fbNewTabBtn{width:30px;height:30px}
+  .fb-start-scroll{padding:30px 16px 54px}
+  .fb-brandrow h1{font-size:1.35rem}
+  .fb-tiles{grid-template-columns:repeat(auto-fill,minmax(80px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-image"></div><div class="bg-overlay"></div>
+<nav class="nav-glass"><div class="nav-inner">
+  <div class="nav-brand">
+    <div class="nav-logo"><span>F</span></div>
+    <div class="nav-title">FATE Browser</div>
+  </div>
+  <div class="nav-links">
+    <span class="fm-chip" id="fateLaneChip" title="wisp tunnel status"><span class="dot"></span><span class="host" id="fateLaneHost">wisp: idle</span></span>
+    <a class="nav-link" href="movies.html" title="Dedicated FATE movies page">Movies</a>
+    <a class="nav-link" href="test.html" title="Back to the FATE portal">Portal</a>
+    <button class="panic-btn" onclick="location.replace('index.html')" title="Emergency exit"><span>Panic</span></button>
+  </div>
+</div></nav>
+<div id="fbApp">
+  <div id="fbTabstrip">
+    <div id="fbTabs"></div>
+    <button id="fbNewTabBtn" title="New tab">+</button>
+  </div>
+  <div id="fbToolbar">
+    <div class="fb-tbgroup">
+      <button class="fb-tb" id="fbBackBtn" title="Back">&#8592;</button>
+      <button class="fb-tb" id="fbFwdBtn" title="Forward">&#8594;</button>
+      <button class="fb-tb" id="fbRelBtn" title="Reload">&#8635;</button>
+      <button class="fb-tb" id="fbHomeBtn" title="Home (new tab page)">&#8962;</button>
+    </div>
+    <div class="fb-addrwrap">
+      <span class="tun" title="served through the wisp tunnel"><svg viewBox="0 0 24 24"><path d="M12 2C8.7 2 6 4.7 6 8c0 4.4 6 14 6 14s6-9.6 6-14c0-3.3-2.7-6-6-6zm0 8.5A2.5 2.5 0 1 1 12 5.5a2.5 2.5 0 0 1 0 5z"/></svg></span>
+      <input id="fbAddr" class="fb-addr" placeholder="Search Google or type a URL" spellcheck="false" autocomplete="off" />
+      <button id="fbGoBtn" title="Go">Go</button>
+    </div>
+    <button class="fb-tb" id="fbPopBtn" title="Open raw proxied tab">&#8599;</button>
+  </div>
+  <div id="fbPanes"></div>
+</div>
+<div id="fbToast"></div>
+<script>
+/* ===== FATE BROWSER WISP LANE HOST (binary wisp handshake — shared fate_wisp_lane_v6 cache with the portal) ===== */
+function _lsGet(k){ try{ return JSON.parse(localStorage.getItem(k) || 'null'); }catch(e){ return null; } }
+function _lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+const FATE_WISP_SERVERS = [
+  'cdn.northstreetumc.org','cdn.vipersfutbol.com','cdn.pcesc.org',
+  'cdn.kcchallengevbc.com','cdn.slcbmooc.org','cdn.topstargym.net',
+  'cdn.goaplytexas.org','cdn.clearfieldswimming.com','cdn.richardacademy.cfd',
+  'wss://athollcottage.com/connection/','wss://api.personalloanonline.net/ws/','wss://0.catclass.net/wisp/',
+  'wss://3658729.ritebooks.com/wisp/','wss://55gms.com/wisp/','wss://admin.proxy.hydrovolter.com/scramjet/wisp/',
+  'wss://anura.pro/','wss://anura.pro/api/wisp/','wss://anura.pro/w/',
+  'wss://anura.pro/wisp/','wss://api.ixl.college/ws/','wss://api.sngdu.com/ws/',
+  'wss://app-dry-waterfall-5636.fly.dev/wisp/','wss://arctic.lat/','wss://arctic.lat/_q/',
+  'wss://arctic.lat/wisp/','wss://arsenic.smartfoloo.space/api/wisp/','wss://arsenic.smartfoloo.space/wisp/',
+  'wss://bare-server.fly.dev/api/wisp/','wss://bare-server.fly.dev/wisp/','wss://browserjs-production.up.railway.app/wisp/',
+  'wss://businessschool.cc/wisp/','wss://cdn.pcesc.org/','wss://cdn.vipersfutbol.com/',
+  'wss://celestial.press/wisp/','wss://charityschools.a2zrealty.biz/wisp/','wss://civil.quartinal.me/api/wisp/',
+  'wss://construction.services.codd70.ru/socket/','wss://crypto-college.cc/wisp/','wss://daydreamx.pro/wisp/',
+  'wss://definitelyscience.com/api/wisp/','wss://definitelyscience.com/wisp/','wss://ela.next-education-learning.sbs/wisp/',
+  'wss://exposed-insider-nitrogen-appointed.trycloudflare.com/wisp/','wss://fern.best/wisp/','wss://fulcrumtheatreinc.com/wisp/',
+  'wss://glseries.net/wisp/','wss://gointospace.app/wisp/','wss://holyunb.locker/api/wisp/',
+  'wss://homework--spmspy0800.replit.app/wisp/','wss://homeworkhelp.cc/wisp/','wss://host/wisp/',
+  'wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/','wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/api/wisp/','wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/w/',
+  'wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/wisp/','wss://i-ready.math.bostoncareercounselor.com/wisp/','wss://info.hotelsunrisegrand.com/wisp/',
+  'wss://info.shop1stoponline.com/wisp/','wss://info.videnom.com/wisp/','wss://invisiproxy.com/wisp/',
+];
+const FATE_WISP_LANE_KEY = 'fate_wisp_lane_v6';
+window.FATE_WISP_RESULTS = [];
+
+function fateWispUrl(s){ return s.includes('://') ? s : ('wss://' + s + '/'); }
+
+/* exact port of the working portal's testWlspDomain() — binary wisp handshake */
+function fateTestWlsp(server, timeoutMs){
+  return new Promise(resolve => {
+    let ws;
+    try{ ws = new WebSocket(fateWispUrl(server)); }catch(e){ return resolve(null); }
+    ws.binaryType = 'arraybuffer';
+    const id = (Math.floor(4294967294 * Math.random()) + 1) >>> 0;
+    let gotEcho = false, t0 = 0;
+    const finish = v => {
+      clearTimeout(timer);
+      try{ ws.onmessage = ws.onerror = ws.onclose = null; ws.close(); }catch(e){}
+      resolve(v);
+    };
+    const timer = setTimeout(() => finish(null), timeoutMs || 4500);
+    ws.onerror = () => finish(null);
+    ws.onclose = () => { if(!gotEcho) finish(null); };
+    ws.onmessage = evt => {
+      const d = evt.data;
+      if(!(d instanceof ArrayBuffer) || d.byteLength < 5) return finish(null);
+      const dv = new DataView(d);
+      const type = dv.getUint8(0), sid = dv.getUint32(1, true);
+      if(gotEcho){ if(sid === id) finish(Math.round(performance.now() - t0)); return; }
+      if(sid === 0){
+        if(type === 5) ws.send(new Uint8Array([5,0,0,0,0,2,1]));
+        else if(type === 3){
+          const host = '127.0.0.1';
+          const hb = new TextEncoder().encode(host);
+          const frame = new Uint8Array([1,0,0,0,0,1,69,0,...hb]);
+          new DataView(frame.buffer).setUint32(1, id, true);
+          gotEcho = true; t0 = performance.now();
+          try{ ws.send(frame); }catch(e){ return finish(null); }
+        }
+      }
+    };
+  });
+}
+
+/* lane candidates: scanner-verified first, then cached lane, then baked relays */
+function laneCandidates(){
+  const seen = new Set(), out = [];
+  const push = s => {
+    s = String(s || '').trim();
+    if (!s) return;
+    try { s = fateWispUrl(s); } catch(e){ return; }
+    if (seen.has(s)) return;
+    seen.add(s); out.push(s);
+  };
+  try {
+    const res = _lsGet('fate_wisp_results') || {};
+    Object.keys(res).forEach(u => { if (res[u] && res[u].status === 'alive') push(u); });
+  } catch(e){}
+  try { const c = _lsGet(FATE_WISP_LANE_KEY); if (c && c.url) push(c.url); } catch(e){}
+  FATE_WISP_SERVERS.forEach(push);
+  return out.slice(0, 72);
+}
+
+async function fateWispSweep(){
+  const list = laneCandidates();
+  const probes = list.map(async s => ({ server: s, rtt: await fateTestWlsp(s, 4500) }));
+  window.FATE_WISP_RESULTS = await Promise.all(probes);
+  return window.FATE_WISP_RESULTS.filter(r => r.rtt !== null).sort((a, b) => a.rtt - b.rtt);
+}
+/* ===== END WISP LANE HOST ===== */
+</script>
+<script>
+/* ===== FATE BROWSER — wisp-only browsing engine (no jet / no scramjet) =====
+   Boot: sweep lanes -> register wisp-sw.js?wisp=<lane> -> libcurl tunnel inside
+   the service worker -> iframes load pages from <origin>/e/<encoded target>. */
+console.log('%c[FATE BROWSER] wisp-only engine loaded', 'color:#f59e0b;font-weight:bold;');
+
+const $ = id => document.getElementById(id);
+const PAGE_PREFIX = new URL('e/', location.href).href;
+const prox = u => PAGE_PREFIX + encodeURIComponent(u);
+function decodeProxied(loc){
+  try {
+    if (!loc || !loc.href || !loc.href.startsWith(PAGE_PREFIX)) return null;
+    return new URL(decodeURIComponent(loc.href.slice(PAGE_PREFIX.length)));
+  } catch(e){ return null; }
+}
+function hostOf(u){
+  try { return new URL(/^https?:/.test(u) ? u : 'https://' + u).host.replace(/^www\./, ''); }
+  catch(e){ return String(u); }
+}
+function laneHost(s){ try { return new URL(fateWispUrl(s)).host.replace(/^www\./, ''); } catch(e){ return s; } }
+function hueOf(s){ let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h % 360; }
+function parseInput(q){
+  q = (q || '').trim();
+  if (!q) return null;
+  if (/^https?:\/\//i.test(q)) return q;
+  if (/^[\w-]+(\.[\w-]+)+(:\d+)?(\/.*)?$/i.test(q)) return 'https://' + q;
+  return 'https://www.google.com/search?q=' + encodeURIComponent(q);
+}
+function recordHistory(url){
+  try {
+    let h = _lsGet('fate_browser_history') || [];
+    h = h.filter(x => x.u !== url);
+    h.unshift({ u: url, t: Date.now() });
+    _lsSet('fate_browser_history', h.slice(0, 24));
+  } catch(e){}
+}
+
+/* ---------- boot state machine ---------- */
+let BOOT = { state: 'idle', err: null };
+let FATE_LANE = null, bootDone = null, bootRes = null, bootRej = null;
+let pendingLane = null;
+
+function boot(){
+  if (BOOT.state === 'sweeping' || BOOT.state === 'registering') return bootDone;
+  BOOT.state = 'sweeping'; BOOT.err = null;
+  paintBoot();
+  bootDone = new Promise((res, rej) => { bootRes = res; bootRej = rej; });
+  bootDone.catch(() => {});
+  (async () => {
+    try {
+      const alive = await fateWispSweep();
+      window.FATE_ALIVE_LANES = alive;
+      if (!alive.length) throw new Error('no live wisp lanes found');
+      BOOT.state = 'registering'; paintBoot();
+      let lastErr = null;
+      for (const lane of alive.slice(0, 6)){
+        try {
+          await registerLane(lane.server);
+          FATE_LANE = lane;
+          try { _lsSet(FATE_WISP_LANE_KEY, { url: fateWispUrl(lane.server), t: Date.now() }); } catch(e){}
+          BOOT.state = 'ready'; paintBoot();
+          console.log('[FATE BROWSER] tunnel ready on', fateWispUrl(lane.server), lane.rtt + 'ms');
+          bootRes(true);
+          return;
+        } catch(e){ lastErr = e; console.warn('[FATE BROWSER] lane failed:', lane.server, e); }
+      }
+      throw (lastErr || new Error('every live lane failed to start the tunnel'));
+    } catch(e){
+      BOOT.state = 'failed'; BOOT.err = String((e && e.message) || e);
+      paintBoot();
+      bootRej(e);
+    }
+  })();
+  return bootDone;
+}
+
+function registerLane(laneSrv){
+  const wantWisp = fateWispUrl(laneSrv);
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const to = setTimeout(() => done(new Error('tunnel start timeout (25s)')), 25000);
+    function done(err){
+      if (settled) return;
+      settled = true; clearTimeout(to);
+      if (pendingLane && pendingLane.wantWisp === wantWisp) pendingLane = null;
+      err ? reject(err) : resolve();
+    }
+    pendingLane = { wantWisp, done };
+    navigator.serviceWorker.register('wisp-sw.js?wisp=' + encodeURIComponent(wantWisp), { updateViaCache: 'none' })
+      .then(async reg => {
+        try {
+          let sw = reg.active || reg.waiting || reg.installing;
+          if (!sw || sw.state !== 'activated'){
+            await new Promise(res => {
+              const chk = () => { if (reg.active && reg.active.state === 'activated') res(); };
+              reg.addEventListener('updatefound', () => { const w = reg.installing; w && w.addEventListener('statechange', chk); });
+              if (sw) sw.addEventListener('statechange', chk);
+              setTimeout(res, 15000);
+            });
+          }
+          sw = reg.active;
+          if (!sw) return done(new Error('service worker never activated'));
+          const ping = () => { try { sw.postMessage({ type: 'fate-ping' }); } catch(e){} };
+          ping();
+          const iv = setInterval(ping, 700);
+          setTimeout(() => clearInterval(iv), 27000);
+        } catch(e){ done(e); }
+      })
+      .catch(e => done(e));
+  });
+}
+
+navigator.serviceWorker.addEventListener('message', e => {
+  const d = e.data || {};
+  if (d.type !== 'fate-wisp-sw' || !pendingLane) return;
+  if (d.wisp !== pendingLane.wantWisp) return; /* stale worker from an older lane */
+  const p = pendingLane; pendingLane = null;
+  if (d.ok) p.done();
+  else p.done(new Error(d.err || 'tunnel init failed inside the service worker'));
+});
+
+/* ---------- chips / lane card ---------- */
+function paintBoot(aliveCount){
+  const chip = $('fateLaneChip'), host = $('fateLaneHost');
+  chip.classList.remove('s-sweep','s-reg','s-ok','s-fail');
+  const total = window.FATE_WISP_RESULTS ? window.FATE_WISP_RESULTS.length : 0;
+  const n = aliveCount || (window.FATE_ALIVE_LANES ? window.FATE_ALIVE_LANES.length : 0);
+  if (BOOT.state === 'ready' && FATE_LANE){
+    chip.classList.add('s-ok');
+    host.textContent = 'wisp \u25b8 ' + laneHost(FATE_LANE.server) + ' \u00b7 ' + FATE_LANE.rtt + 'ms';
+    laneLine('tunnel up on ' + fateWispUrl(FATE_LANE.server) + ' (' + FATE_LANE.rtt + ' ms) \u00b7 ' + n + '/' + total + ' lanes alive', false);
+  } else if (BOOT.state === 'failed'){
+    chip.classList.add('s-fail');
+    host.textContent = 'wisp \u25b8 no live lanes';
+    laneLine('no live lanes found \u2014 open the wisp scanner to hunt for more', true);
+  } else if (BOOT.state === 'registering'){
+    chip.classList.add('s-reg');
+    host.textContent = 'wisp \u25b8 starting tunnel\u2026';
+    laneLine('starting the tunnel on the fastest lane\u2026', false);
+  } else {
+    chip.classList.add('s-sweep');
+    host.textContent = 'wisp \u25b8 finding live lanes\u2026';
+    laneLine('probing ' + (window.FATE_WISP_RESULTS.length || laneCandidates().length) + ' wisp relays for the fastest live lane\u2026', false);
+  }
+}
+function laneLine(text, err){
+  document.querySelectorAll('.js-lane-line').forEach(el => { el.textContent = text; });
+  document.querySelectorAll('.fb-lanecard').forEach(el => el.classList.toggle('err', !!err));
+}
+
+/* ---------- tabs & panes ---------- */
+const TILES = [
+  { label: 'YouTube', url: 'https://youtube.com/', color: '#ff0000', path: 'M21.58 7.19a2.5 2.5 0 0 0-1.76-1.77C18.25 5 12 5 12 5s-6.25 0-7.82.42A2.5 2.5 0 0 0 2.42 7.19 26.2 26.2 0 0 0 2 12a26.2 26.2 0 0 0 .42 4.81 2.5 2.5 0 0 0 1.76 1.77C5.75 19 12 19 12 19s6.25 0 7.82-.42a2.5 2.5 0 0 0 1.76-1.77A26.2 26.2 0 0 0 22 12a26.2 26.2 0 0 0-.42-4.81zM10 15V9l5.2 3z' },
+  { label: 'TikTok', url: 'https://www.tiktok.com/', color: '#25f4ee', path: 'M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z' },
+  { label: 'Instagram', url: 'https://instagram.com', color: '#e1306c', path: 'M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 7.5zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5zm5.8-4.3a1.2 1.2 0 1 1-1.2 1.2 1.2 1.2 0 0 1 1.2-1.2z' },
+  { label: 'Discord', url: 'https://discord.com/app', color: '#5865f2', path: 'M19.6 5.9A16.3 16.3 0 0 0 15.9 4.7l-.5 1a15 15 0 0 0-6.8 0l-.5-1A16.3 16.3 0 0 0 4.4 5.9 17.6 17.6 0 0 0 1.5 17a16.6 16.6 0 0 0 5 2.6l.9-1.5a10.8 10.8 0 0 1-1.7-.8l.4-.3a11.8 11.8 0 0 0 11.8 0l.4.3a10.8 10.8 0 0 1-1.7.8l.9 1.5a16.6 16.6 0 0 0 5-2.6 17.6 17.6 0 0 0-2.9-11.1zM8.7 14.7c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z' },
+  { label: 'Twitch', url: 'https://twitch.tv', color: '#9146ff', path: 'M4 2L2 6v14h5v3h3l3-3h4l5-5V2H4zm16 11l-3 3h-5l-3 3v-3H5V4h15v9zM15 7h2v5h-2V7zm-5 0h2v5h-2V7z' },
+  { label: 'Snapchat', url: 'https://www.snapchat.com/web', color: '#fffc00', path: 'M12 2c3 0 5 2.2 5 5.2 0 1.1-.1 2.1-.2 3 .5.2 1.1 0 1.6-.2.6-.2 1.2-.1 1.4.4.2.6-.3 1-1 1.4-.6.3-1.5.7-1.6 1.3-.1.5.3 1.2 1 2 .8 1 2 2.1 3.5 2.5.4.1.6.5.4.9-.1.3-.5.6-1.2.8-.5.1-1 .2-1.2.5-.1.2-.1.5-.2.8-.1.3-.3.5-.7.4-.5-.1-1.1-.2-1.8-.1-.7.1-1.3.4-2 .8-.9.6-1.9 1.3-3.2 1.3s-2.3-.7-3.2-1.3c-.7-.4-1.3-.7-2-.8-.7-.1-1.3 0-1.8.1-.4.1-.6-.1-.7-.4-.1.3-.1-.6-.2-.8-.2-.3-.7-.4-1.2-.5-.7-.2-1.1-.5-1.2-.8-.2-.4 0-.8.4-.9C4.5 18 5.7 16.9 6.5 15.9c.7-.8 1.1-1.5 1-2-.1-.6-1-1-1.6-1.3-.7-.4-1.2-.8-1-1.4.2-.5.8-.6 1.4-.4.5.2 1.1.4 1.6.2-.1-.9-.2-1.9-.2-3C7 4.2 9 2 12 2z' },
+  { label: 'Geforce Now', url: 'https://play.geforcenow.com/mall/', color: '#76b900', path: 'M7 7h10a5 5 0 0 1 5 5v1a4 4 0 0 1-7.2 2.4L13 13h-2l-1.8 2.4A4 4 0 0 1 2 13v-1a5 5 0 0 1 5-5zm1 3v2H6v2h2v2h2v-2h2v-2h-2v-2H8zm8 1a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z' },
+  { label: 'X', url: 'https://x.com/', color: '#e7e9ea' },
+  { label: 'Reddit', url: 'https://www.reddit.com/', color: '#ff4500' },
+  { label: 'Spotify', url: 'https://open.spotify.com/', color: '#1db954' },
+  { label: 'Wikipedia', url: 'https://en.wikipedia.org/', color: '#a2a9b1' },
+  { label: 'ChatGPT', url: 'https://chatgpt.com/', color: '#10a37f' },
+  { label: 'Movies', url: 'https://aether.ist/', color: '#a78bfa', path: 'M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z' }
+];
+function tileHtml(){
+  return TILES.map(t =>
+    '<div class="fb-tile" data-go="' + t.url + '">' +
+      '<span class="ic" style="color:' + t.color + '">' +
+        (t.path ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="' + t.path + '"/></svg>' : '<span>' + t.label[0] + '</span>') +
+      '</span><span class="lbl">' + t.label + '</span></div>'
+  ).join('');
+}
+const PANE_HTML =
+  '<div class="fb-progress"></div>' +
+  '<iframe class="fb-frame" allow="fullscreen; clipboard-read; clipboard-write" allowfullscreen></iframe>' +
+  '<div class="fb-start"><div class="fb-start-scroll">' +
+    '<div class="fb-brandrow"><div class="fb-logo">F</div><div><h1>FATE Browser</h1><p>the whole web, tunneled over wisp \u2014 no jet, just the relay</p></div></div>' +
+    '<div class="fb-srow"><input class="fb-search" placeholder="Search Google or type a URL" spellcheck="false" autocomplete="off" /><button class="fb-go" data-act="go">Go</button></div>' +
+    '<div class="fb-lanecard"><div><b class="lc-title"><svg viewBox="0 0 24 24"><path d="M12 2C8.7 2 6 4.7 6 8c0 4.4 6 14 6 14s6-9.6 6-14c0-3.3-2.7-6-6-6zm0 8.5A2.5 2.5 0 1 1 12 5.5a2.5 2.5 0 0 1 0 5z"/></svg> wisp tunnel</b><span class="lc-line js-lane-line">probing wisp relays\u2026</span></div>' +
+    '<div class="lc-actions"><button class="lc-btn" data-act="rescan">Rescan lanes</button><a class="lc-btn ghost" href="wisp-scanner.html">Scanner</a></div></div>' +
+    '<div class="fb-tiles">' + tileHtml() + '</div>' +
+    '<div class="fb-recent"><h3>Recently visited</h3><div class="fb-recent-row js-recents"></div></div>' +
+    '<div class="fb-note">pages are served by the FATE service worker through the fastest live wisp relay \u2014 everything stays inside the tunnel. heavy apps may still be flaky; the portal\u2019s engine covers those.</div>' +
+  '</div></div>' +
+  '<div class="fb-connect"><div class="fb-spin"></div><b class="js-stage">connecting\u2026</b><span class="js-stagenote"></span>' +
+  '<div class="fb-cbtns"><button onclick="location.reload()">Retry</button><button onclick="location.href=\'wisp-scanner.html\'">Wisp scanner</button></div></div>';
+
+let TABS = [], ACTIVE = null, TAB_SEQ = 0;
+
+function newTab(url){
+  TABS.forEach(t => t.pane.classList.remove('active'));
+  const pane = document.createElement('div');
+  pane.className = 'fb-pane active at-home';
+  pane.innerHTML = PANE_HTML;
+  $('fbPanes').appendChild(pane);
+  const tab = {
+    id: ++TAB_SEQ, pane, url: null, title: 'New tab', atHome: true,
+    loading: false, closed: false, frame: pane.querySelector('.fb-frame'), watch: null
+  };
+  tab.frame.addEventListener('load', () => {
+    clearTimeout(tab.watch);
+    tab.loading = false;
+    tab.pane.classList.remove('loading');
+    if (tab.url && !tab.atHome){ clearPaneStage(tab); syncTabMeta(tab); }
+    updateChrome();
+  });
+  wireStart(pane, tab);
+  paintRecents(pane);
+  TABS.push(tab);
+  ACTIVE = tab;
+  updateChrome();
+  if (url) navigate(tab, url);
+  return tab;
+}
+function wireStart(pane, tab){
+  pane.querySelector('.fb-search').addEventListener('keydown', e => {
+    if (e.key === 'Enter') navigate(tab, e.target.value);
+  });
+  pane.addEventListener('click', e => {
+    const go = e.target.closest('[data-go]');
+    if (go){ navigate(tab, go.getAttribute('data-go')); return; }
+    const act = e.target.closest('[data-act]');
+    if (!act) return;
+    if (act.getAttribute('data-act') === 'go') navigate(tab, pane.querySelector('.fb-search').value);
+    if (act.getAttribute('data-act') === 'rescan'){
+      toast('rescanning wisp lanes\u2026');
+      BOOT.state = 'idle';
+      boot().then(() => toast(BOOT.state === 'ready' ? 'tunnel ready via ' + laneHost(FATE_LANE.server) : 'rescan failed \u2014 ' + (BOOT.err || ''))).catch(() => {});
+    }
+  });
+}
+function paintRecents(pane){
+  const row = pane.querySelector('.js-recents');
+  let h = [];
+  try { h = _lsGet('fate_browser_history') || []; } catch(e){}
+  const recent = h.slice(0, 8);
+  if (!recent.length){
+    const s = document.createElement('span');
+    s.style.cssText = 'font-size:.72rem;color:#64748b';
+    s.textContent = 'nothing yet \u2014 pages you open land here';
+    row.appendChild(s);
+    return;
+  }
+  recent.forEach(x => {
+    const b = document.createElement('button');
+    b.className = 'fb-recent-chip';
+    b.setAttribute('data-go', x.u);
+    b.innerHTML = '<span class="dot"></span><span></span>';
+    b.lastChild.textContent = hostOf(x.u);
+    row.appendChild(b);
+  });
+}
+function activate(tab){
+  if (!tab || tab.closed) return;
+  ACTIVE = tab;
+  TABS.forEach(t => t.pane.classList.toggle('active', t === tab));
+  updateChrome();
+}
+function closeTab(tab){
+  if (!tab || tab.closed) return;
+  tab.closed = true;
+  clearTimeout(tab.watch);
+  const i = TABS.indexOf(tab);
+  TABS.splice(i, 1);
+  tab.pane.remove();
+  if (!TABS.length){ newTab(); return; }
+  if (ACTIVE === tab) activate(TABS[Math.max(0, i - 1)]);
+  updateChrome();
+}
+function navigate(tab, input){
+  if (!tab || tab.closed) return;
+  const url = parseInput(input);
+  if (!url){ toast('type a URL or search first'); return; }
+  tab.url = url; tab.atHome = false; tab.title = hostOf(url);
+  tab.pane.classList.remove('at-home');
+  setPaneStage(tab, 'connecting', 'loading ' + hostOf(url) + '\u2026',
+    BOOT.state === 'ready' ? '' : 'waiting for the wisp tunnel to start\u2026');
+  recordHistory(url);
+  updateChrome();
+  boot().then(() => {
+    if (tab.closed) return;
+    if (BOOT.state !== 'ready' || !FATE_LANE) return setPaneStage(tab, 'error', BOOT.err || 'tunnel failed');
+    setPaneStage(tab, 'connecting', 'loading ' + hostOf(url) + '\u2026', 'through ' + laneHost(FATE_LANE.server));
+    tab.loading = true;
+    tab.pane.classList.add('loading');
+    tab.frame.src = prox(url);
+    clearTimeout(tab.watch);
+    tab.watch = setTimeout(() => {
+      if (tab.loading) setPaneStage(tab, 'error', hostOf(url) + ' never answered through the tunnel',
+        'the lane may be too weak for this site \u2014 try rescan, or pick another lane in the scanner');
+    }, 45000);
+  }).catch(() => {
+    if (!tab.closed) setPaneStage(tab, 'error', BOOT.err || 'tunnel failed', 'no live wisp lane could start the tunnel');
+  });
+}
+function reloadTab(tab){
+  if (!tab) return;
+  if (tab.atHome || !tab.url){ toast('on the start page \u2014 nothing to reload'); return; }
+  try { tab.frame.contentWindow.location.reload(); }
+  catch(e){ tab.frame.src = prox(tab.url); }
+}
+function goHome(tab){
+  if (!tab) return;
+  tab.atHome = true;
+  tab.pane.classList.add('at-home');
+  clearPaneStage(tab);
+  updateChrome();
+}
+function setPaneStage(tab, kind, msg, note){
+  const p = tab.pane;
+  p.classList.toggle('err', kind === 'error');
+  p.classList.toggle('connecting', !!kind);
+  p.querySelector('.js-stage').textContent = msg || '';
+  p.querySelector('.js-stagenote').textContent = note || (kind === 'error' ? 'tap retry to boot the tunnel again' : '');
+}
+function clearPaneStage(tab){
+  tab.pane.classList.remove('connecting', 'err');
+}
+function syncTabMeta(tab){
+  if (!tab || tab.closed || tab.atHome || !tab.url) return;
+  try {
+    const w = tab.frame.contentWindow;
+    const real = decodeProxied(w.location);
+    if (real && /^https?:$/.test(real.protocol)) tab.url = real.href;
+    if (w.document && w.document.title) tab.title = String(w.document.title).slice(0, 80);
+  } catch(e){}
+  updateChrome();
+}
+function paintTabs(){
+  const el = $('fbTabs');
+  el.innerHTML = '';
+  TABS.forEach(t => {
+    const d = document.createElement('div');
+    d.className = 'fb-tab' + (t === ACTIVE ? ' active' : '');
+    const h = hueOf(t.atHome ? 'fate-home' : hostOf(t.url || 'fate'));
+    const ic = t.loading
+      ? '<span class="fb-tab-ic loading"></span>'
+      : '<span class="fb-tab-ic" style="background:hsla(' + h + ',45%,16%,.95);color:hsl(' + h + ',85%,70%)">' + (t.atHome ? 'F' : (hostOf(t.url || 'F')[0] || 'F').toUpperCase()) + '</span>';
+    d.innerHTML = ic + '<span class="fb-tab-title"></span><span class="fb-tab-x" title="Close tab">\u00d7</span>';
+    d.querySelector('.fb-tab-title').textContent = t.atHome ? 'New tab' : (t.title || hostOf(t.url || ''));
+    d.addEventListener('click', () => activate(t));
+    d.addEventListener('auxclick', e => { if (e.button === 1) closeTab(t); });
+    d.querySelector('.fb-tab-x').addEventListener('click', e => { e.stopPropagation(); closeTab(t); });
+    el.appendChild(d);
+  });
+  const act = el.querySelector('.fb-tab.active');
+  if (act && act.scrollIntoView) try { act.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch(e){}
+}
+function updateChrome(){
+  paintTabs();
+  const t = ACTIVE;
+  const off = !t || t.atHome || !t.url;
+  $('fbBackBtn').disabled = off;
+  $('fbFwdBtn').disabled = off;
+  $('fbRelBtn').disabled = off;
+  $('fbPopBtn').disabled = off;
+  const a = $('fbAddr');
+  if (document.activeElement !== a) a.value = off ? '' : (t.url || '');
+  document.title = t && !t.atHome && t.title ? (t.title + ' \u00b7 FATE Browser') : 'FATE Browser';
+}
+let toastT = null;
+function toast(msg){
+  const el = $('fbToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+/* ---------- toolbar wiring ---------- */
+$('fbNewTabBtn').addEventListener('click', () => newTab());
+$('fbBackBtn').addEventListener('click', () => { try { ACTIVE.frame.contentWindow.history.back(); } catch(e){} });
+$('fbFwdBtn').addEventListener('click', () => { try { ACTIVE.frame.contentWindow.history.forward(); } catch(e){} });
+$('fbRelBtn').addEventListener('click', () => reloadTab(ACTIVE));
+$('fbHomeBtn').addEventListener('click', () => goHome(ACTIVE));
+$('fbGoBtn').addEventListener('click', () => { const a = $('fbAddr'); navigate(ACTIVE, a.value); a.blur(); });
+$('fbAddr').addEventListener('keydown', e => { if (e.key === 'Enter'){ navigate(ACTIVE, e.target.value); e.target.blur(); } });
+$('fbPopBtn').addEventListener('click', () => {
+  const t = ACTIVE;
+  if (!t || t.atHome || !t.url) return toast('nothing to pop out \u2014 load a page first');
+  window.open(prox(t.url), '_blank');
+  toast('opened the raw proxied tab');
+});
+
+/* ---------- init ---------- */
+newTab();
+paintBoot(0);
+boot();
+/* gentle meta sync: titles + pushState URLs that don't fire load events */
+setInterval(() => { if (ACTIVE && !ACTIVE.atHome && !ACTIVE.loading) syncTabMeta(ACTIVE); }, 2000);
+</script>
+</body>
+</html>

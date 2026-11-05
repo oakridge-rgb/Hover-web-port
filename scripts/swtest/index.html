@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><title>sw test</title>
+<pre id="out">starting…</pre>
+<script>
+const out = document.getElementById('out');
+function log(s){ out.textContent += '\n' + s; }
+log('protocol: ' + location.protocol);
+navigator.serviceWorker.register('sw-test.js', { updateViaCache: 'none' })
+  .then(() => log('registered'))
+  .catch(e => log('register FAILED: ' + e.message));
+navigator.serviceWorker.addEventListener('message', e => {
+  if (e.data && e.data.type === 'test-init-result') log('RESULT::' + JSON.stringify(e.data.result));
+});
+(function ping(){
+  const ctl = navigator.serviceWorker.controller;
+  if (!ctl){ setTimeout(ping, 250); return; }
+  log('controller ok — pinging');
+  ctl.postMessage({ type: 'test-init' });
+  setTimeout(() => { if (!out.textContent.includes('RESULT::')) ping(); }, 4000);
+})();
+</script>

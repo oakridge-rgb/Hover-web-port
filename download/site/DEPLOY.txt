@@ -39,3 +39,36 @@ NOTES
   - games.json (your 2021-game catalog) is now included; index/games
     pages load it from the same folder. games3.json is optional - its
     404 is harmless. Card images need your /media/ folder when deployed.
+
+FATE BROWSER — NOW 100% WISP (jet engine removed)
+===================================================
+b.html no longer uses the jet/scramjet files at all. It browses straight
+over wisp: a lane sweep (binary handshake) picks the fastest live relay,
+then a small service worker serves proxied pages through the libcurl
+tunnel. Pages load from  <your-site>/e/<encoded-url>.
+
+NEW FILES THAT MUST SHIP NEXT TO b.html
+  wisp-sw.js            the proxy service worker (required)
+  curl/index.plain.js   the libcurl/wisp client bundle, 2.1 MB (required;
+                        the WASM is embedded inside it — no extra files)
+  wisp-scanner.html     endpoint scanner (optional, feeds the browser)
+
+HOW LANES ARE CHOSEN
+  1. lanes the wisp scanner verified alive (localStorage fate_wisp_results)
+  2. the last lane that worked (fate_wisp_lane_v6)
+  3. 51 baked relays harvested from dozens of proxy repos on GitHub
+  Top 6 fastest get tried until one starts the tunnel. Rescan any time
+  from the lane card on the start page; the chip in the nav shows the
+  live lane + ping.
+
+BEHAVIOR NOTES
+  - Works best on server-rendered sites (Wikipedia, news, docs, search,
+    forums). Very heavy JS apps (Discord/Roblox-class) are better through
+    the portal engine — same caveat as before.
+  - Cookies are kept in a small per-host jar inside the worker (logins
+    partially work; not a full cookie engine).
+  - The old jet files (jet.*.js, sj/, fate-sw.js) can stay on the server —
+    they are simply unused by b.html now.
+  - Tested end-to-end on 2026-11-05 through a local relay: lane sweep,
+    tunnel boot, example.com, full-styling Wikipedia (CSS/JS/images),
+    in-tunnel link clicks, tabs, tiles, recents, rescan.
