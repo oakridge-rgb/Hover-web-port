@@ -532,8 +532,9 @@ function updateChrome(){
   paintTabs();
   const t = ACTIVE;
   const off = !t || t.atHome || !t.url;
-  $('fbBackBtn').disabled = off || !t.backStack.length;
-  $('fbFwdBtn').disabled = off || !t.fwdStack.length;
+  /* back/forward work from the start page too — the stacks survive Home */
+  $('fbBackBtn').disabled = !t || !t.backStack.length;
+  $('fbFwdBtn').disabled = !t || !t.fwdStack.length;
   $('fbRelBtn').disabled = off;
   $('fbPopBtn').disabled = off;
   const a = $('fbAddr');
