@@ -1,0 +1,402 @@
+     1→     1→<!DOCTYPE html>
+     2→     2→<html lang="en">
+     3→     3→<head>
+     4→     4→<meta charset="UTF-8" />
+     5→     5→<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+     6→     6→<meta name="theme-color" content="#0c0a09" />
+     7→     7→<title>FATE Browser</title>
+     8→     8→<link rel="shortcut icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2338bdf8'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='19' font-weight='800' text-anchor='middle' fill='%23050505'%3EF%3C/text%3E%3C/svg%3E" type="image/x-icon" />
+     9→     9→<script src="pass.js"></script>
+    10→    10→<script>
+    11→    11→/* ===== V6 ACCESS GATE (same auth as the portal — opens straight through if you're logged in) ===== */
+    12→    12→(function(){
+    13→    13→  var AUTH_KEY='fate_v6_auth';
+    14→    14→  function passes(){
+    15→    15→    if(typeof FATE_PASS==='undefined')return['fate2026'];
+    16→    16→    return Array.isArray(FATE_PASS)?FATE_PASS.map(String):[String(FATE_PASS)];
+    17→    17→  }
+    18→    18→  function hash(s){
+    19→    19→    var h=5381;
+    20→    20→    for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;
+    21→    21→    return h.toString(36);
+    22→    22→  }
+    23→    23→  function isAuthed(){
+    24→    24→    try{
+    25→    25→      var v=localStorage.getItem(AUTH_KEY);
+    26→    26→      return !!v&&passes().map(hash).indexOf(v)>-1;
+    27→    27→    }catch(e){return false}
+    28→    28→  }
+    29→    29→  if(!isAuthed()){
+    30→    30→    location.replace('index.html');
+    31→    31→  }
+    32→    32→})();
+    33→    33→</script>
+    34→    34→<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    35→    35→<style>
+    36→    36→:root{--primary:#f59e0b;--secondary:#ef4444;--accent:#10b981;--bg-deep:#050505;--glass:rgba(0,0,0,0.55);--glass-border:rgba(255,255,255,0.1);--text:#f8fafc;--text-muted:#cbd5e1}
+    37→    37→*{box-sizing:border-box;margin:0;padding:0}
+    38→    38→html{height:100%}
+    39→    39→body{height:100%;position:fixed;inset:0;overflow:hidden;background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;padding-top:calc(60px + env(safe-area-inset-top,0px));-webkit-tap-highlight-color:transparent}
+    40→    40→.bg-image{position:fixed;inset:0;z-index:0;background:url("/img/background.png") center center/cover no-repeat}
+    41→    41→.bg-overlay{position:fixed;inset:0;z-index:1;background:rgba(5,5,5,0.55);backdrop-filter:blur(4px)}
+    42→    42→/* ---- top nav ---- */
+    43→    43→.nav-glass{position:fixed;top:0;left:0;right:0;z-index:50;height:calc(60px + env(safe-area-inset-top,0px));padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:rgba(5,5,5,0.6);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--glass-border)}
+    44→    44→.nav-inner{height:100%;display:flex;justify-content:space-between;align-items:center;gap:10px}
+    45→    45→.nav-brand{display:flex;align-items:center;gap:11px;min-width:0}
+    46→    46→.nav-logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(245,158,11,0.4);flex-shrink:0}
+    47→    47→.nav-logo span{font-weight:800;font-size:16px;color:white;font-family:"Space Grotesk",sans-serif}
+    48→    48→.nav-title{font-family:"Space Grotesk",sans-serif;font-size:1.05rem;font-weight:700;background:linear-gradient(135deg,#fff,#fcd34d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap}
+    49→    49→.nav-links{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}
+    50→    50→.nav-link{padding:8px 14px;border-radius:11px;font-weight:500;color:var(--text-muted);text-decoration:none;display:flex;align-items:center;gap:7px;transition:all .3s cubic-bezier(.4,0,.2,1);background:none;border:none;cursor:pointer;font-family:inherit;font-size:.82rem;white-space:nowrap}
+    51→    51→.nav-link:hover{background:rgba(56,189,248,0.1);color:#fff}
+    52→    52→.fm-chip{padding:7px 12px;border-radius:11px;font-size:.68rem;font-weight:700;border:1px solid rgba(148,163,184,.25);white-space:nowrap;background:rgba(0,0,0,0.4);display:flex;align-items:center;gap:7px;color:#cbd5e1;font-family:"Space Grotesk",sans-serif;max-width:300px;overflow:hidden}
+    53→    53→.fm-chip .dot{width:9px;height:9px;border-radius:50%;background:#64748b;flex-shrink:0;transition:background .3s}
+    54→    54→.fm-chip.s-sweep .dot,.fm-chip.s-reg .dot{background:#f59e0b;animation:pulse 1.1s ease-in-out infinite}
+    55→    55→.fm-chip.s-ok .dot{background:#10b981;box-shadow:0 0 8px rgba(16,185,129,.7)}
+    56→    56→.fm-chip.s-fail .dot{background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,.6)}
+    57→    57→.fm-chip .host{overflow:hidden;text-overflow:ellipsis}
+    58→    58→@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+    59→    59→.panic-btn{padding:8px 14px;border-radius:11px;background:linear-gradient(135deg,#dc2626,#991b1b);color:white;font-weight:700;font-size:.78rem;border:none;cursor:pointer;display:flex;align-items:center;gap:7px;box-shadow:0 4px 18px rgba(220,38,38,0.4);transition:all .3s ease;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+    60→    60→.panic-btn:hover{transform:scale(1.05);box-shadow:0 8px 28px rgba(220,38,38,0.6)}
+    61→    61→/* ---- app frame ---- */
+    62→    62→#fbApp{position:relative;z-index:4;display:flex;flex-direction:column;height:calc(100% - 60px - env(safe-area-inset-top,0px))}
+    63→    63→#fbTabstrip{display:flex;align-items:flex-end;gap:7px;padding:8px 10px 0;flex-shrink:0}
+    64→    64→#fbTabs{display:flex;gap:6px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:0}
+    65→    65→#fbTabs::-webkit-scrollbar{display:none}
+    66→    66→.fb-tab{display:flex;align-items:center;gap:7px;flex:0 0 auto;min-width:104px;max-width:184px;height:38px;padding:0 8px 0 7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-bottom:none;border-radius:12px 12px 0 0;cursor:pointer;transition:background .2s,border-color .2s,box-shadow .2s}
+    67→    67→.fb-tab:hover{background:rgba(255,255,255,.09)}
+    68→    68→.fb-tab.active{background:rgba(245,158,11,.13);border-color:rgba(245,158,11,.55);box-shadow:0 -6px 18px rgba(245,158,11,.12)}
+    69→    69→.fb-tab-ic{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:.64rem;font-weight:800;flex-shrink:0;overflow:hidden}
+    70→    70→.fb-tab-ic.loading{background:transparent}
+    71→    71→.fb-tab-ic.loading::after{content:"";width:13px;height:13px;border:2px solid rgba(245,158,11,.25);border-top-color:#f59e0b;border-radius:50%;animation:spin 1s linear infinite}
+    72→    72→.fb-tab-title{flex:1;font-size:.72rem;font-weight:600;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    73→    73→.fb-tab.active .fb-tab-title{color:#fff}
+    74→    74→.fb-tab-x{width:18px;height:18px;border-radius:5px;display:grid;place-items:center;color:#64748b;font-size:.9rem;flex-shrink:0;line-height:1}
+    75→    75→.fb-tab-x:hover{background:rgba(239,68,68,.3);color:#f87171}
+    76→    76→#fbNewTabBtn{width:34px;height:34px;flex:0 0 auto;margin-bottom:2px;border-radius:10px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:#fcd34d;font-size:1.15rem;cursor:pointer;line-height:1}
+    77→    77→#fbNewTabBtn:hover{background:rgba(245,158,11,.25)}
+    78→    78→/* ---- toolbar ---- */
+    79→    79→#fbToolbar{display:flex;gap:7px;align-items:center;padding:8px 10px;background:rgba(8,7,6,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(245,158,11,.28);flex-shrink:0}
+    80→    80→.fb-tbgroup{display:flex;gap:2px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:2px}
+    81→    81→.fb-tb{width:36px;height:34px;flex:0 0 auto;border-radius:9px;background:none;border:none;color:#e2e8f0;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+    82→    82→.fb-tb:hover{background:rgba(245,158,11,.18);color:#fcd34d}
+    83→    83→.fb-tb:disabled{opacity:.32;cursor:default}
+    84→    84→.fb-tb:disabled:hover{background:none;color:#e2e8f0}
+    85→    85→.fb-addrwrap{flex:1;display:flex;align-items:center;height:38px;background:rgba(0,0,0,.55);border:1px solid rgba(148,163,184,.3);border-radius:11px;padding:0 6px 0 12px;min-width:50px;transition:border-color .2s,box-shadow .2s;gap:8px}
+    86→    86→.fb-addrwrap:focus-within{border-color:rgba(245,158,11,.5);box-shadow:0 0 0 3px rgba(245,158,11,.12)}
+    87→    87→.fb-addrwrap .tun{display:grid;place-items:center;width:16px;height:16px;flex-shrink:0;color:#fcd34d;opacity:.85}
+    88→    88→.fb-addrwrap .tun svg{width:14px;height:14px;fill:currentColor}
+    89→    89→.fb-addr{flex:1;height:100%;background:none;border:none;padding:0;color:#e2e8f0;font-size:.88rem;outline:none;min-width:50px;font-family:inherit}
+    90→    90→.fb-addr::placeholder{color:#64748b}
+    91→    91→#fbGoBtn{height:28px;padding:0 13px;border-radius:8px;font-weight:800;font-size:.74rem;color:#fcd34d;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.4);cursor:pointer;white-space:nowrap;font-family:"Space Grotesk",sans-serif;flex-shrink:0}
+    92→    92→#fbGoBtn:hover{background:rgba(245,158,11,.28)}
+    93→    93→/* ---- panes ---- */
+    94→    94→#fbPanes{flex:1;position:relative;background:#0a0908;min-height:0}
+    95→    95→.fb-pane{position:absolute;inset:0;display:none;background:#fff}
+    96→    96→.fb-pane.active{display:block}
+    97→    97→.fb-frame{position:absolute;inset:0;width:100%;height:100%;border:none;background:#fff}
+    98→    98→.fb-progress{position:absolute;top:0;left:0;right:0;height:3px;z-index:7;display:none;background:linear-gradient(90deg,transparent 0%,rgba(245,158,11,.95) 50%,transparent 100%);background-size:50% 100%;background-repeat:no-repeat;animation:fbSlide 1.1s linear infinite}
+    99→    99→.fb-pane.loading .fb-progress{display:block}
+   100→   100→@keyframes fbSlide{0%{background-position:-60% 0}100%{background-position:160% 0}}
+   101→   101→.fb-connect{position:absolute;inset:0;z-index:8;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(8,7,6,.96);text-align:center;padding:2rem}
+   102→   102→.fb-pane.connecting .fb-connect{display:flex}
+   103→   103→.fb-spin{width:42px;height:42px;border:3px solid rgba(245,158,11,.2);border-top-color:#f59e0b;border-radius:50%;animation:spin 1s linear infinite}
+   104→   104→.fb-pane.err .fb-spin{display:none}
+   105→   105→.fb-connect b{color:#fcd34d;font-size:.95rem;font-family:"Space Grotesk",sans-serif}
+   106→   106→.fb-pane.err .fb-connect b{color:#f87171}
+   107→   107→.fb-connect span{color:#94a3b8;font-size:.78rem;max-width:430px;line-height:1.55}
+   108→   108→.fb-cbtns{display:none;gap:10px;margin-top:6px}
+   109→   109→.fb-pane.err .fb-cbtns{display:flex}
+   110→   110→.fb-cbtns button{background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.45);color:#fcd34d;font-weight:700;font-size:.78rem;padding:.55rem 1.1rem;border-radius:10px;cursor:pointer;font-family:inherit}
+   111→   111→.fb-cbtns button:hover{background:rgba(245,158,11,.28)}
+   112→   112→/* ---- start page (new tab) ---- */
+   113→   113→.fb-start{position:absolute;inset:0;z-index:5;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0a0908}
+   114→   114→.fb-pane.at-home .fb-start{display:block}
+   115→   115→.fb-start-scroll{max-width:720px;margin:0 auto;padding:42px 22px 64px}
+   116→   116→.fb-brandrow{display:flex;align-items:center;gap:15px;margin-bottom:1.5rem}
+   117→   117→.fb-logo{width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:grid;place-items:center;font:800 25px "Space Grotesk",sans-serif;color:#fff;box-shadow:0 0 26px rgba(245,158,11,.4);flex-shrink:0}
+   118→   118→.fb-brandrow h1{font-family:"Space Grotesk",sans-serif;font-size:1.65rem;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#fff 0%,#fcd34d 55%,#38bdf8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15}
+   119→   119→.fb-brandrow p{color:#94a3b8;font-size:.84rem;margin-top:2px}
+   120→   120→.fb-srow{display:flex;gap:.6rem;margin-bottom:1.5rem}
+   121→   121→.fb-search{flex:1;height:52px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:16px;color:var(--text);font-size:.98rem;outline:none;transition:all .3s ease;font-family:inherit;padding:0 20px}
+   122→   122→.fb-search:focus{border-color:rgba(245,158,11,0.45);box-shadow:0 0 0 3px rgba(245,158,11,0.1)}
+   123→   123→.fb-search::placeholder{color:#64748b}
+   124→   124→.fb-go{padding:0 24px;height:52px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;font-weight:800;font-size:.92rem;cursor:pointer;white-space:nowrap;box-shadow:0 8px 25px rgba(245,158,11,0.35);transition:all .3s ease;font-family:inherit}
+   125→   125→.fb-go:hover{transform:translateY(-2px);box-shadow:0 12px 35px rgba(245,158,11,0.5)}
+   126→   126→.fb-lanecard{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.3);border-radius:16px;padding:14px 18px;margin-bottom:1.5rem;flex-wrap:wrap}
+   127→   127→.fb-lanecard.err{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.35)}
+   128→   128→.fb-lanecard .lc-title{display:flex;align-items:center;gap:8px;font-family:"Space Grotesk",sans-serif;font-weight:800;font-size:.86rem;color:#fff}
+   129→   129→.fb-lanecard .lc-title svg{width:15px;height:15px;fill:#10b981;flex-shrink:0}
+   130→   130→.fb-lanecard.err .lc-title svg{fill:#f87171}
+   131→   131→.fb-lanecard .lc-line{display:block;font-size:.72rem;color:#94a3b8;margin-top:3px;word-break:break-all}
+   132→   132→.fb-lanecard .lc-actions{display:flex;gap:8px;flex-shrink:0}
+   133→   133→.lc-btn{padding:8px 14px;border-radius:10px;font-size:.72rem;font-weight:700;border:1px solid rgba(16,185,129,.45);background:rgba(16,185,129,.12);color:#6ee7b7;cursor:pointer;text-decoration:none;font-family:inherit;white-space:nowrap;transition:all .2s}
+   134→   134→.lc-btn:hover{background:rgba(16,185,129,.25)}
+   135→   135→.lc-btn.ghost{border-color:rgba(148,163,184,.3);background:rgba(255,255,255,.04);color:#cbd5e1}
+   136→   136→.lc-btn.ghost:hover{border-color:rgba(245,158,11,.5);color:#fcd34d;background:rgba(245,158,11,.08)}
+   137→   137→.fb-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:.7rem;margin-bottom:1.5rem}
+   138→   138→.fb-tile{display:flex;flex-direction:column;align-items:center;gap:.5rem;background:rgba(255,255,255,.04);border:1px solid rgba(148,163,184,.22);border-radius:14px;padding:.9rem .3rem;cursor:pointer;transition:all .2s}
+   139→   139→.fb-tile:hover{border-color:rgba(245,158,11,.55);background:rgba(245,158,11,.08);transform:translateY(-2px)}
+   140→   140→.fb-tile .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(0,0,0,.5);font-weight:800;font-size:1rem}
+   141→   141→.fb-tile .ic svg{width:20px;height:20px}
+   142→   142→.fb-tile .lbl{font-size:.66rem;font-weight:700;color:#e2e8f0;text-align:center}
+   143→   143→.fb-recent{margin-bottom:1.5rem}
+   144→   144→.fb-recent h3{font-family:"Space Grotesk",sans-serif;font-size:.74rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:.65rem}
+   145→   145→.fb-recent-row{display:flex;flex-wrap:wrap;gap:.5rem}
+   146→   146→.fb-recent-chip{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(148,163,184,.25);color:#cbd5e1;font-size:.73rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;max-width:250px}
+   147→   147→.fb-recent-chip:hover{border-color:rgba(245,158,11,.5);color:#fff;background:rgba(245,158,11,.08)}
+   148→   148→.fb-recent-chip .dot{width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0}
+   149→   149→.fb-recent-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+   150→   150→.fb-note{font-size:.7rem;color:#64748b;line-height:1.55;background:rgba(0,0,0,.35);border:1px solid rgba(148,163,184,.18);border-radius:12px;padding:.7rem .95rem}
+   151→   151→@keyframes spin{to{transform:rotate(360deg)}}
+   152→   152→@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+   153→   153→/* ---- toast ---- */
+   154→   154→#fbToast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);z-index:90;background:rgba(12,10,9,.95);border:1px solid rgba(245,158,11,.45);color:#fcd34d;font-size:.76rem;font-weight:600;padding:.6rem 1.1rem;border-radius:999px;opacity:0;pointer-events:none;transition:all .3s;box-shadow:0 8px 30px rgba(0,0,0,.5);max-width:88vw;text-align:center}
+   155→   155→#fbToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+   156→   156→/* ---- responsive ---- */
+   157→   157→@media(max-width:760px){
+   158→   158→  .nav-glass{padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px}
+   159→   159→  .nav-title{display:none}
+   160→   160→  .nav-link{padding:7px 10px;font-size:.74rem}
+   161→   161→  .panic-btn{padding:7px 10px}
+   162→   162→  .fm-chip{display:none}
+   163→   163→  .fb-tab{min-width:88px;max-width:150px}
+   164→   164→  .fb-tb{width:32px;height:32px;font-size:.9rem}
+   165→   165→  #fbGoBtn{padding:0 10px;font-size:.68rem}
+   166→   166→  .fb-addr{font-size:.8rem}
+   167→   167→  #fbNewTabBtn{width:30px;height:30px}
+   168→   168→  .fb-start-scroll{padding:30px 16px 54px}
+   169→   169→  .fb-brandrow h1{font-size:1.35rem}
+   170→   170→  .fb-tiles{grid-template-columns:repeat(auto-fill,minmax(80px,1fr))}
+   171→   171→}
+   172→   172→</style>
+   173→   173→</head>
+   174→   174→<body>
+   175→   175→
+   176→   176→<div class="bg-image"></div><div class="bg-overlay"></div>
+   177→   177→<nav class="nav-glass"><div class="nav-inner">
+   178→   178→  <div class="nav-brand">
+   179→   179→    <div class="nav-logo"><span>F</span></div>
+   180→   180→    <div class="nav-title">FATE Browser</div>
+   181→   181→  </div>
+   182→   182→  <div class="nav-links">
+   183→   183→    <span class="fm-chip" id="fateLaneChip" title="wisp tunnel status"><span class="dot"></span><span class="host" id="fateLaneHost">wisp: idle</span></span>
+   184→   184→    <a class="nav-link" href="movies.html" title="Dedicated FATE movies page">Movies</a>
+   185→   185→    <a class="nav-link" href="test.html" title="Back to the FATE portal">Portal</a>
+   186→   186→    <button class="panic-btn" onclick="location.replace('index.html')" title="Emergency exit"><span>Panic</span></button>
+   187→   187→  </div>
+   188→   188→</div></nav>
+   189→   189→<div id="fbApp">
+   190→   190→  <div id="fbTabstrip">
+   191→   191→    <div id="fbTabs"></div>
+   192→   192→    <button id="fbNewTabBtn" title="New tab">+</button>
+   193→   193→  </div>
+   194→   194→  <div id="fbToolbar">
+   195→   195→    <div class="fb-tbgroup">
+   196→   196→      <button class="fb-tb" id="fbBackBtn" title="Back">&#8592;</button>
+   197→   197→      <button class="fb-tb" id="fbFwdBtn" title="Forward">&#8594;</button>
+   198→   198→      <button class="fb-tb" id="fbRelBtn" title="Reload">&#8635;</button>
+   199→   199→      <button class="fb-tb" id="fbHomeBtn" title="Home (new tab page)">&#8962;</button>
+   200→   200→    </div>
+   201→   201→    <div class="fb-addrwrap">
+   202→   202→      <span class="tun" title="served through the wisp tunnel"><svg viewBox="0 0 24 24"><path d="M12 2C8.7 2 6 4.7 6 8c0 4.4 6 14 6 14s6-9.6 6-14c0-3.3-2.7-6-6-6zm0 8.5A2.5 2.5 0 1 1 12 5.5a2.5 2.5 0 0 1 0 5z"/></svg></span>
+   203→   203→      <input id="fbAddr" class="fb-addr" placeholder="Search Google or type a URL" spellcheck="false" autocomplete="off" />
+   204→   204→      <button id="fbGoBtn" title="Go">Go</button>
+   205→   205→    </div>
+   206→   206→    <button class="fb-tb" id="fbPopBtn" title="Open raw proxied tab">&#8599;</button>
+   207→   207→  </div>
+   208→   208→  <div id="fbPanes"></div>
+   209→   209→</div>
+   210→   210→<div id="fbToast"></div>
+   211→   211→<script>
+   212→   212→/* ===== FATE BROWSER WISP LANE HOST (binary wisp handshake — shared fate_wisp_lane_v6 cache with the portal) ===== */
+   213→   213→function _lsGet(k){ try{ return JSON.parse(localStorage.getItem(k) || 'null'); }catch(e){ return null; } }
+   214→   214→function _lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+   215→   215→
+   216→   216→const FATE_WISP_SERVERS = [
+   217→   217→  'cdn.northstreetumc.org','cdn.vipersfutbol.com','cdn.pcesc.org',
+   218→   218→  'cdn.kcchallengevbc.com','cdn.slcbmooc.org','cdn.topstargym.net',
+   219→   219→  'cdn.goaplytexas.org','cdn.clearfieldswimming.com','cdn.richardacademy.cfd',
+   220→   220→  'wss://athollcottage.com/connection/','wss://api.personalloanonline.net/ws/','wss://0.catclass.net/wisp/',
+   221→   221→  'wss://3658729.ritebooks.com/wisp/','wss://55gms.com/wisp/','wss://admin.proxy.hydrovolter.com/scramjet/wisp/',
+   222→   222→  'wss://anura.pro/','wss://anura.pro/api/wisp/','wss://anura.pro/w/',
+   223→   223→  'wss://anura.pro/wisp/','wss://api.ixl.college/ws/','wss://api.sngdu.com/ws/',
+   224→   224→  'wss://app-dry-waterfall-5636.fly.dev/wisp/','wss://arctic.lat/','wss://arctic.lat/_q/',
+   225→   225→  'wss://arctic.lat/wisp/','wss://arsenic.smartfoloo.space/api/wisp/','wss://arsenic.smartfoloo.space/wisp/',
+   226→   226→  'wss://bare-server.fly.dev/api/wisp/','wss://bare-server.fly.dev/wisp/','wss://browserjs-production.up.railway.app/wisp/',
+   227→   227→  'wss://businessschool.cc/wisp/','wss://cdn.pcesc.org/','wss://cdn.vipersfutbol.com/',
+   228→   228→  'wss://celestial.press/wisp/','wss://charityschools.a2zrealty.biz/wisp/','wss://civil.quartinal.me/api/wisp/',
+   229→   229→  'wss://construction.services.codd70.ru/socket/','wss://crypto-college.cc/wisp/','wss://daydreamx.pro/wisp/',
+   230→   230→  'wss://definitelyscience.com/api/wisp/','wss://definitelyscience.com/wisp/','wss://ela.next-education-learning.sbs/wisp/',
+   231→   231→  'wss://exposed-insider-nitrogen-appointed.trycloudflare.com/wisp/','wss://fern.best/wisp/','wss://fulcrumtheatreinc.com/wisp/',
+   232→   232→  'wss://glseries.net/wisp/','wss://gointospace.app/wisp/','wss://holyunb.locker/api/wisp/',
+   233→   233→  'wss://homework--spmspy0800.replit.app/wisp/','wss://homeworkhelp.cc/wisp/','wss://host/wisp/',
+   234→   234→  'wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/','wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/api/wisp/','wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/w/',
+   235→   235→  'wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/wisp/','wss://i-ready.math.bostoncareercounselor.com/wisp/','wss://info.hotelsunrisegrand.com/wisp/',
+   236→   236→  'wss://info.shop1stoponline.com/wisp/','wss://info.videnom.com/wisp/','wss://invisiproxy.com/wisp/',
+   237→   237→];
+   238→   238→const FATE_WISP_LANE_KEY = 'fate_wisp_lane_v6';
+   239→   239→window.FATE_WISP_RESULTS = [];
+   240→   240→
+   241→   241→function fateWispUrl(s){ return s.includes('://') ? s : ('wss://' + s + '/'); }
+   242→   242→
+   243→   243→/* exact port of the working portal's testWlspDomain() — binary wisp handshake */
+   244→   244→function fateTestWlsp(server, timeoutMs){
+   245→   245→  return new Promise(resolve => {
+   246→   246→    let ws;
+   247→   247→    try{ ws = new WebSocket(fateWispUrl(server)); }catch(e){ return resolve(null); }
+   248→   248→    ws.binaryType = 'arraybuffer';
+   249→   249→    const id = (Math.floor(4294967294 * Math.random()) + 1) >>> 0;
+   250→   250→    let gotEcho = false, t0 = 0;
+   251→   251→    const finish = v => {
+   252→   252→      clearTimeout(timer);
+   253→   253→      try{ ws.onmessage = ws.onerror = ws.onclose = null; ws.close(); }catch(e){}
+   254→   254→      resolve(v);
+   255→   255→    };
+   256→   256→    const timer = setTimeout(() => finish(null), timeoutMs || 4500);
+   257→   257→    ws.onerror = () => finish(null);
+   258→   258→    ws.onclose = () => { if(!gotEcho) finish(null); };
+   259→   259→    ws.onmessage = evt => {
+   260→   260→      const d = evt.data;
+   261→   261→      if(!(d instanceof ArrayBuffer) || d.byteLength < 5) return finish(null);
+   262→   262→      const dv = new DataView(d);
+   263→   263→      const type = dv.getUint8(0), sid = dv.getUint32(1, true);
+   264→   264→      if(gotEcho){ if(sid === id) finish(Math.round(performance.now() - t0)); return; }
+   265→   265→      if(sid === 0){
+   266→   266→        if(type === 5) ws.send(new Uint8Array([5,0,0,0,0,2,1]));
+   267→   267→        else if(type === 3){
+   268→   268→          const host = '127.0.0.1';
+   269→   269→          const hb = new TextEncoder().encode(host);
+   270→   270→          const frame = new Uint8Array([1,0,0,0,0,1,69,0,...hb]);
+   271→   271→          new DataView(frame.buffer).setUint32(1, id, true);
+   272→   272→          gotEcho = true; t0 = performance.now();
+   273→   273→          try{ ws.send(frame); }catch(e){ return finish(null); }
+   274→   274→        }
+   275→   275→      }
+   276→   276→    };
+   277→   277→  });
+   278→   278→}
+   279→   279→
+   280→   280→/* lane candidates: scanner-verified first, then cached lane, then baked relays */
+   281→   281→function laneCandidates(){
+   282→   282→  const seen = new Set(), out = [];
+   283→   283→  const push = s => {
+   284→   284→    s = String(s || '').trim();
+   285→   285→    if (!s) return;
+   286→   286→    try { s = fateWispUrl(s); } catch(e){ return; }
+   287→   287→    if (seen.has(s)) return;
+   288→   288→    seen.add(s); out.push(s);
+   289→   289→  };
+   290→   290→  try {
+   291→   291→    const res = _lsGet('fate_wisp_results') || {};
+   292→   292→    Object.keys(res).forEach(u => { if (res[u] && res[u].status === 'alive') push(u); });
+   293→   293→  } catch(e){}
+   294→   294→  try { const c = _lsGet(FATE_WISP_LANE_KEY); if (c && c.url) push(c.url); } catch(e){}
+   295→   295→  FATE_WISP_SERVERS.forEach(push);
+   296→   296→  return out.slice(0, 72);
+   297→   297→}
+   298→   298→
+   299→   299→async function fateWispSweep(){
+   300→   300→  const list = laneCandidates();
+   301→   301→  const probes = list.map(async s => ({ server: s, rtt: await fateTestWlsp(s, 4500) }));
+   302→   302→  window.FATE_WISP_RESULTS = await Promise.all(probes);
+   303→   303→  return window.FATE_WISP_RESULTS.filter(r => r.rtt !== null).sort((a, b) => a.rtt - b.rtt);
+   304→   304→}
+   305→   305→/* ===== END WISP LANE HOST ===== */
+   306→   306→</script>
+   307→   307→<script>
+   308→   308→/* ===== FATE BROWSER — wisp-only browsing engine (no jet / no scramjet) =====
+   309→   309→   Boot: sweep lanes -> register wisp-sw.js?wisp=<lane> -> libcurl tunnel inside
+   310→   310→   the service worker -> iframes load pages from <origin>/e/<encoded target>. */
+   311→   311→console.log('%c[FATE BROWSER] wisp-only engine loaded', 'color:#f59e0b;font-weight:bold;');
+   312→   312→
+   313→   313→const $ = id => document.getElementById(id);
+   314→   314→const PAGE_PREFIX = new URL('e/', location.href).href;
+   315→   315→const prox = u => PAGE_PREFIX + encodeURIComponent(u);
+   316→   316→function decodeProxied(loc){
+   317→   317→  try {
+   318→   318→    if (!loc || !loc.href || !loc.href.startsWith(PAGE_PREFIX)) return null;
+   319→   319→    return new URL(decodeURIComponent(loc.href.slice(PAGE_PREFIX.length)));
+   320→   320→  } catch(e){ return null; }
+   321→   321→}
+   322→   322→function hostOf(u){
+   323→   323→  try { return new URL(/^https?:/.test(u) ? u : 'https://' + u).host.replace(/^www\./, ''); }
+   324→   324→  catch(e){ return String(u); }
+   325→   325→}
+   326→   326→function laneHost(s){ try { return new URL(fateWispUrl(s)).host.replace(/^www\./, ''); } catch(e){ return s; } }
+   327→   327→function hueOf(s){ let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h % 360; }
+   328→   328→function parseInput(q){
+   329→   329→  q = (q || '').trim();
+   330→   330→  if (!q) return null;
+   331→   331→  if (/^https?:\/\//i.test(q)) return q;
+   332→   332→  if (/^[\w-]+(\.[\w-]+)+(:\d+)?(\/.*)?$/i.test(q)) return 'https://' + q;
+   333→   333→  return 'https://www.google.com/search?q=' + encodeURIComponent(q);
+   334→   334→}
+   335→   335→function recordHistory(url){
+   336→   336→  try {
+   337→   337→    let h = _lsGet('fate_browser_history') || [];
+   338→   338→    h = h.filter(x => x.u !== url);
+   339→   339→    h.unshift({ u: url, t: Date.now() });
+   340→   340→    _lsSet('fate_browser_history', h.slice(0, 24));
+   341→   341→  } catch(e){}
+   342→   342→}
+   343→   343→
+   344→   344→/* ---------- boot state machine ---------- */
+   345→   345→let BOOT = { state: 'idle', err: null };
+   346→   346→let FATE_LANE = null, bootDone = null, bootRes = null, bootRej = null;
+   347→   347→let pendingLane = null;
+   348→   348→
+   349→   349→function boot(){
+   350→   350→  if (BOOT.state === 'sweeping' || BOOT.state === 'registering') return bootDone;
+   351→   351→  BOOT.state = 'sweeping'; BOOT.err = null;
+   352→   352→  paintBoot();
+   353→   353→  bootDone = new Promise((res, rej) => { bootRes = res; bootRej = rej; });
+   354→   354→  bootDone.catch(() => {});
+   355→   355→  (async () => {
+   356→   356→    try {
+   357→   357→      const alive = await fateWispSweep();
+   358→   358→      window.FATE_ALIVE_LANES = alive;
+   359→   359→      if (!alive.length) throw new Error('no live wisp lanes found');
+   360→   360→      BOOT.state = 'registering'; paintBoot();
+   361→   361→      let lastErr = null;
+   362→   362→      for (const lane of alive.slice(0, 6)){
+   363→   363→        try {
+   364→   364→          await registerLane(lane.server);
+   365→   365→          FATE_LANE = lane;
+   366→   366→          try { _lsSet(FATE_WISP_LANE_KEY, { url: fateWispUrl(lane.server), t: Date.now() }); } catch(e){}
+   367→   367→          BOOT.state = 'ready'; paintBoot();
+   368→   368→          console.log('[FATE BROWSER] tunnel ready on', fateWispUrl(lane.server), lane.rtt + 'ms');
+   369→   369→          bootRes(true);
+   370→   370→          return;
+   371→   371→        } catch(e){ lastErr = e; console.warn('[FATE BROWSER] lane failed:', lane.server, e); }
+   372→   372→      }
+   373→   373→      throw (lastErr || new Error('every live lane failed to start the tunnel'));
+   374→   374→    } catch(e){
+   375→   375→      BOOT.state = 'failed'; BOOT.err = String((e && e.message) || e);
+   376→   376→      paintBoot();
+   377→   377→      bootRej(e);
+   378→   378→    }
+   379→   379→  })();
+   380→   380→  return bootDone;
+   381→   381→}
+   382→   382→
+   383→   383→function registerLane(laneSrv){
+   384→   384→  const wantWisp = fateWispUrl(laneSrv);
+   385→   385→  return new Promise((resolve, reject) => {
+   386→   386→    let settled = false;
+   387→   387→    const to = setTimeout(() => done(new Error('tunnel start timeout (25s)')), 25000);
+   388→   388→    function done(err){
+   389→   389→      if (settled) return;
+   390→   390→      settled = true; clearTimeout(to);
+   391→   391→      if (pendingLane && pendingLane.wantWisp === wantWisp) pendingLane = null;
+   392→   392→      err ? reject(err) : resolve();
+   393→   393→    }
+   394→   394→    pendingLane = { wantWisp, done };
+   395→   395→    navigator.serviceWorker.register('wisp-sw.js?wisp=' + encodeURIComponent(wantWisp), { updateViaCache: 'none' })
+   396→   396→      .then(async reg => {
+   397→   397→        try {
+   398→   398→          let sw = reg.active || reg.waiting || reg.installing;
+   399→   399→          if (!sw || sw.state !== 'activated'){
+   400→   400→            await new Promise(res => {
+
+[showing lines 1-400 of 702; use offset=401 with limit to continue reading]
