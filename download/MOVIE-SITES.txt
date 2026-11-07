@@ -1,0 +1,89 @@
+==========================================================================
+FATE MOVIE SITES - WISP TEST REPORT
+tested: Nov 8 2026  -  tester: scripts/wisp_site_test.js
+==========================================================================
+
+HOW IT WAS TESTED
+--------------------------------------------------------------------------
+Ran the FATE engine's OWN wisp client code (the exact g0/Di classes from
+gn-math.html) inside Node, opened each site over the real lanes:
+wisp CONNECT -> TLS through the tunnel -> GET / - i.e. the same path the
+Apps module uses at runtime. No shortcuts, no direct requests.
+
+LANES: 68 of 113 baked endpoints answered real HTTP; top lanes used:
+    259 ms  wss://browserjs-production.up.railway.app/wisp/
+    467 ms  wss://tokyo.new-updates.info/wisp/
+    788 ms  wss://fern.best/wisp/
+    872 ms  wss://linuxontab-net.fly.dev/wisp/
+    884 ms  wss://wisp.mercurywork.shop/api/wisp/
+    891 ms  wss://wisp.mercurywork.shop/
+    895 ms  wss://wisp.mercurywork.shop/w/
+    900 ms  wss://wisp.mercurywork.shop/wisp/
+
+ADDED TO FATE - APPS MODULE (32 new tiles + Movy already there)
+--------------------------------------------------------------------------
+Movies & TV (27):
+  [200] Aether           aether.st                  title: "Aether"  lane: browserjs-production.up.railway.app
+  [200] Cinejoy          cinejoy.pk                 title: "Cinejoy"  lane: browserjs-production.up.railway.app
+  [200] 7Movies          7movies.ac                 title: "7Movies — Watch Movies & TV Shows Onli"  lane: browserjs-production.up.railway.app
+  [200] Atlantic         atlantic.bz                title: "Atlantic — Watch Movies and TV Shows Free"  lane: browserjs-production.up.railway.app
+  [200] Vivarium         vivarium.su                title: "vivarium"  lane: browserjs-production.up.railway.app
+  [200] CineLite         cinelite.xyz               title: "CineLite - Watch Free Movies & TV Shows Onli"  lane: browserjs-production.up.railway.app
+  [200] Ghostflix        ghostflix.st               title: "Ghostflix — Free HD Movies & What to W"  lane: browserjs-production.up.railway.app
+  [200] MeowTV           meowtv.ru                  title: "MeowTV — Stream movies, TV shows & anime"  lane: browserjs-production.up.railway.app
+  [200] Reelix           reelix.ac                  title: "Reelix - Watch Movies, TV Shows & Anime "  lane: browserjs-production.up.railway.app
+  [200] Cno              cno.to                     title: "Cno.to · Watch Movies & TV Shows Online"  lane: browserjs-production.up.railway.app
+  [200] SweetFox         sweetfox.app               title: "SweetFox · Watch movies and TV shows"  lane: browserjs-production.up.railway.app
+  [200] Cinecat          cinecat.eu                 title: ""  lane: browserjs-production.up.railway.app
+  [200] Flixer           flixer.gd                  title: "FLIXER - Stream Movies & TV Shows Free Onlin"  lane: browserjs-production.up.railway.app
+  [200] Dulo             dulo.mov                   title: "dulo — Watch Free Movies & TV Shows On"  lane: browserjs-production.up.railway.app
+  [200] Basement         basementx.lol              title: "Basement — Watch Movies & Shows"  lane: browserjs-production.up.railway.app
+  [200] ShuttleTV        shuttletv.su               title: "ShuttleTV"  lane: browserjs-production.up.railway.app
+  [200] TonkaCine        tonkacine.watch            title: "TonkaCine — Stream Movies & TV Series"  lane: browserjs-production.up.railway.app
+  [200] Moovie           moovie.fun                 title: "Moovie — Stream Movies, TV Shows & Anime F"  lane: browserjs-production.up.railway.app
+  [200] Cineby           cinebytv.com               title: "Cineby - Watch Movies Free Online - Without "  lane: browserjs-production.up.railway.app
+  [200] PrimeShows       primeshows.org             title: "Primeshows - Watch Your Favorite Movies &amp"  lane: browserjs-production.up.railway.app
+  [200] PressPlayZ       pressplayz.top             title: "PressPlayZ | Watch Free Movies & TV Shows"   lane: browserjs-production.up.railway.app
+  [200] LookMovie        www.lookmovie2.to          title: "Watch Latest Movies & Shows Episode Online"   lane: browserjs-production.up.railway.app
+  [200] Goojara          ww1.goojara.to             title: "Watch movies, series, animes online - Goojar"  lane: browserjs-production.up.railway.app
+  [200] Levidia          www.levidia.ch             title: "Levidia - Levidia.ch"  lane: browserjs-production.up.railway.app
+  [200] 1Shows           www.1shows.org             title: "(JS app - no title tag)"   lane: browserjs-production.up.railway.app
+  [200] ArrowTV          arrowtv.net                title: "ArrowTV"  lane: browserjs-production.up.railway.app
+  [200] AniCine          anicine.sbs                title: "AniCine – Watch Free Movies, TV Shows &amp"  lane: browserjs-production.up.railway.app
+Cartoons & Anime (3):
+  [200] MegaCartoons     www.megacartoons.net       title: "MegaCartoons.net - Watch Online Cartoons"  lane: browserjs-production.up.railway.app
+  [200] SuperCartoons    www.supercartoons.net      title: "SuperCartoons : Watch Old Classical Cartoons"  lane: browserjs-production.up.railway.app
+  [200] HiAnime          hianimes.ru                title: "HiAnime - Watch Anime Online Free in HD"  lane: browserjs-production.up.railway.app
+Hubs (2):
+  [200] Aetheris         aetheris.win               title: "Aetheris"  lane: browserjs-production.up.railway.app
+  [200] Moxy (The Moxy Files) moxy.neocities.org         title: "The Moxy Files"  lane: browserjs-production.up.railway.app
+
+REACHABLE BUT NOT ADDED (bot walls / verification gates)
+--------------------------------------------------------------------------
+These DO open through the wisp lanes but answer with a bot check first.
+The engine's Chrome profile may pass some of them - try via the Browser
+module before writing them off:
+  PopcornMovies    popcornmovies.st           403 Cloudflare bot check
+  Chillflix        chillflix.lol              403 Cloudflare block page
+  NEPU             nepu.io                    403 Cloudflare bot check
+  RidoMovies       ridomovies.is              403 Cloudflare bot check
+  HydraHD          hydrahd.gd                 403 Cloudflare bot check
+  ZetMoon          zetmoon.live               403 Cloudflare block page
+  WCOStream        www.wcostream.tv           403 Cloudflare bot check
+  MoanaTV          moanatv.lfmx.app           403 at final URL after redirect
+  FlyStream        flystream.net              anti-bot interstitial (200)
+  AZMovies         azmovies.to                302 to /verify wall
+  Noxx             noxx.gg                    302 to /verify wall
+
+FAILED
+--------------------------------------------------------------------------
+  Rive             rivestream.app             TLS connection reset through every lane
+
+NOTES
+--------------------------------------------------------------------------
+- Movy (movy.sx) was already in Apps as "Movies & TV"; confirmed still 200.
+- Moxy = The Moxy Files on Neocities. The homepage is a 'coming soon'
+  landing page (200 OK); the archive content is on its subpages.
+- Domains came from the FMHY streaming wiki (updated Nov 5 2026) + your
+  two references (aetheris.win, moxy). These sites rotate domains often;
+  re-test with:  node scripts/wisp_site_test.js endpoints && node scripts/wisp_site_test.js sites

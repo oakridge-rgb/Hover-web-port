@@ -39,6 +39,11 @@ a{color:inherit;text-decoration:none}
 .tile-icon svg{width:24px;height:24px}
 .tile-name{font-weight:700;font-size:1.02rem;font-family:'Space Grotesk',sans-serif}
 .tile-desc{color:var(--text-muted);font-size:.8rem;line-height:1.45}
+.sh{max-width:1200px;margin:36px auto 0;padding:0 24px}
+.sh h2{font-family:'Space Grotesk',sans-serif;font-size:1.3rem;font-weight:800;letter-spacing:-.01em}
+.sh h2 em{font-style:normal;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sh-sub{color:var(--text-muted);font-size:.82rem;margin-top:6px;line-height:1.55;max-width:720px}
+.tile-host{font-size:.68rem;color:#64748b;font-family:'Space Grotesk',monospace;letter-spacing:.02em}
 /* ---------- deck card ---------- */
 .deck{max-width:1200px;margin:18px auto 0;padding:0 24px}
 .deck-btn{width:100%;display:flex;align-items:center;gap:16px;padding:20px 22px;border-radius:18px;border:1px solid rgba(245,158,11,.35);background:linear-gradient(135deg,rgba(245,158,11,.14),rgba(239,68,68,.10));cursor:pointer;color:var(--text);font-family:inherit;transition:all .25s;text-align:left}
@@ -116,6 +121,21 @@ a{color:inherit;text-decoration:none}
       </button>
 </section>
 
+<section class="sh" id="msites">
+  <h2>Movie sites <em>— verified on the wisp proxy</em></h2>
+  <p class="sh-sub">Every site below was opened through the built-in proxy lanes and returned a real page on Nov 8 2026.
+     Tap one to stream it inside FATE — first connect takes a few seconds.</p>
+</section>
+<section class="grid" id="movieGrid"></section>
+<section class="sh">
+  <h2>Cartoons &amp; anime <em>— verified</em></h2>
+</section>
+<section class="grid" id="toonGrid"></section>
+<section class="sh">
+  <h2>Hubs <em>— all-in-one sites</em></h2>
+</section>
+<section class="grid" id="hubGrid"></section>
+
 <section class="deck">
   <button class="deck-btn" onclick="location.href='gn-math.html'">
     <span class="tile-icon"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 256 256"><g fill="currentColor"><path d="M224 56v40H32V56a8 8 0 0 1 8-8h176a8 8 0 0 1 8 8" opacity=".2"/><path d="M216 40H40a16 16 0 0 0-16 16v144a16 16 0 0 0 16 16h176a16 16 0 0 0 16-16V56a16 16 0 0 0-16-16m0 16v32H40V56Zm0 144H40v-96h176z"/></g></svg></span>
@@ -129,7 +149,7 @@ a{color:inherit;text-decoration:none}
 
 <div class="foot">
   Apps load through public Wisp relays (arctic.lat · mercurywork.shop · anura.pro). If one is down, the app automatically
-  retries the next relay — press Reload in the top bar if a site ever stalls. Tip: Ctrl+click any tile to open it in a new tab.
+  retries the next relay — press Reload in the top bar if a site ever stalls. Tip: Ctrl+click any tile to open it in a new tab. Movie sites re-verified through the wisp lanes on Nov 8 2026 (full report: MOVIE-SITES.txt).
 </div>
 
 <div class="overlay" id="overlay">
@@ -148,6 +168,21 @@ a{color:inherit;text-decoration:none}
 
 <script>
 var APPS = [{"key": "movies", "label": "Movies & TV", "url": "https://www.movy.sx/"}, {"key": "TikTok", "label": "TikTok", "url": "https://www.tiktok.com/"}, {"key": "Instagram", "label": "Instagram", "url": "https://www.instagram.com/"}, {"key": "books", "label": "Books", "url": "https://bookracy.com/"}, {"key": "YouTube", "label": "YouTube", "url": "https://www.youtube.com/"}, {"key": "discord", "label": "Discord", "url": "https://discord.com/app"}];
+var MSITES = [{"key": "ms-aether", "label": "Aether", "url": "https://aether.st/", "desc": "P-Stream player - 4K, no ads, auto-next", "host": "aether.st", "grid": "movieGrid"}, {"key": "ms-cinejoy", "label": "Cinejoy", "url": "https://cinejoy.pk/", "desc": "Clean catalog, auto-next episodes", "host": "cinejoy.pk", "grid": "movieGrid"}, {"key": "ms-7movies", "label": "7Movies", "url": "https://7movies.ac/", "desc": "Movies & TV in HD, big catalog", "host": "7movies.ac", "grid": "movieGrid"}, {"key": "ms-atlantic", "label": "Atlantic", "url": "https://atlantic.bz/", "desc": "4K aggregator, smooth player", "host": "atlantic.bz", "grid": "movieGrid"}, {"key": "ms-vivarium", "label": "Vivarium", "url": "https://vivarium.su/", "desc": "Fast embeds, auto-next", "host": "vivarium.su", "grid": "movieGrid"}, {"key": "ms-cinelite", "label": "CineLite", "url": "https://cinelite.xyz/", "desc": "Lightweight 4K player", "host": "cinelite.xyz", "grid": "movieGrid"}, {"key": "ms-ghostflix", "label": "Ghostflix", "url": "https://ghostflix.st/", "desc": "HD movies & what to watch", "host": "ghostflix.st", "grid": "movieGrid"}, {"key": "ms-meowtv", "label": "MeowTV", "url": "https://meowtv.ru/", "desc": "Movies, TV shows & anime", "host": "meowtv.ru", "grid": "movieGrid"}, {"key": "ms-reelix", "label": "Reelix", "url": "https://reelix.ac/", "desc": "HD streaming, auto-next", "host": "reelix.ac", "grid": "movieGrid"}, {"key": "ms-cno", "label": "Cno", "url": "https://cno.to/", "desc": "Dedicated-server player, 4K", "host": "cno.to", "grid": "movieGrid"}, {"key": "ms-sweetfox", "label": "SweetFox", "url": "https://sweetfox.app/", "desc": "Simple and quick, auto-next", "host": "sweetfox.app", "grid": "movieGrid"}, {"key": "ms-cinecat", "label": "Cinecat", "url": "https://cinecat.eu/", "desc": "P-Stream fork, 4K", "host": "cinecat.eu", "grid": "movieGrid"}, {"key": "ms-flixer", "label": "Flixer", "url": "https://flixer.gd/", "desc": "Free streaming hub", "host": "flixer.gd", "grid": "movieGrid"}, {"key": "ms-dulo", "label": "Dulo", "url": "https://dulo.mov/", "desc": "4K, auto-next", "host": "dulo.mov", "grid": "movieGrid"}, {"key": "ms-basement", "label": "Basement", "url": "https://basementx.lol/", "desc": "P-Stream fork, 4K", "host": "basementx.lol", "grid": "movieGrid"}, {"key": "ms-shuttletv", "label": "ShuttleTV", "url": "https://shuttletv.su/", "desc": "Multi-mirror player", "host": "shuttletv.su", "grid": "movieGrid"}, {"key": "ms-tonkacine", "label": "TonkaCine", "url": "https://tonkacine.watch/", "desc": "Movies & TV series", "host": "tonkacine.watch", "grid": "movieGrid"}, {"key": "ms-moovie", "label": "Moovie", "url": "https://moovie.fun/", "desc": "Movies, TV & anime", "host": "moovie.fun", "grid": "movieGrid"}, {"key": "ms-cineby", "label": "Cineby", "url": "https://cinebytv.com/", "desc": "No ads, no login", "host": "cinebytv.com", "grid": "movieGrid"}, {"key": "ms-primeshows", "label": "PrimeShows", "url": "https://primeshows.org/", "desc": "Big multi-server catalog", "host": "primeshows.org", "grid": "movieGrid"}, {"key": "ms-pressplayz", "label": "PressPlayZ", "url": "https://pressplayz.top/", "desc": "No sign-up streaming", "host": "pressplayz.top", "grid": "movieGrid"}, {"key": "ms-lookmovie", "label": "LookMovie", "url": "https://www.lookmovie2.to/", "desc": "Classic movie aggregator", "host": "www.lookmovie2.to", "grid": "movieGrid"}, {"key": "ms-goojara", "label": "Goojara", "url": "https://ww1.goojara.to/", "desc": "Movies, series & anime", "host": "ww1.goojara.to", "grid": "movieGrid"}, {"key": "ms-levidia", "label": "Levidia", "url": "https://www.levidia.ch/", "desc": "Huge movie & TV library", "host": "www.levidia.ch", "grid": "movieGrid"}, {"key": "ms-1shows", "label": "1Shows", "url": "https://www.1shows.org/", "desc": "Multi-server player", "host": "www.1shows.org", "grid": "movieGrid"}, {"key": "ms-arrowtv", "label": "ArrowTV", "url": "https://arrowtv.net/", "desc": "Slick TV & movie player", "host": "arrowtv.net", "grid": "movieGrid"}, {"key": "ms-anicine", "label": "AniCine", "url": "https://anicine.sbs/", "desc": "Movies, TV & anime in HD", "host": "anicine.sbs", "grid": "movieGrid"}, {"key": "ms-megacartoons", "label": "MegaCartoons", "url": "https://www.megacartoons.net/", "desc": "Classic & new cartoons", "host": "www.megacartoons.net", "grid": "toonGrid"}, {"key": "ms-supercartoons", "label": "SuperCartoons", "url": "https://www.supercartoons.net/", "desc": "Old-school cartoon vault", "host": "www.supercartoons.net", "grid": "toonGrid"}, {"key": "ms-hianime", "label": "HiAnime", "url": "https://hianimes.ru/", "desc": "Anime, sub & dub, HD", "host": "hianimes.ru", "grid": "toonGrid"}, {"key": "ms-aetheris", "label": "Aetheris", "url": "https://aetheris.win/", "desc": "Games, movies, proxy & chat in one", "host": "aetheris.win", "grid": "hubGrid"}, {"key": "ms-moxy", "label": "Moxy", "url": "https://moxy.neocities.org/", "desc": "The Moxy Files - 90s cartoon & show archive", "host": "moxy.neocities.org", "grid": "hubGrid"}];
+APPS = APPS.concat(MSITES.map(function (m) { return { key: m.key, label: m.label, url: m.url }; }));
+(function renderMovieSites() {
+  var ICON = "<svg aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" width=\"1em\" height=\"1em\" viewBox=\"0 0 24 24\"><path fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"m12.296 3.464l3.02 3.956M20.2 6L3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3zM3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zm3.18-5.724l3.1 3.899\"/></svg>";
+  var targets = { movieGrid: document.getElementById('movieGrid'), toonGrid: document.getElementById('toonGrid'), hubGrid: document.getElementById('hubGrid') };
+  MSITES.forEach(function (m) {
+    var g = targets[m.grid];
+    if (!g) return;
+    var b = document.createElement('button');
+    b.className = 'app-tile';
+    b.setAttribute('data-app', m.key);
+    b.innerHTML = '<span class="tile-icon">' + ICON + '</span><span class="tile-name">' + m.label + '</span><span class="tile-desc">' + m.desc + '</span><span class="tile-host">' + m.host + '</span>';
+    g.appendChild(b);
+  });
+})();
 var overlay = document.getElementById('overlay'),
     frame = document.getElementById('ovFrame'),
     title = document.getElementById('ovTitle'),
@@ -193,9 +228,9 @@ frame.addEventListener('load', function() {
   var s = frame.src || '';
   if (s && s !== 'about:blank' && s.indexOf('data:') !== 0) appReady();
 });
-document.getElementById('appGrid').addEventListener('click', function(e) {
+document.addEventListener('click', function(e) {
   var t = e.target.closest('.app-tile');
-  if (t) {
+  if (t && t.dataset.app) {
     var app = APPS.filter(function(a) { return a.key === t.dataset.app; })[0];
     if (app) openApp(app, e.ctrlKey || e.metaKey);
   }

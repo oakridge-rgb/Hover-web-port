@@ -1,0 +1,794 @@
+{
+ "endpoints": {
+  "scanned": 113,
+  "alive": [
+   {
+    "ep": "wss://browserjs-production.up.railway.app/wisp/",
+    "status": 200,
+    "ms": 259
+   },
+   {
+    "ep": "wss://tokyo.new-updates.info/wisp/",
+    "status": 200,
+    "ms": 467
+   },
+   {
+    "ep": "wss://fern.best/wisp/",
+    "status": 200,
+    "ms": 788
+   },
+   {
+    "ep": "wss://linuxontab-net.fly.dev/wisp/",
+    "status": 200,
+    "ms": 872
+   },
+   {
+    "ep": "wss://wisp.mercurywork.shop/api/wisp/",
+    "status": 200,
+    "ms": 884
+   },
+   {
+    "ep": "wss://wisp.mercurywork.shop/",
+    "status": 200,
+    "ms": 891
+   },
+   {
+    "ep": "wss://wisp.mercurywork.shop/w/",
+    "status": 200,
+    "ms": 895
+   },
+   {
+    "ep": "wss://wisp.mercurywork.shop/wisp/",
+    "status": 200,
+    "ms": 900
+   },
+   {
+    "ep": "wss://civil.quartinal.me/api/wisp/",
+    "status": 200,
+    "ms": 924
+   },
+   {
+    "ep": "wss://lichology.com/api/wisp/",
+    "status": 200,
+    "ms": 971
+   },
+   {
+    "ep": "wss://mages.io/api/wisp/",
+    "status": 200,
+    "ms": 993
+   },
+   {
+    "ep": "wss://definitelyscience.com/api/wisp/",
+    "status": 200,
+    "ms": 1012
+   },
+   {
+    "ep": "wss://wisp.webmc.fun/",
+    "status": 200,
+    "ms": 1012
+   },
+   {
+    "ep": "wss://lichology.com/wisp/",
+    "status": 200,
+    "ms": 1017
+   },
+   {
+    "ep": "wss://wisp.webmc.fun/w/",
+    "status": 200,
+    "ms": 1018
+   },
+   {
+    "ep": "wss://definitelyscience.com/wisp/",
+    "status": 200,
+    "ms": 1033
+   },
+   {
+    "ep": "wss://arsenic.smartfoloo.space/wisp/",
+    "status": 200,
+    "ms": 1060
+   },
+   {
+    "ep": "wss://arsenic.smartfoloo.space/api/wisp/",
+    "status": 200,
+    "ms": 1061
+   },
+   {
+    "ep": "wss://wisp.webmc.fun/wisp/",
+    "status": 200,
+    "ms": 1061
+   },
+   {
+    "ep": "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/",
+    "status": 200,
+    "ms": 1062
+   },
+   {
+    "ep": "wss://bare-server.fly.dev/api/wisp/",
+    "status": 200,
+    "ms": 1078
+   },
+   {
+    "ep": "wss://anura.pro/w/",
+    "status": 200,
+    "ms": 1090
+   },
+   {
+    "ep": "wss://mages.io/wisp/",
+    "status": 200,
+    "ms": 1095
+   },
+   {
+    "ep": "wss://anura.pro/api/wisp/",
+    "status": 200,
+    "ms": 1096
+   },
+   {
+    "ep": "wss://anura.pro/",
+    "status": 200,
+    "ms": 1100
+   },
+   {
+    "ep": "wss://55gms.com/wisp/",
+    "status": 200,
+    "ms": 1110
+   },
+   {
+    "ep": "wss://anura.pro/wisp/",
+    "status": 200,
+    "ms": 1113
+   },
+   {
+    "ep": "wss://triplet.bumon.ar/wisp/",
+    "status": 200,
+    "ms": 1117
+   },
+   {
+    "ep": "wss://wisp.webmc.xyz/",
+    "status": 200,
+    "ms": 1123
+   },
+   {
+    "ep": "wss://invisiproxy.com/wisp/",
+    "status": 200,
+    "ms": 1156
+   },
+   {
+    "ep": "wss://pgis-wisp.getvoroa.com/",
+    "status": 200,
+    "ms": 1176
+   },
+   {
+    "ep": "wss://yashsurjuse-wisp.hf.space/wisp/",
+    "status": 200,
+    "ms": 1202
+   },
+   {
+    "ep": "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/wisp/",
+    "status": 200,
+    "ms": 1229
+   },
+   {
+    "ep": "wss://wisp.webmc.fun/api/wisp/",
+    "status": 200,
+    "ms": 1237
+   },
+   {
+    "ep": "wss://holyunb.locker/api/wisp/",
+    "status": 200,
+    "ms": 1238
+   },
+   {
+    "ep": "wss://athollcottage.com/connection/",
+    "status": 200,
+    "ms": 1256
+   },
+   {
+    "ep": "wss://bare-server.fly.dev/wisp/",
+    "status": 200,
+    "ms": 1261
+   },
+   {
+    "ep": "wss://wisp.waved.site/wisp/",
+    "status": 200,
+    "ms": 1262
+   },
+   {
+    "ep": "wss://yashsurjuse-wisp.hf.space/",
+    "status": 200,
+    "ms": 1264
+   },
+   {
+    "ep": "wss://gointospace.app/wisp/",
+    "status": 200,
+    "ms": 1286
+   },
+   {
+    "ep": "wss://shadow.curesoutpost.com/wisp/",
+    "status": 200,
+    "ms": 1299
+   },
+   {
+    "ep": "wss://app-dry-waterfall-5636.fly.dev/wisp/",
+    "status": 200,
+    "ms": 1312
+   },
+   {
+    "ep": "wss://cdn.pcesc.org/",
+    "status": 200,
+    "ms": 1336
+   },
+   {
+    "ep": "wss://lunaron.top/w/",
+    "status": 200,
+    "ms": 1357
+   },
+   {
+    "ep": "wss://terbiumon.top/api/wisp/",
+    "status": 200,
+    "ms": 1357
+   },
+   {
+    "ep": "wss://cdn.vipersfutbol.com/",
+    "status": 200,
+    "ms": 1360
+   },
+   {
+    "ep": "wss://terbiumon.top/wisp/",
+    "status": 200,
+    "ms": 1361
+   },
+   {
+    "ep": "wss://daydreamx.pro/wisp/",
+    "status": 200,
+    "ms": 1371
+   },
+   {
+    "ep": "wss://wisp.waved.site/",
+    "status": 200,
+    "ms": 1410
+   },
+   {
+    "ep": "wss://shadow.curesoutpost.com/api/wisp/",
+    "status": 200,
+    "ms": 1419
+   },
+   {
+    "ep": "wss://shadow-3.swanndvr.net/wisp/",
+    "status": 200,
+    "ms": 1425
+   },
+   {
+    "ep": "wss://shadow-3.swanndvr.net/api/wisp/",
+    "status": 200,
+    "ms": 1456
+   },
+   {
+    "ep": "wss://wisp.waved.site/w/",
+    "status": 200,
+    "ms": 1486
+   },
+   {
+    "ep": "wss://wisp.waved.site/api/wisp/",
+    "status": 200,
+    "ms": 1493
+   },
+   {
+    "ep": "wss://wisp.terbiumon.top/wisp/",
+    "status": 200,
+    "ms": 1502
+   },
+   {
+    "ep": "wss://crypto-college.cc/wisp/",
+    "status": 200,
+    "ms": 1584
+   },
+   {
+    "ep": "wss://studyhub.kkmsilvia.com/wisp/",
+    "status": 200,
+    "ms": 1620
+   },
+   {
+    "ep": "wss://admin.proxy.hydrovolter.com/scramjet/wisp/",
+    "status": 200,
+    "ms": 1665
+   },
+   {
+    "ep": "wss://fulcrumtheatreinc.com/wisp/",
+    "status": 200,
+    "ms": 1687
+   },
+   {
+    "ep": "wss://businessschool.cc/wisp/",
+    "status": 200,
+    "ms": 1714
+   },
+   {
+    "ep": "wss://sciencenews.cc/wisp/",
+    "status": 200,
+    "ms": 1721
+   },
+   {
+    "ep": "wss://sciencepark.cc/wisp/",
+    "status": 200,
+    "ms": 1776
+   },
+   {
+    "ep": "wss://info.shop1stoponline.com/wisp/",
+    "status": 200,
+    "ms": 1779
+   },
+   {
+    "ep": "wss://petezahgames.com/wisp/",
+    "status": 200,
+    "ms": 1790
+   },
+   {
+    "ep": "wss://info.hotelsunrisegrand.com/wisp/",
+    "status": 200,
+    "ms": 1811
+   },
+   {
+    "ep": "wss://homeworkhelp.cc/wisp/",
+    "status": 200,
+    "ms": 1822
+   },
+   {
+    "ep": "wss://info.videnom.com/wisp/",
+    "status": 200,
+    "ms": 1828
+   },
+   {
+    "ep": "wss://3658729.ritebooks.com/wisp/",
+    "status": 200,
+    "ms": 1910
+   }
+  ],
+  "dead": 45
+ },
+ "sites": {
+  "movy.sx": {
+   "name": "Movy",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 301,
+   "title": "301 Moved Permanently",
+   "bytes": 731,
+   "ms": 285,
+   "loc": "https://www.movy.sx/",
+   "server": "cloudflare"
+  },
+  "popcornmovies.st": {
+   "name": "PopcornMovies",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 403,
+   "title": "Just a moment...",
+   "bytes": 7902,
+   "ms": 421,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "7movies.ac": {
+   "name": "7Movies",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "7Movies â Watch Movies &amp; TV Shows Online in HD",
+   "bytes": 151921,
+   "ms": 507,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "moxy.neocities.org": {
+   "name": "Moxy (The Moxy Files)",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "The Moxy Files",
+   "bytes": 899,
+   "ms": 547,
+   "loc": null,
+   "server": "neocities"
+  },
+  "vivarium.su": {
+   "name": "Vivarium",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "vivarium",
+   "bytes": 1959,
+   "ms": 378,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "cinejoy.pk": {
+   "name": "Cinejoy",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Cinejoy",
+   "bytes": 7477,
+   "ms": 671,
+   "loc": null,
+   "server": "ddos-guard"
+  },
+  "flystream.net": {
+   "name": "FlyStream",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Making sure you&#39;re not a bot!",
+   "bytes": 9321,
+   "ms": 695,
+   "loc": null,
+   "server": "ddos-guard"
+  },
+  "atlantic.bz": {
+   "name": "Atlantic",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Atlantic â Watch Movies and TV Shows Free",
+   "bytes": 7538,
+   "ms": 765,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "arrowtv.net": {
+   "name": "ArrowTV",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "ArrowTV",
+   "bytes": 151933,
+   "ms": 280,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "aetheris.win": {
+   "name": "Aetheris",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Aetheris",
+   "bytes": 28769,
+   "ms": 1067,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "cinelite.xyz": {
+   "name": "CineLite",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "CineLite - Watch Free Movies & TV Shows Online",
+   "bytes": 6863,
+   "ms": 385,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "chillflix.lol": {
+   "name": "Chillflix",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 403,
+   "title": "Attention Required! | Cloudflare",
+   "bytes": 6832,
+   "ms": 282,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "ghostflix.st": {
+   "name": "Ghostflix",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Ghostflix â Free HD Movies &amp; What to Watch",
+   "bytes": 151892,
+   "ms": 394,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "meowtv.ru": {
+   "name": "MeowTV",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "MeowTV â Stream movies, TV shows & anime",
+   "bytes": 5794,
+   "ms": 523,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "aether.st": {
+   "name": "Aether",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Aether",
+   "bytes": 16071,
+   "ms": 1099,
+   "loc": null,
+   "server": "nginx"
+  },
+  "reelix.ac": {
+   "name": "Reelix",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Reelix - Watch Movies, TV Shows &amp; Anime Free in HD",
+   "bytes": 153228,
+   "ms": 156,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "cno.to": {
+   "name": "Cno",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Cno.to Â· Watch Movies &amp; TV Shows Online Free in HD",
+   "bytes": 23745,
+   "ms": 144,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "nepu.io": {
+   "name": "NEPU",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 403,
+   "title": "Just a moment...",
+   "bytes": 7871,
+   "ms": 143,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "sweetfox.app": {
+   "name": "SweetFox",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "SweetFox Â· Watch movies and TV shows",
+   "bytes": 8675,
+   "ms": 321,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "cinecat.eu": {
+   "name": "Cinecat",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": null,
+   "bytes": 23498,
+   "ms": 335,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "flixer.gd": {
+   "name": "Flixer",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "FLIXER - Stream Movies & TV Shows Free Online | Free Entertainment Platform",
+   "bytes": 45328,
+   "ms": 987,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "ridomovies.is": {
+   "name": "RidoMovies",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 403,
+   "title": "Just a moment...",
+   "bytes": 8000,
+   "ms": 173,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "dulo.mov": {
+   "name": "Dulo",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "dulo â Watch Free Movies &amp; TV Shows Online | dulo.mov",
+   "bytes": 62576,
+   "ms": 550,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "hydrahd.gd": {
+   "name": "HydraHD",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 403,
+   "title": "Just a moment...",
+   "bytes": 7901,
+   "ms": 143,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "anicine.sbs": {
+   "name": "AniCine",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "AniCine â Watch Free Movies, TV Shows &amp; Anime Online HD",
+   "bytes": 151930,
+   "ms": 171,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "lfmx.app": {
+   "name": "MoanaTV",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 301,
+   "title": null,
+   "bytes": 710,
+   "ms": 664,
+   "loc": "https://moanatv.lfmx.app/",
+   "server": "cloudflare"
+  },
+  "basementx.lol": {
+   "name": "Basement",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Basement â Watch Movies &amp; Shows",
+   "bytes": 21836,
+   "ms": 651,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "zetmoon.live": {
+   "name": "ZetMoon",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 403,
+   "title": "Attention Required! | Cloudflare",
+   "bytes": 5723,
+   "ms": 161,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "1shows.org": {
+   "name": "1Shows",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 301,
+   "title": null,
+   "bytes": 661,
+   "ms": 331,
+   "loc": "https://www.1shows.org/",
+   "server": "cloudflare"
+  },
+  "pressplayx.to": {
+   "name": "PressPlay",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 301,
+   "title": "301 Moved Permanently",
+   "bytes": 380,
+   "ms": 728,
+   "loc": "https://pressplayz.top/",
+   "server": "nginx/1.18.0 (Ubuntu)"
+  },
+  "www.wcostream.tv": {
+   "name": "WCOStream",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 403,
+   "title": "Just a moment...",
+   "bytes": 7900,
+   "ms": 147,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "shuttletv.su": {
+   "name": "ShuttleTV",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "ShuttleTV",
+   "bytes": 49610,
+   "ms": 2019,
+   "loc": null,
+   "server": "nginx"
+  },
+  "azmovies.to": {
+   "name": "AZMovies",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 302,
+   "title": null,
+   "bytes": 2349,
+   "ms": 790,
+   "loc": "/verify",
+   "server": "cloudflare"
+  },
+  "tonkacine.watch": {
+   "name": "TonkaCine",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "TonkaCine â Stream Movies & TV Series",
+   "bytes": 61617,
+   "ms": 519,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "moovie.fun": {
+   "name": "Moovie",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Moovie â Stream Movies, TV Shows & Anime Free",
+   "bytes": 12106,
+   "ms": 514,
+   "loc": null,
+   "server": "nginx/1.22.1"
+  },
+  "cinebytv.com": {
+   "name": "CinebyTV",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Cineby - Watch Movies Free Online - Without Login, No Ads",
+   "bytes": 147696,
+   "ms": 660,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "primeshows.org": {
+   "name": "PrimeShows",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Primeshows - Watch Your Favorite Movies &amp; TV Shows",
+   "bytes": 153727,
+   "ms": 882,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "lookmovie2.to": {
+   "name": "LookMovie",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 301,
+   "title": "301 Moved Permanently",
+   "bytes": 351,
+   "ms": 1271,
+   "loc": "https://www.lookmovie2.to/",
+   "server": "nginx"
+  },
+  "www.megacartoons.net": {
+   "name": "MegaCartoons",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "MegaCartoons.net - Watch Online Cartoons",
+   "bytes": 133729,
+   "ms": 842,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "www.supercartoons.net": {
+   "name": "SuperCartoons",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "SuperCartoons : Watch Old Classical Cartoons",
+   "bytes": 85821,
+   "ms": 846,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "noxx.gg": {
+   "name": "Noxx",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 302,
+   "title": null,
+   "bytes": 2565,
+   "ms": 655,
+   "loc": "/verify",
+   "server": "cloudflare"
+  },
+  "ww1.goojara.to": {
+   "name": "Goojara",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Watch movies, series, animes online - Goojara.ch",
+   "bytes": 8772,
+   "ms": 760,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "www.levidia.ch": {
+   "name": "Levidia",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "Levidia - Levidia.ch",
+   "bytes": 30996,
+   "ms": 968,
+   "loc": null,
+   "server": "nginx"
+  },
+  "hianimes.ru": {
+   "name": "HiAnime",
+   "ep": "wss://browserjs-production.up.railway.app/wisp/",
+   "status": 200,
+   "title": "HiAnime - Watch Anime Online Free in HD",
+   "bytes": 24735,
+   "ms": 1088,
+   "loc": null,
+   "server": "cloudflare"
+  },
+  "rivestream.app": {
+   "name": "Rive",
+   "error": "tls-ECONNRESET"
+  }
+ }
+}
