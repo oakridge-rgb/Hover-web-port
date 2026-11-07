@@ -66,6 +66,20 @@ PRELUDE = r"""<script>
   window.FATE_MODULE_URLS = g('__FATE_MODULE_URLS') || {};
   window.FATE_ENGINE_URL = g('__FATE_ENGINE_URL') || null;
   window.FATE_GAMES_URL = g('__FATE_GAMES_URL') || null;
+  window.FATE_GAMES3_URL = g('__FATE_GAMES3_URL') || null;
+  window.FATE_ORIGIN = (function(){
+    try {
+      var L = T ? T.location : null;
+      return (L && (L.protocol === 'http:' || L.protocol === 'https:')) ? L.origin + '/' : null;
+    } catch(e){ return null; }
+  })();
+  /* catalog source: fresh copy from the server origin first, embedded as fallback */
+  window.FATE_CAT_SRC = function(file){
+    var emb = file === 'games.json' ? window.FATE_GAMES_URL : (file === 'games3.json' ? window.FATE_GAMES3_URL : null);
+    var orig = window.FATE_ORIGIN ? window.FATE_ORIGIN + file : null;
+    if (orig && emb) return [orig, emb];
+    return orig || emb || file;
+  };
   window.FATE_PLACEHOLDER = g('__FATE_PLACEHOLDER') || null;
   window.FATE_BOOT_URL = g('__FATE_BOOT_URL') || null;
   var PAGES = {
@@ -229,6 +243,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 
 __MODULE_TAGS__
 <script type="text/plain" data-fate-data="games">__GAMES_B64__</script>
+__GAMES3_TAG__
 <script type="text/plain" data-fate-module="engine">__ENGINE_B64__</script>
 <script>
 (function(){
@@ -286,6 +301,8 @@ function buildSmallModules(){
   try {
     var g = document.querySelector('script[data-fate-data="games"]');
     if (g && !window.__FATE_GAMES_URL) window.__FATE_GAMES_URL = 'data:application/json;base64,' + g.textContent.replace(/\s+/g, '');
+    var g3 = document.querySelector('script[data-fate-data="games3"]');
+    if (g3 && !window.__FATE_GAMES3_URL) window.__FATE_GAMES3_URL = 'data:application/json;base64,' + g3.textContent.replace(/\s+/g, '');
   } catch(e){}
   window.__FATE_MODULE_URLS = MODULE_URLS;
   window.__FATE_ENGINE_URL = ENGINE_URL;
@@ -466,7 +483,22 @@ def patch(name, html):
             "catch (err) { frame.src = (window.FATE_ENGINE_URL || 'gn-math.html') + '#open='",
         ))
     if name in ('games', 'index'):
-        subs.append(("url: 'games.json'", "url: (window.FATE_GAMES_URL || 'games.json')"))
+        subs.append(("url: 'games.json'", "url: FATE_CAT_SRC('games.json')"))
+        subs.append(("url: 'games3.json'", "url: FATE_CAT_SRC('games3.json')"))
+        subs.append((
+            "const res = await fetchWithTimeout(src.url);\n        if (!res.ok) throw new Error('HTTP ' + res.status);",
+            "const _cands = Array.isArray(src.url) ? src.url : [src.url];\n"
+            "        let res = null, _err = null;\n"
+            "        for (const _cu of _cands){\n"
+            "          try { const _r = await fetchWithTimeout(_cu); if (_r.ok){ res = _r; break; } _err = new Error('HTTP ' + _r.status); }\n"
+            "          catch(e){ _err = e; }\n"
+            "        }\n"
+            "        if (!res) throw (_err || new Error('unavailable'));",
+        ))
+        subs.append((
+            "if(src.base) return src.base + u;\n  return u;",
+            "if(src.base) return src.base + u;\n  return (window.FATE_ORIGIN || '') + u;",
+        ))
     if name == 's':
         subs.append((
             "if(location.search.indexOf('mini=1')>-1)",
@@ -517,6 +549,14 @@ def main():
     games_b64 = b64_wrap((SITE / 'games.json').read_bytes())
     engine_b64 = b64_wrap((SITE / 'gn-math.html').read_bytes())
     print(f'  games.json -> {len(games_b64)/1024:.0f} KB b64, engine -> {len(engine_b64)/1024/1024:.1f} MB b64')
+    g3_path = SITE / 'games3.json'
+    games3_tag = ''
+    if g3_path.exists():
+        g3_b64 = b64_wrap(g3_path.read_bytes())
+        games3_tag = '<script type="text/plain" data-fate-data="games3">' + g3_b64 + '</script>'
+        print(f'  games3.json embedded ({len(g3_b64)/1024:.0f} KB b64)')
+    else:
+        print('  games3.json not in site/ -> single file will fetch it from the server origin (put it next to FATE.html)')
 
     tags = []
     for pid in ['index', 'games', 'apps', 'tv', 's', 'w', 'settings', 'b', 'scanner']:
@@ -526,6 +566,7 @@ def main():
     doc = (SHELL
            .replace('__MODULE_TAGS__', '\n'.join(tags))
            .replace('__GAMES_B64__', games_b64)
+           .replace('__GAMES3_TAG__', games3_tag)
            .replace('__ENGINE_B64__', engine_b64)
            .replace('__LOGO__', LOGO)
            .replace('__PLACEHOLDER__', PLACEHOLDER))
