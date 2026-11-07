@@ -19,13 +19,15 @@ Architecture inside the single file:
       * window.open() override  -> routes page links back to the shell
       * capture-phase click interceptor for <a href> + inline onclick nav
       * tv/w music dock iframe fixup (s.html?mini=1 -> blob URL + #mini=1)
-  - games.json is embedded as a data: URL exposed on the top window (used by
-    the index portal). The games module is the v5 page: its 22,727-game
-    jsDelivr vault (fate-games-cat.js -> window.FATE_GAMES_B64, gzip+base64)
-    and every other local <script src> (pass/seasonal/track/cloak/fate-extras)
-    are INLINED into the module, because blob: iframes have no base URL.
+  - The games module is the v5 page: its 22,727-game jsDelivr vault
+    (fate-games-cat.js -> window.FATE_GAMES_B64, gzip+base64) and every
+    other local <script src> (pass/seasonal/track/cloak/fate-extras) are
+    INLINED into the module, because blob: iframes have no base URL.
+  - The index module is the FATE V7 hub (hero + themes + changelog);
+    a.json is embedded as an offline fallback for its changelog fetch.
 """
 import base64
+import json
 import pathlib
 import re
 import sys
@@ -91,7 +93,7 @@ PRELUDE = r"""<script>
     's.html':'s','w.html':'w','settings.html':'settings','b.html':'b',
     'wisp-scanner.html':'scanner','gn-math.html':'engine',
     'x.html':'index','e.html':'index','livetv.html':'tv','prox.html':'b','os.html':'index',
-    'ai.html':'index'
+    'vm.html':'index','ch.html':'index','ai.html':'index'
   };
   function nav(page){ try { parent.postMessage({ __fate:'nav', page:page }, '*'); } catch(e){} }
   window.FATE_NAV_FILE = function(file){
@@ -247,8 +249,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 <main class="views" id="fateViews"></main>
 
 __MODULE_TAGS__
-<script type="text/plain" data-fate-data="games">__GAMES_B64__</script>
-__GAMES3_TAG__
 <script type="text/plain" data-fate-module="engine">__ENGINE_B64__</script>
 <script>
 (function(){
@@ -488,21 +488,18 @@ def patch(name, html):
             "catch (err) { frame.src = (window.FATE_ENGINE_URL || 'gn-math.html') + '#open='",
         ))
     if name == 'index':
-        subs.append(("url: 'games.json'", "url: FATE_CAT_SRC('games.json')"))
-        subs.append(("url: 'games3.json'", "url: FATE_CAT_SRC('games3.json')"))
+        # FATE V7 hub: a.json (announcements/changelog) is fetched relatively,
+        # which can never resolve inside a blob: module. Try the origin copy
+        # first (live edits win on the real site), fall back to the embedded
+        # snapshot taken at build time.
+        a_path = SITE / 'a.json'
+        a_raw = a_path.read_text(encoding='utf-8').strip() if a_path.exists() else '{}'
         subs.append((
-            "const res = await fetchWithTimeout(src.url);\n        if (!res.ok) throw new Error('HTTP ' + res.status);",
-            "const _cands = Array.isArray(src.url) ? src.url : [src.url];\n"
-            "        let res = null, _err = null;\n"
-            "        for (const _cu of _cands){\n"
-            "          try { const _r = await fetchWithTimeout(_cu); if (_r.ok){ res = _r; break; } _err = new Error('HTTP ' + _r.status); }\n"
-            "          catch(e){ _err = e; }\n"
-            "        }\n"
-            "        if (!res) throw (_err || new Error('unavailable'));",
-        ))
-        subs.append((
-            "if(src.base) return src.base + u;\n  return u;",
-            "if(src.base) return src.base + u;\n  return (window.FATE_ORIGIN || '') + u;",
+            "var res = await fetch('a.json');",
+            "var res = await (async function(){\n"
+            "          try { var _r = await fetch('a.json'); if (_r.ok) return _r; } catch(e){}\n"
+            "          return new Response(" + json.dumps(a_raw) + ");\n"
+            "        })();",
         ))
     if name == 's':
         subs.append((
@@ -565,17 +562,8 @@ def main():
         modules[pid] = html
         print(f'  {fname}: {len(html)/1024:.0f} KB after patch')
 
-    games_b64 = b64_wrap((SITE / 'games.json').read_bytes())
     engine_b64 = b64_wrap((SITE / 'gn-math.html').read_bytes())
-    print(f'  games.json -> {len(games_b64)/1024:.0f} KB b64, engine -> {len(engine_b64)/1024/1024:.1f} MB b64')
-    g3_path = SITE / 'games3.json'
-    games3_tag = ''
-    if g3_path.exists():
-        g3_b64 = b64_wrap(g3_path.read_bytes())
-        games3_tag = '<script type="text/plain" data-fate-data="games3">' + g3_b64 + '</script>'
-        print(f'  games3.json embedded ({len(g3_b64)/1024:.0f} KB b64)')
-    else:
-        print('  games3.json not in site/ -> single file will fetch it from the server origin (put it next to FATE.html)')
+    print(f'  engine -> {len(engine_b64)/1024/1024:.1f} MB b64 (games.json no longer embedded - no page consumes it)')
 
     tags = []
     for pid in ['index', 'games', 'apps', 'tv', 's', 'w', 'settings', 'b', 'scanner']:
@@ -584,8 +572,6 @@ def main():
 
     doc = (SHELL
            .replace('__MODULE_TAGS__', '\n'.join(tags))
-           .replace('__GAMES_B64__', games_b64)
-           .replace('__GAMES3_TAG__', games3_tag)
            .replace('__ENGINE_B64__', engine_b64)
            .replace('__LOGO__', LOGO)
            .replace('__PLACEHOLDER__', PLACEHOLDER))

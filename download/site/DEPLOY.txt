@@ -113,8 +113,22 @@ GAMES LIBRARY (2026-11-08 — the 10k CDN games)
     seasonal.js, track.js, cloak.js   stubs (optional)
   Inside FATE.html (single file) all of the above are INLINED into the
   games module by the builder, so the vault decodes with zero network.
-  The old games.json (2021 games) is still embedded for the Home portal
-  grid; games3.json stays optional (its 404 warning is harmless).
+  The old games.json (2021 games) is no longer used by any page — it can
+  stay on the server or be deleted; nothing loads it anymore.
   Verified end-to-end on 2026-11-08: vault decode (~0.1s), 10,240 games
   in the grid (vault + cloud), covers loading, CDN picker, and vault
   games playing in the popup player (2048 fully playable).
+
+HOME = FATE V7 HUB (2026-11-08)
+  index.html used to be a clone of the old games portal (the reason the
+  Home module showed only 2,021 games). It is now the FATE V7 hub:
+  launch countdown (Nov 19, 6:05 AM CT), hero, side rail, changelog and
+  announcements (a.json), 10 themes (Settings > Themes still applies).
+  Files that MUST ship next to index.html (multi-file site):
+    theme.js, countdown.js, a.json   (new)
+    cloak.js, pass.js, seasonal.js, track.js (stubs)
+  Links that pointed to pages you don't ship (vm.html / ch.html /
+  ai.html / os.html) fall back to Home inside FATE.html; on the multi
+  file site they behave exactly as before.
+  Inside FATE.html the hub's changelog fetch falls back to the a.json
+  snapshot embedded at build time, so announcements work offline too.
