@@ -13,8 +13,9 @@ Architecture inside the single file:
     topbar + dock + full-viewport module views (kept alive per app).
   - Every legacy page is stored as base64 inside <script type="text/plain"
     data-fate-module="..."> and mounted as a same-origin blob: URL iframe.
-  - gn-math.html engine is embedded too and decoded lazily; b.html/apps.html
-    get it through window.FATE_ENGINE_URL (blob URL, same origin).
+  - gn-math.html engine is embedded too (gzip+base64, magic-byte detected at
+    decode) and decoded lazily with DecompressionStream; b.html/apps.html get
+    it through window.FATE_ENGINE_URL (blob URL, same origin).
   - A bridge prelude is injected into every module:
       * window.open() override  -> routes page links back to the shell
       * capture-phase click interceptor for <a href> + inline onclick nav
@@ -27,6 +28,7 @@ Architecture inside the single file:
     a.json is embedded as an offline fallback for its changelog fetch.
 """
 import base64
+import gzip
 import json
 import pathlib
 import re
@@ -298,6 +300,21 @@ function modTag(name){
 function blobURLof(b64, mime){
   return URL.createObjectURL(new Blob([b64Bytes(b64)], { type: mime }));
 }
+/* gzip+base64 aware blob builder: gzip magic 0x1f8b -> DecompressionStream,
+   anything else decodes as plain base64 (legacy path). */
+function inflateURL(b64, mime){
+  var bytes = b64Bytes(b64);
+  if (bytes.length > 2 && bytes[0] === 0x1f && bytes[1] === 0x8b){
+    if (typeof DecompressionStream !== 'function'){
+      return Promise.reject(new Error('browser too old - needs DecompressionStream (Chrome 80+ / Safari 16.4+)'));
+    }
+    var st = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return new Response(st).blob().then(function(b){
+      return URL.createObjectURL(new Blob([b], { type: mime }));
+    });
+  }
+  return Promise.resolve(URL.createObjectURL(new Blob([bytes], { type: mime })));
+}
 function buildSmallModules(){
   for (var i = 0; i < SMALL.length; i++){
     var id = SMALL[i];
@@ -316,11 +333,16 @@ function buildSmallModules(){
 function buildEngine(){
   if (ENGINE_URL) return Promise.resolve(ENGINE_URL);
   if (!enginePromise){
-    enginePromise = new Promise(function(res){
+    enginePromise = new Promise(function(res, rej){
       setTimeout(function(){
-        ENGINE_URL = blobURLof(modTag('engine'), 'text/html');
-        window.__FATE_ENGINE_URL = ENGINE_URL;
-        res(ENGINE_URL);
+        inflateURL(modTag('engine'), 'text/html').then(function(u){
+          ENGINE_URL = u;
+          window.__FATE_ENGINE_URL = u;
+          res(u);
+        }, function(err){
+          enginePromise = null;
+          rej(err);
+        });
       }, 60);
     });
   }
@@ -350,6 +372,11 @@ function showModule(id){
     buildEngine().then(function(){
       $('fateUnpack').classList.remove('on');
       if (CURRENT === id) return;
+      mount(id);
+    }, function(err){
+      var up = $('fateUnpack');
+      up.querySelector('p').textContent = 'engine unpack failed: ' + (err && err.message ? err.message : err);
+      setTimeout(function(){ up.classList.remove('on'); }, 5000);
       mount(id);
     });
     return;
@@ -408,10 +435,11 @@ window.addEventListener('message', function(e){
   if (!d || typeof d !== 'object' || !d.__fate) return;
   if (d.__fate === 'nav' && PAGE_FILE[d.page]) showModule(d.page);
   else if (d.__fate === 'engine_open'){
-    if (!ENGINE_URL) return;
-    var u = ENGINE_URL;
-    if (d.url) u += '#open=' + encodeURIComponent(d.url);
-    window.open(u, '_blank');
+    buildEngine().then(function(){
+      var u = ENGINE_URL;
+      if (d.url) u += '#open=' + encodeURIComponent(d.url);
+      window.open(u, '_blank');
+    }, function(){});
   }
 });
 $('gateGo').addEventListener('click', tryUnlock);
@@ -562,8 +590,11 @@ def main():
         modules[pid] = html
         print(f'  {fname}: {len(html)/1024:.0f} KB after patch')
 
-    engine_b64 = b64_wrap((SITE / 'gn-math.html').read_bytes())
-    print(f'  engine -> {len(engine_b64)/1024/1024:.1f} MB b64 (games.json no longer embedded - no page consumes it)')
+    engine_raw = (SITE / 'gn-math.html').read_bytes()
+    engine_gz = gzip.compress(engine_raw, 9)
+    engine_b64 = b64_wrap(engine_gz)
+    print(f'  engine -> {len(engine_raw)/1024/1024:.1f} MB raw, gzip -9 {len(engine_gz)/1024/1024:.1f} MB, '
+          f'{len(engine_b64)/1024/1024:.1f} MB b64 stored (DecompressionStream at runtime)')
 
     tags = []
     for pid in ['index', 'games', 'apps', 'tv', 's', 'w', 'settings', 'b', 'scanner']:

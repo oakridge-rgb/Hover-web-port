@@ -75,10 +75,16 @@ BEHAVIOR NOTES
 
 FATE OS — SINGLE-FILE BUILD (stormOS style)
 ===========================================
-  FATE.html      the ENTIRE site packed into ONE file (~22 MB): portal,
-                 games (games.json embedded), apps, live TV, watch, music,
-                 settings, the browser shell, the relay scanner AND the
-                 16.7 MB gn-math engine (base64, decoded on first use).
+  FATE.html      the ENTIRE site packed into ONE file (~15.3 MB as of
+                 2026-11-08, was ~22 MB): portal, games (10k vault inlined),
+                 apps, live TV, watch, music, settings, the browser shell,
+                 the relay scanner AND the 16.7 MB gn-math engine — the
+                 engine is stored gzip+base64 (10.3 MB) and inflated in the
+                 browser with DecompressionStream on first use (Chrome 80+ /
+                 Safari 16.4+; the vault decoder already required the same
+                 API, so no device that runs the vault can fail here). The
+                 decode path detects the gzip magic bytes, so an older raw
+                 base64 build still loads.
 
   How it works: a FATE OS shell (boot splash -> password gate -> dock)
   mounts every old page as a same-origin blob: URL iframe. Links between
