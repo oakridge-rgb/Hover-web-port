@@ -1,0 +1,247 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Google</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #fff;
+      color: #202124;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .header {
+      width: 100%;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 16px;
+      font-size: 13px;
+    }
+    .header a {
+      color: #202124;
+      text-decoration: none;
+    }
+    .header a:hover { text-decoration: underline; }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      width: 100%;
+      max-width: 584px;
+    }
+    .logo {
+      font-size: 90px;
+      font-weight: 400;
+      letter-spacing: -4px;
+      margin-bottom: 28px;
+      user-select: none;
+    }
+    .logo span:nth-child(1) { color: #4285F4; }
+    .logo span:nth-child(2) { color: #EA4335; }
+    .logo span:nth-child(3) { color: #FBBC05; }
+    .logo span:nth-child(4) { color: #4285F4; }
+    .logo span:nth-child(5) { color: #34A853; }
+    .logo span:nth-child(6) { color: #EA4335; }
+    .search-box {
+      width: 100%;
+      max-width: 584px;
+      height: 46px;
+      border: 1px solid #dfe1e5;
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      box-shadow: none;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .search-box:hover,
+    .search-box:focus-within {
+      box-shadow: 0 1px 6px rgba(32,33,36,.28);
+      border-color: rgba(223,225,229,0);
+    }
+    .search-icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 12px;
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+    .search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      background: transparent;
+      color: #202124;
+    }
+    .buttons {
+      margin-top: 28px;
+      display: flex;
+      gap: 12px;
+    }
+    .btn {
+      background: #f8f9fa;
+      border: 1px solid #f8f9fa;
+      border-radius: 4px;
+      color: #3c4043;
+      font-size: 14px;
+      padding: 10px 16px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      box-shadow: 0 1px 1px rgba(0,0,0,.1);
+      background: #f8f9fa;
+      border: 1px solid #dadce0;
+      color: #202124;
+    }
+    .footer {
+      width: 100%;
+      background: #f2f2f2;
+      padding: 14px 24px;
+      font-size: 14px;
+      color: #70757a;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer a {
+      color: #70757a;
+      text-decoration: none;
+      margin-right: 24px;
+    }
+    .footer a:hover { text-decoration: underline; }
+    #storm-loader {
+      display: none;
+      margin: 0;
+      background: #0b0b19;
+      color: #eee;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+    }
+    #status {
+      padding: 24px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Fake Google Screen -->
+  <div id="google-screen">
+    <div class="header">
+      <a href="#">Gmail</a>
+      <a href="#">Images</a>
+    </div>
+
+    <div class="main">
+      <div class="logo">
+        <span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span>
+      </div>
+
+      <form id="search-form" class="search-box" onsubmit="return handleSearch(event)">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="#9aa0a6">
+          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input
+          id="q"
+          class="search-input"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder=""
+          autofocus
+        >
+      </form>
+
+      <div class="buttons">
+        <button class="btn" type="button" onclick="handleSearch(event)">Google Search</button>
+        <button class="btn" type="button" onclick="handleSearch(event)">I'm Feeling Lucky</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>
+        <a href="#">About</a>
+        <a href="#">Advertising</a>
+        <a href="#">Business</a>
+        <a href="#">How Search works</a>
+      </div>
+      <div>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Settings</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Storm0S Loader (hidden until search) -->
+  <div id="storm-loader">
+    <p id="status">Loading the latest Storm0S…</p>
+  </div>
+
+  <script>
+    function handleSearch(e) {
+      if (e) e.preventDefault();
+      const query = (document.getElementById('q').value || '').trim().toLowerCase();
+
+      // Only the keyword "os" opens Storm0S
+      if (query === 'os') {
+        document.getElementById('google-screen').style.display = 'none';
+        document.getElementById('storm-loader').style.display = 'block';
+        document.title = 'Storm 0S';
+        loadStormOS();
+      } else {
+        // Fake "no results" feel — just clear or do nothing
+        document.getElementById('q').value = '';
+        document.getElementById('q').placeholder = 'Try searching "os"';
+        document.getElementById('q').focus();
+      }
+      return false;
+    }
+
+    async function loadStormOS() {
+      const repo = 'masterstorm257-maker/STORM0S';
+      const key = 'storm-loader-last-commit';
+      let latest = '', saved = '';
+      try { saved = localStorage.getItem(key) || ''; } catch {}
+      try {
+        const r = await fetch('https://api.github.com/repos/' + repo + '/commits/main', {
+          cache: 'no-store',
+          signal: AbortSignal.timeout(8000)
+        });
+        if (r.ok) {
+          const data = await r.json();
+          if (/^[a-f0-9]{40}$/.test(data.sha)) latest = data.sha;
+        }
+      } catch {}
+      const refs = [...new Set([latest, /^[a-f0-9]{40}$/.test(saved) ? saved : '', 'main'].filter(Boolean))];
+      for (const ref of refs) {
+        for (const host of ['cdn.jsdelivr.net', 'fastly.jsdelivr.net', 'gcore.jsdelivr.net']) {
+          try {
+            const r = await fetch('https://' + host + '/gh/' + repo + '@' + ref + '/STORM0S.html', {
+              signal: AbortSignal.timeout(20000)
+            });
+            if (!r.ok) continue;
+            const html = await r.text();
+            if (!/<html[\s>]/i.test(html) || !html.includes('homeView')) continue;
+            if (ref !== 'main') try { localStorage.setItem(key, ref); } catch {}
+            document.open();
+            document.write(html);
+            document.close();
+            return;
+          } catch {}
+        }
+      }
+      document.getElementById('status').textContent = 'Storm0S could not load. Check your connection and reload.';
+    }
+  </script>
+</body>
+</html>

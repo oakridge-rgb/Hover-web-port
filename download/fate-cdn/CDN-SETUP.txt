@@ -1,0 +1,66 @@
+FATE ON jsDelivr — CDN + LINK FARM SETUP (2026-11-08)
+=======================================================
+
+Why: stormOS ships links that are tiny (~7 KB) cloak pages which fetch the
+real OS from cdn.jsdelivr.net at runtime, so their link-maker bot can pump
+out thousands of links instantly. FATE.html now does the same: the 15.3 MB
+build lives on GitHub, jsDelivr serves it, and every link is a ~9 KB page.
+
+ONE-TIME: PUT FATE.HTML ON GITHUB
+---------------------------------
+  1. Your repo already exists: github.com/TongSherbet/storage
+     (the same repo that hosts the 10k games vault).
+  2. On the repo page press "Add file -> Upload files" (web drag & drop is
+     fine), drop in  download/FATE.html  (15.3 MB), commit to main.
+  3. Done. It is now served at:
+        https://cdn.jsdelivr.net/gh/TongSherbet/storage@main/FATE.html
+     jsDelivr keeps branch URLs for a while (up to ~12 h), but every commit
+     also gets an instant permanent URL  @<40-char-sha>/FATE.html  — the
+     loader resolves that SHA itself, so updates reach users immediately.
+
+LIMITS / FACTS
+--------------
+  - jsDelivr serves repo files up to 20 MB. FATE.html is 15.3 MB — keep it
+    under 20 MB or jsDelivr will refuse to serve it (that is exactly why
+    the engine was gzip-compressed into the build).
+  - jsDelivr sends *.html as text/plain (they refuse to host live HTML),
+    which is why the loader fetches the text and document.write()s it —
+    the same trick the stormOS loader you uploaded uses.
+  - jsDelivr sends Access-Control-Allow-Origin: * , so links work hosted,
+    from file://, or from data: URLs.
+  - api.github.com allows ~60 unauthenticated calls/h per IP. The loader
+    handles that: GitHub API -> data.jsdelivr.com resolve API -> SHA saved
+    in localStorage -> @main. It always has a way in.
+
+MAKE LINKS
+----------
+  1. Open  make-links.html  (hosted or straight from storage).
+     Defaults already point at TongSherbet/storage / FATE.html / main.
+  2. Type how many links you want (field caps at 65000), pick the keyword
+     pool (default: os, fate — each link gets a random one), press
+     "Generate links". 3000 links take ~60 ms; each is ~9.4 KB.
+  3. "Download ZIP" bundles them (store zip, no deps). Unzip and host /
+     share the little .html files like stormOS does.
+  4. Self-host escape hatch: any link accepts  ?src=<encoded url>  to
+     stream FATE.html from somewhere else (your local server app, another
+     mirror) without regenerating anything.
+
+WHAT A LINK DOES WHEN SOMEONE OPENS IT
+--------------------------------------
+  fake Google page -> type the keyword -> "Loading FATE OS... 3.2 MB (34%)"
+  progress bar -> resolve latest commit -> stream from cdn / fastly /
+  gcore jsDelivr mirrors (validates the FATE marker before writing) ->
+  FATE OS boots -> password gate (fate2026) -> full OS, 10k games included.
+
+FILES IN THIS FOLDER
+--------------------
+  make-links.html   the link-maker bot (link template lives inside it)
+  link.html         one ready-made link (the template with defaults baked)
+  CDN-SETUP.txt     this file
+
+Rebuild FATE.html any time with scripts/build_fate_single.py, re-upload to
+the repo, and every existing link picks up the new build automatically.
+
+Verified locally on 2026-11-08 through the loader's ?src= mode: cloak ->
+keyword "os" -> streamed the full 15.3 MB build -> gate -> FATE V7 home,
+plus 3000-link generation (61 ms) and a structurally valid 3000-entry zip.
