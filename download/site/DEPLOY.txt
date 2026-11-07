@@ -72,3 +72,25 @@ BEHAVIOR NOTES
   - Tested end-to-end on 2026-11-05 through a local relay: lane sweep,
     tunnel boot, example.com, full-styling Wikipedia (CSS/JS/images),
     in-tunnel link clicks, tabs, tiles, recents, rescan.
+
+FATE OS — SINGLE-FILE BUILD (stormOS style)
+===========================================
+  FATE.html      the ENTIRE site packed into ONE file (~22 MB): portal,
+                 games (games.json embedded), apps, live TV, watch, music,
+                 settings, the browser shell, the relay scanner AND the
+                 16.7 MB gn-math engine (base64, decoded on first use).
+
+  How it works: a FATE OS shell (boot splash -> password gate -> dock)
+  mounts every old page as a same-origin blob: URL iframe. Links between
+  pages are intercepted and routed by the shell, so the old multi-page
+  navigation just works. Apps keep running when you switch dock icons
+  (the browser keeps its engine session).
+
+  - Same password gate as before (fate_v6_auth, default 'fate2026').
+  - Deep links still work: FATE.html#open=<encoded url> opens the browser
+    on that page; FATE.html#games / #tv / #apps jump to a module.
+  - Serve over http(s) (your local server app) — don't rely on file://,
+    blob iframes and localStorage need a real origin.
+  - The old multi-file site (index.html, b.html, gn-math.html, ...) still
+    works standalone; FATE.html is the portable all-in-one edition.
+  - Rebuild it any time: scripts/build_fate_single.py
