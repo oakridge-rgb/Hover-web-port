@@ -95,17 +95,26 @@ FATE OS — SINGLE-FILE BUILD (stormOS style)
     works standalone; FATE.html is the portable all-in-one edition.
   - Rebuild it any time: scripts/build_fate_single.py
 
-GAMES CATALOG IN THE SINGLE FILE (important)
-  The old pages loaded games.json + games3.json from the same folder.
-  Inside FATE.html the pages run from blob: modules where relative paths
-  are dead, so the builder fixed this (2026-11-07):
-    - games.json is embedded in the file (2021 games) AND fetched fresh
-      from the server origin first, embedded copy = offline fallback.
-    - games3.json is fetched from the server origin — KEEP IT NEXT TO
-      FATE.html (it already sits next to the old index.html, same folder,
-      so nothing to move). If site/games3.json exists at build time it is
-      embedded too.
-    - relative links inside the catalogs (gh/*.html, media/*) are now
-      auto-expanded to absolute server URLs, so the self-hosted games
-      open again and cover art resolves.
-    - Stratus cloud games still merge in from the network, unchanged.
+GAMES LIBRARY (2026-11-08 — the 10k CDN games)
+  games.html is now the v5 portal page (the "FATE V6 Games" page):
+    - 22,727-game jsDelivr vault decoded in the browser from
+      fate-games-cat.js (window.FATE_GAMES_B64, gzip+base64) — after
+      URL/name dedupe that is the ~10k CDN games list.
+    - Stratus cloud games merge in live from the mirror sweep
+      (the Check mirrors / Reload games buttons in the Cloud header).
+    - Playing a vault game uses the v5 smart player: it fetches the
+      jsDelivr page (which is text/plain), rebuilds it as a blob: page
+      and plays that — the CDN button in the player header switches
+      mirrors (9 providers, "Test All" pings them on your network).
+  Files that MUST ship next to games.html (multi-file site):
+    fate-games-cat.js   the vault (481 KB, required)
+    fate-extras.js      theme engine + background FX (optional)
+    pass.js             FATE_PASS (optional; default 'fate2026')
+    seasonal.js, track.js, cloak.js   stubs (optional)
+  Inside FATE.html (single file) all of the above are INLINED into the
+  games module by the builder, so the vault decodes with zero network.
+  The old games.json (2021 games) is still embedded for the Home portal
+  grid; games3.json stays optional (its 404 warning is harmless).
+  Verified end-to-end on 2026-11-08: vault decode (~0.1s), 10,240 games
+  in the grid (vault + cloud), covers loading, CDN picker, and vault
+  games playing in the popup player (2048 fully playable).

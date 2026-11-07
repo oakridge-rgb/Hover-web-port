@@ -1,0 +1,581 @@
+     1→#!/usr/bin/env python3
+     2→"""
+     3→FATE OS — single-file builder (stormOS style).
+     4→
+     5→Packs the whole FATE site (portal, games, apps, tv, watch, music, settings,
+     6→browser shell, relay scanner + the 16.7 MB gn-math wisp engine) into ONE
+     7→self-contained HTML file:
+     8→
+     9→  download/FATE.html
+    10→
+    11→Architecture inside the single file:
+    12→  - FATE "OS" shell: boot splash -> access gate (same fate_v6_auth key) ->
+    13→    topbar + dock + full-viewport module views (kept alive per app).
+    14→  - Every legacy page is stored as base64 inside <script type="text/plain"
+    15→    data-fate-module="..."> and mounted as a same-origin blob: URL iframe.
+    16→  - gn-math.html engine is embedded too and decoded lazily; b.html/apps.html
+    17→    get it through window.FATE_ENGINE_URL (blob URL, same origin).
+    18→  - A bridge prelude is injected into every module:
+    19→      * window.open() override  -> routes page links back to the shell
+    20→      * capture-phase click interceptor for <a href> + inline onclick nav
+    21→      * tv/w music dock iframe fixup (s.html?mini=1 -> blob URL + #mini=1)
+    22→  - games.json is embedded as a data: URL exposed on the top window.
+    23→"""
+    24→import base64
+    25→import pathlib
+    26→import re
+    27→import sys
+    28→
+    29→SITE = pathlib.Path('/home/z/my-project/download/site')
+    30→OUT_MAIN = pathlib.Path('/home/z/my-project/download/FATE.html')
+    31→OUT_COPY = pathlib.Path('/home/z/my-project/download/site/FATE.html')
+    32→
+    33→SRC = {
+    34→    'index':    'index.html',
+    35→    'games':    'games.html',
+    36→    'apps':     'apps.html',
+    37→    'tv':       'tv.html',
+    38→    's':        's.html',
+    39→    'w':        'w.html',
+    40→    'settings': 'settings.html',
+    41→    'b':        'b.html',
+    42→    'scanner':  'wisp-scanner.html',
+    43→}
+    44→SMALL_MODULES = ['index', 'games', 'apps', 'tv', 's', 'w', 'settings', 'scanner', 'b']
+    45→
+    46→# Fully percent-escaped SVG data URIs — safe inside double-quoted HTML attrs
+    47→# AND single-quoted JS strings (no literal quote characters at all).
+    48→LOGO = ("data:image/svg+xml,%3Csvg%20xmlns%3Dhttp%3A%2F%2Fwww.w3.org%2F2000%2Fsvg"
+    49→        "%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22"
+    50→        "%20rx%3D%228%22%20fill%3D%22%23f59e0b%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2223%22"
+    51→        "%20font-family%3D%22Arial%22%20font-size%3D%2219%22%20font-weight%3D%22800%22"
+    52→        "%20text-anchor%3D%22middle%22%20fill%3D%22%23050505%22%3EF%3C%2Ftext%3E%3C%2Fsvg%3E")
+    53→PLACEHOLDER = ("data:image/svg+xml,%3Csvg%20xmlns%3Dhttp%3A%2F%2Fwww.w3.org%2F2000%2Fsvg"
+    54→               "%20viewBox%3D%220%200%20200%20200%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22"
+    55→               "%20fill%3D%22%23111318%22%2F%3E%3Ctext%20x%3D%22100%22%20y%3D%22110%22"
+    56→               "%20font-family%3D%22Arial%22%20font-size%3D%2224%22%20font-weight%3D%22700%22"
+    57→               "%20text-anchor%3D%22middle%22%20fill%3D%22%23475569%22%3EFATE%3C%2Ftext%3E%3C%2Fsvg%3E")
+    58→
+    59→PRELUDE = r"""<script>
+    60→/* FATE OS bridge — injected by build_fate_single.py */
+    61→(function(){
+    62→  var T = null;
+    63→  try { T = window.top; } catch(e){}
+    64→  function g(k){ try { return T ? T[k] : null; } catch(e){ return null; } }
+    65→  window.FATE_EMBEDDED = true;
+    66→  window.FATE_MODULE_URLS = g('__FATE_MODULE_URLS') || {};
+    67→  window.FATE_ENGINE_URL = g('__FATE_ENGINE_URL') || null;
+    68→  window.FATE_GAMES_URL = g('__FATE_GAMES_URL') || null;
+    69→  window.FATE_GAMES3_URL = g('__FATE_GAMES3_URL') || null;
+    70→  window.FATE_ORIGIN = (function(){
+    71→    try {
+    72→      var L = T ? T.location : null;
+    73→      return (L && (L.protocol === 'http:' || L.protocol === 'https:')) ? L.origin + '/' : null;
+    74→    } catch(e){ return null; }
+    75→  })();
+    76→  /* catalog source: fresh copy from the server origin first, embedded as fallback */
+    77→  window.FATE_CAT_SRC = function(file){
+    78→    var emb = file === 'games.json' ? window.FATE_GAMES_URL : (file === 'games3.json' ? window.FATE_GAMES3_URL : null);
+    79→    var orig = window.FATE_ORIGIN ? window.FATE_ORIGIN + file : null;
+    80→    if (orig && emb) return [orig, emb];
+    81→    return orig || emb || file;
+    82→  };
+    83→  window.FATE_PLACEHOLDER = g('__FATE_PLACEHOLDER') || null;
+    84→  window.FATE_BOOT_URL = g('__FATE_BOOT_URL') || null;
+    85→  var PAGES = {
+    86→    'index.html':'index','games.html':'games','apps.html':'apps','tv.html':'tv',
+    87→    's.html':'s','w.html':'w','settings.html':'settings','b.html':'b',
+    88→    'wisp-scanner.html':'scanner','gn-math.html':'engine',
+    89→    'x.html':'index','e.html':'index','livetv.html':'tv','prox.html':'b','os.html':'index'
+    90→  };
+    91→  function nav(page){ try { parent.postMessage({ __fate:'nav', page:page }, '*'); } catch(e){} }
+    92→  window.FATE_NAV_FILE = function(file){
+    93→    var page = PAGES[file];
+    94→    if (!page){ try { location.href = file; } catch(e){} return; }
+    95→    if (page === 'engine') nav('b');
+    96→    else nav(page);
+    97→  };
+    98→  var wopen = window.open ? window.open.bind(window) : null;
+    99→  function classify(u){
+   100→    u = String(u == null ? '' : u);
+   101→    if (/^[a-z][a-z0-9+.\-]*:/i.test(u) || u.slice(0,2) === '//') return null; /* absolute -> native */
+   102→    var m = /^\/?([\w.\- ]+\.html)(\?[^#]*)?(#[\s\S]*)?$/.exec(u);
+   103→    if (!m) return null;
+   104→    var page = PAGES[m[1]];
+   105→    if (!page) return null;
+   106→    if (page === 'engine'){
+   107→      var open = '';
+   108→      var mm = /#open=([^&]+)/.exec(m[3] || '') || /[?&]open=([^&]+)/.exec(m[2] || '');
+   109→      if (mm) { try { open = decodeURIComponent(mm[1]); } catch(e){ open = mm[1]; } }
+   110→      return { engine:true, url:open };
+   111→    }
+   112→    return { page:page };
+   113→  }
+   114→  window.open = function(u, t, f){
+   115→    var c = classify(u);
+   116→    if (!c) return wopen ? wopen(u, t, f) : null;
+   117→    if (c.engine){ try { parent.postMessage({ __fate:'engine_open', url:c.url }, '*'); } catch(e){} }
+   118→    else nav(c.page);
+   119→    return null;
+   120→  };
+   121→  document.addEventListener('click', function(e){
+   122→    var el = e.target;
+   123→    while (el && el.nodeType === 1 && el.nodeName !== 'A') el = el.parentNode;
+   124→    if (!el || el.nodeType !== 1) return;
+   125→    var c = classify(el.getAttribute('href') || '');
+   126→    if (!c) return;
+   127→    e.preventDefault();
+   128→    e.stopPropagation();
+   129→    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+   130→    if (c.engine) nav('b');       /* gn-math links land in the browser shell */
+   131→    else nav(c.page);
+   132→  }, true);
+   133→  document.addEventListener('DOMContentLoaded', function(){
+   134→    var list = document.querySelectorAll('iframe[data-fate-mini]');
+   135→    for (var i = 0; i < list.length; i++){
+   136→      var f = list[i];
+   137→      var u = window.FATE_MODULE_URLS[f.getAttribute('data-fate-mini')];
+   138→      if (u) f.src = u + '#mini=1';
+   139→    }
+   140→  });
+   141→})();
+   142→</script>"""
+   143→
+   144→SHELL = r"""<!DOCTYPE html>
+   145→<html lang="en">
+   146→<head>
+   147→<meta charset="UTF-8"/>
+   148→<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+   149→<title>FATE OS</title>
+   150→<link rel="shortcut icon" href="__LOGO__" type="image/x-icon"/>
+   151→<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+   152→<style>
+   153→:root{--primary:#f59e0b;--secondary:#ef4444;--bg:#050505;--border:rgba(255,255,255,.09);--text:#f8fafc;--muted:#94a3b8}
+   154→*{box-sizing:border-box;margin:0;padding:0}
+   155→html,body{height:100%}
+   156→body{background:var(--bg);color:var(--text);font-family:Inter,sans-serif;overflow:hidden}
+   157→body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:
+   158→ radial-gradient(1200px 700px at 82% -10%,rgba(245,158,11,.09),transparent 60%),
+   159→ radial-gradient(900px 600px at -10% 110%,rgba(239,68,68,.06),transparent 60%)}
+   160→.topbar{position:fixed;top:0;left:0;right:0;height:56px;z-index:30;display:none;align-items:center;gap:14px;
+   161→ padding:0 18px;background:rgba(5,5,5,.65);backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--border)}
+   162→.brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.02rem}
+   163→.brand .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--primary),var(--secondary));
+   164→ display:flex;align-items:center;justify-content:center;font-weight:800;color:#050505;box-shadow:0 0 16px rgba(245,158,11,.35)}
+   165→.brand em{font-style:normal;background:linear-gradient(135deg,#fff,#fcd34d);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+   166→.top-spacer{flex:1}
+   167→.clock{font-family:'Space Grotesk',sans-serif;font-size:.9rem;color:var(--muted);letter-spacing:.06em}
+   168→.panic{padding:8px 16px;border-radius:11px;border:none;cursor:pointer;font-weight:700;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;
+   169→ color:#fff;background:linear-gradient(135deg,#dc2626,#991b1b);box-shadow:0 4px 16px rgba(220,38,38,.35)}
+   170→.panic:hover{filter:brightness(1.12)}
+   171→.dock{position:fixed;top:56px;bottom:0;left:0;width:88px;z-index:25;display:none;flex-direction:column;gap:6px;align-items:center;
+   172→ padding:14px 8px;overflow-y:auto;background:rgba(5,5,5,.55);backdrop-filter:blur(18px);border-right:1px solid var(--border);scrollbar-width:none}
+   173→.dock::-webkit-scrollbar{display:none}
+   174→.dbtn{width:70px;padding:9px 2px 7px;border-radius:14px;border:1px solid transparent;background:none;color:var(--muted);cursor:pointer;
+   175→ display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .25s;font-family:inherit}
+   176→.dbtn svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+   177→.dbtn span{font-size:.6rem;font-weight:600;letter-spacing:.02em}
+   178→.dbtn:hover{background:rgba(245,158,11,.08);color:#fde68a}
+   179→.dbtn.active{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.35);color:var(--primary)}
+   180→.views{position:fixed;top:56px;left:88px;right:0;bottom:0;z-index:10;display:none;background:var(--bg)}
+   181→.views iframe{width:100%;height:100%;border:none;display:none;background:var(--bg)}
+   182→.views iframe.on{display:block}
+   183→.gate{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;
+   184→ background:radial-gradient(1000px 700px at 50% 18%,#0d0a06,var(--bg) 72%)}
+   185→.gate.on{display:flex}
+   186→.gate-card{width:min(92vw,380px);padding:34px 30px;border-radius:24px;background:rgba(255,255,255,.04);border:1px solid var(--border);
+   187→ backdrop-filter:blur(20px);text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+   188→.gate-logo{width:64px;height:64px;margin:0 auto 16px;border-radius:18px;background:linear-gradient(135deg,var(--primary),var(--secondary));
+   189→ display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:30px;color:#050505;
+   190→ box-shadow:0 0 40px rgba(245,158,11,.45)}
+   191→.gate-card h1{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:.02em}
+   192→.gate-card p{color:var(--muted);font-size:.82rem;margin:6px 0 22px}
+   193→.gate-card input{width:100%;padding:13px 16px;border-radius:13px;background:rgba(255,255,255,.05);border:1px solid var(--border);
+   194→ color:var(--text);font-size:1rem;outline:none;text-align:center;letter-spacing:.2em;font-family:inherit}
+   195→.gate-card input:focus{border-color:rgba(245,158,11,.45);box-shadow:0 0 0 3px rgba(245,158,11,.12)}
+   196→.gate-card button{width:100%;margin-top:12px;padding:13px;border-radius:13px;border:none;cursor:pointer;font-weight:700;font-size:.92rem;
+   197→ color:#050505;background:linear-gradient(135deg,var(--primary),#d97706);font-family:inherit}
+   198→.gate-err{color:var(--secondary);font-size:.78rem;min-height:1.1em;margin-top:10px}
+   199→.shake{animation:shake .4s}
+   200→@keyframes shake{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+   201→.boot{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+   202→ background:var(--bg);transition:opacity .45s}
+   203→.boot.hidden{opacity:0;pointer-events:none}
+   204→.boot .gate-logo{animation:pulse 1.4s ease-in-out infinite}
+   205→@keyframes pulse{50%{box-shadow:0 0 70px rgba(245,158,11,.7);transform:scale(1.05)}}
+   206→.boot small{color:var(--muted);letter-spacing:.14em;text-transform:uppercase;font-size:.68rem}
+   207→.unpack{position:fixed;top:56px;left:88px;right:0;bottom:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;
+   208→ gap:14px;background:var(--bg)}
+   209→.unpack.on{display:flex}
+   210→.unpack .ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(245,158,11,.2);border-top-color:var(--primary);animation:spin 1s linear infinite}
+   211→@keyframes spin{to{transform:rotate(360deg)}}
+   212→.unpack p{color:var(--muted);font-size:.85rem}
+   213→@media(max-width:820px){
+   214→ .dock{top:auto;bottom:0;left:0;right:0;width:auto;height:74px;flex-direction:row;justify-content:flex-start;
+   215→  padding:8px 10px;border-right:none;border-top:1px solid var(--border);overflow-x:auto;overflow-y:hidden}
+   216→ .dbtn{min-width:64px;flex:0 0 auto}
+   217→ .views{left:0;bottom:74px}
+   218→ .unpack{left:0;bottom:74px}
+   219→}
+   220→</style>
+   221→</head>
+   222→<body>
+   223→<div class="boot" id="fateBoot"><div class="gate-logo">F</div><small id="bootTxt">unpacking FATE OS</small></div>
+   224→<div class="gate" id="fateGate">
+   225→ <div class="gate-card" id="gateCard">
+   226→  <div class="gate-logo">F</div>
+   227→  <h1>FATE OS</h1>
+   228→  <p>the whole site in one file &mdash; portal &middot; games &middot; tv &middot; music &middot; browser</p>
+   229→  <input id="gatePass" type="password" placeholder="access password" autocomplete="off"/>
+   230→  <button id="gateGo">Unlock</button>
+   231→  <div class="gate-err" id="gateErr"></div>
+   232→ </div>
+   233→</div>
+   234→<div class="topbar" id="fateTop">
+   235→ <div class="brand"><div class="logo">F</div><span><em>FATE</em>&nbsp;OS</span></div>
+   236→ <div class="top-spacer"></div>
+   237→ <div class="clock" id="fateClock"></div>
+   238→ <button class="panic" id="fatePanic">Panic</button>
+   239→</div>
+   240→<nav class="dock" id="fateDock"></nav>
+   241→<div class="unpack" id="fateUnpack"><div class="ring"></div><p>unpacking the wisp engine&hellip;</p></div>
+   242→<main class="views" id="fateViews"></main>
+   243→
+   244→__MODULE_TAGS__
+   245→<script type="text/plain" data-fate-data="games">__GAMES_B64__</script>
+   246→__GAMES3_TAG__
+   247→<script type="text/plain" data-fate-module="engine">__ENGINE_B64__</script>
+   248→<script>
+   249→(function(){
+   250→'use strict';
+   251→var AUTH_KEY = 'fate_v6_auth';
+   252→var PASSES = ['fate2026'];
+   253→var SMALL = ['index','games','apps','tv','s','w','settings','scanner','b'];
+   254→var PAGE_FILE = {index:1,games:1,apps:1,tv:1,s:1,w:1,settings:1,scanner:1,b:1};
+   255→var PAGES = [
+   256→  {id:'index',   label:'Home',     d:'M3 11l9-8 9 8M5 10v10h4v-6h6v6h4V10'},
+   257→  {id:'games',   label:'Games',    d:'M6 12h4M8 10v4M15 11h.01M18 13h.01M17.3 5H6.7a4.7 4.7 0 0 0-4.6 5.6l1 5.4a2.8 2.8 0 0 0 4.9 1.2L9.5 15h5l1.5 2.2a2.8 2.8 0 0 0 4.9-1.2l1-5.4A4.7 4.7 0 0 0 17.3 5z'},
+   258→  {id:'apps',    label:'Apps',     d:'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z'},
+   259→  {id:'tv',      label:'Live TV',  d:'M3 7h18v11H3zM8 3l4 4 4-4'},
+   260→  {id:'w',       label:'Watch',    d:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM10 8l6 4-6 4z'},
+   261→  {id:'s',       label:'Music',    d:'M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'},
+   262→  {id:'b',       label:'Browser',  d:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18'},
+   263→  {id:'scanner', label:'Relay',    d:'M3 12h4l3-8 4 16 3-8h4'},
+   264→  {id:'settings',label:'Settings', d:'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z'}
+   265→];
+   266→var MODULE_URLS = {}, ENGINE_URL = null, enginePromise = null, CURRENT = null;
+   267→var FRAMES = {};
+   268→function $(id){ return document.getElementById(id); }
+   269→function hash(s){ var h = 5381; for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h.toString(36); }
+   270→function authed(){
+   271→  try {
+   272→    var v = localStorage.getItem(AUTH_KEY);
+   273→    var list = PASSES.map(hash);
+   274→    return !!v && list.indexOf(v) > -1;
+   275→  } catch(e){ return false; }
+   276→}
+   277→function b64Bytes(b64){
+   278→  b64 = b64.replace(/\s+/g, '');
+   279→  var pad = b64.slice(-2) === '==' ? 2 : (b64.slice(-1) === '=' ? 1 : 0);
+   280→  var out = new Uint8Array(Math.floor(b64.length / 4) * 3 - pad);
+   281→  var CH = 4194304;
+   282→  for (var i = 0; i < b64.length; i += CH){
+   283→    var bin = atob(b64.substr(i, CH));
+   284→    var start = Math.floor(i / 4) * 3;
+   285→    for (var j = 0; j < bin.length; j++) out[start + j] = bin.charCodeAt(j);
+   286→  }
+   287→  return out;
+   288→}
+   289→function modTag(name){
+   290→  var el = document.querySelector('script[data-fate-module="' + name + '"]');
+   291→  return el ? el.textContent : '';
+   292→}
+   293→function blobURLof(b64, mime){
+   294→  return URL.createObjectURL(new Blob([b64Bytes(b64)], { type: mime }));
+   295→}
+   296→function buildSmallModules(){
+   297→  for (var i = 0; i < SMALL.length; i++){
+   298→    var id = SMALL[i];
+   299→    if (!MODULE_URLS[id]) MODULE_URLS[id] = blobURLof(modTag(id), 'text/html');
+   300→  }
+   301→  try {
+   302→    var g = document.querySelector('script[data-fate-data="games"]');
+   303→    if (g && !window.__FATE_GAMES_URL) window.__FATE_GAMES_URL = 'data:application/json;base64,' + g.textContent.replace(/\s+/g, '');
+   304→    var g3 = document.querySelector('script[data-fate-data="games3"]');
+   305→    if (g3 && !window.__FATE_GAMES3_URL) window.__FATE_GAMES3_URL = 'data:application/json;base64,' + g3.textContent.replace(/\s+/g, '');
+   306→  } catch(e){}
+   307→  window.__FATE_MODULE_URLS = MODULE_URLS;
+   308→  window.__FATE_ENGINE_URL = ENGINE_URL;
+   309→  window.__FATE_PLACEHOLDER = '__PLACEHOLDER__';
+   310→}
+   311→function buildEngine(){
+   312→  if (ENGINE_URL) return Promise.resolve(ENGINE_URL);
+   313→  if (!enginePromise){
+   314→    enginePromise = new Promise(function(res){
+   315→      setTimeout(function(){
+   316→        ENGINE_URL = blobURLof(modTag('engine'), 'text/html');
+   317→        window.__FATE_ENGINE_URL = ENGINE_URL;
+   318→        res(ENGINE_URL);
+   319→      }, 60);
+   320→    });
+   321→  }
+   322→  return enginePromise;
+   323→}
+   324→function mount(id){
+   325→  var el = $('fateViews');
+   326→  if (!FRAMES[id]){
+   327→    var f = document.createElement('iframe');
+   328→    f.title = id;
+   329→    f.setAttribute('allow', 'fullscreen; clipboard-read; clipboard-write; autoplay; encrypted-media');
+   330→    f.setAttribute('allowfullscreen', '');
+   331→    f.dataset.page = id;
+   332→    el.appendChild(f);
+   333→    FRAMES[id] = f;
+   334→    f.src = MODULE_URLS[id];
+   335→  }
+   336→  for (var k in FRAMES) FRAMES[k].classList.toggle('on', k === id);
+   337→  CURRENT = id;
+   338→  var btns = document.querySelectorAll('.dbtn');
+   339→  for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', btns[i].dataset.page === id);
+   340→}
+   341→function showModule(id){
+   342→  if (!PAGE_FILE[id]) return;
+   343→  if (id === 'b' || id === 'apps'){
+   344→    $('fateUnpack').classList.add('on');
+   345→    buildEngine().then(function(){
+   346→      $('fateUnpack').classList.remove('on');
+   347→      if (CURRENT === id) return;
+   348→      mount(id);
+   349→    });
+   350→    return;
+   351→  }
+   352→  mount(id);
+   353→}
+   354→function buildDock(){
+   355→  var dock = $('fateDock');
+   356→  for (var i = 0; i < PAGES.length; i++){
+   357→    var p = PAGES[i];
+   358→    var b = document.createElement('button');
+   359→    b.className = 'dbtn';
+   360→    b.dataset.page = p.id;
+   361→    b.title = p.label;
+   362→    b.innerHTML = '<svg viewBox="0 0 24 24"><path d="' + p.d + '"/></svg><span></span>';
+   363→    b.querySelector('span').textContent = p.label;
+   364→    b.addEventListener('click', function(ev){ showModule(ev.currentTarget.dataset.page); });
+   365→    dock.appendChild(b);
+   366→  }
+   367→}
+   368→function clock(){
+   369→  var el = $('fateClock');
+   370→  function t(){
+   371→    var d = new Date();
+   372→    el.textContent = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+   373→  }
+   374→  t();
+   375→  setInterval(t, 20000);
+   376→}
+   377→function initOS(){
+   378→  $('bootTxt').textContent = 'decoding modules';
+   379→  buildSmallModules();
+   380→  $('fateBoot').classList.add('hidden');
+   381→  $('fateGate').classList.remove('on');
+   382→  $('fateTop').style.display = 'flex';
+   383→  $('fateDock').style.display = 'flex';
+   384→  $('fateViews').style.display = 'block';
+   385→  buildDock();
+   386→  clock();
+   387→  var h = location.hash || '';
+   388→  var mopen = /^#open=(.+)$/.exec(h);
+   389→  var mpage = /^#([a-z]+)$/.exec(h);
+   390→  if (mopen){
+   391→    window.__FATE_BOOT_URL = null;
+   392→    try { window.__FATE_BOOT_URL = decodeURIComponent(mopen[1]); } catch(e){ window.__FATE_BOOT_URL = mopen[1]; }
+   393→    showModule('b');
+   394→  } else if (mpage && PAGE_FILE[mpage[1]]){
+   395→    showModule(mpage[1]);
+   396→  } else {
+   397→    showModule('index');
+   398→  }
+   399→  setTimeout(function(){ buildEngine(); }, 1500); /* prewarm the engine */
+   400→}
+   401→window.addEventListener('message', function(e){
+   402→  var d = e.data;
+   403→  if (!d || typeof d !== 'object' || !d.__fate) return;
+   404→  if (d.__fate === 'nav' && PAGE_FILE[d.page]) showModule(d.page);
+   405→  else if (d.__fate === 'engine_open'){
+   406→    if (!ENGINE_URL) return;
+   407→    var u = ENGINE_URL;
+   408→    if (d.url) u += '#open=' + encodeURIComponent(d.url);
+   409→    window.open(u, '_blank');
+   410→  }
+   411→});
+   412→$('gateGo').addEventListener('click', tryUnlock);
+   413→$('gatePass').addEventListener('keydown', function(e){ if (e.key === 'Enter') tryUnlock(); });
+   414→function tryUnlock(){
+   415→  var p = $('gatePass').value || '';
+   416→  if (PASSES.map(hash).indexOf(hash(p)) > -1){
+   417→    try { localStorage.setItem(AUTH_KEY, hash(p)); } catch(e){}
+   418→    initOS();
+   419→  } else {
+   420→    $('gateErr').textContent = 'wrong password';
+   421→    var c = $('gateCard');
+   422→    c.classList.remove('shake');
+   423→    void c.offsetWidth;
+   424→    c.classList.add('shake');
+   425→  }
+   426→}
+   427→$('fatePanic').addEventListener('click', function(){ location.replace('https://clever.com'); });
+   428→window.addEventListener('hashchange', function(){
+   429→  var m = /^#open=(.+)$/.exec(location.hash || '');
+   430→  if (!m) return;
+   431→  var u;
+   432→  try { u = decodeURIComponent(m[1]); } catch(e){ u = m[1]; }
+   433→  showModule('b');
+   434→  var f = FRAMES['b'];
+   435→  var sent = false;
+   436→  if (f && f.contentWindow){
+   437→    try { f.contentWindow.postMessage({ __fate:'boot', url:u }, '*'); sent = true; } catch(e){}
+   438→  }
+   439→  if (!sent) window.__FATE_BOOT_URL = u; /* fresh boot: prelude picks it up */
+   440→});
+   441→window.addEventListener('DOMContentLoaded', function(){
+   442→  if (authed()) initOS();
+   443→  else { $('fateBoot').classList.add('hidden'); $('fateGate').classList.add('on'); try { $('gatePass').focus(); } catch(e){} }
+   444→});
+   445→})();
+   446→</script>
+   447→</body>
+   448→</html>
+   449→"""
+   450→
+   451→PAGE_ID_TO_FILE = {
+   452→    'b': 'b.html', 'scanner': 'wisp-scanner.html',
+   453→    'index': 'index.html', 'games': 'games.html', 'apps': 'apps.html',
+   454→    'tv': 'tv.html', 's': 's.html', 'w': 'w.html', 'settings': 'settings.html',
+   455→}
+   456→
+   457→
+   458→def patch(name, html):
+   459→    subs = []
+   460→    if name == 'b':
+   461→        subs.append((
+   462→            "const ENGINE_URL = 'gn-math.html';",
+   463→            "const ENGINE_URL = (window.FATE_ENGINE_URL || 'gn-math.html');",
+   464→        ))
+   465→        subs.append((
+   466→            "newTab();\npaintChip();",
+   467→            "newTab();\nif (window.FATE_BOOT_URL) { try { navigate(TABS[0], window.FATE_BOOT_URL); } catch(e){} }\n"
+   468→            "window.addEventListener('message', function(e){ var d = e.data; if (!d || typeof d !== 'object' || d.__fate !== 'boot') return;"
+   469→            " try { navigate(TABS[0], String(d.url || '')); } catch(err){} });\n"
+   470→            "paintChip();",
+   471→        ))
+   472→    if name == 'apps':
+   473→        subs.append((
+   474→            "var src = 'gn-math.html#open=' + encodeURIComponent(app.url);",
+   475→            "var src = (window.FATE_ENGINE_URL || 'gn-math.html') + '#open=' + encodeURIComponent(app.url);",
+   476→        ))
+   477→        subs.append((
+   478→            "try { frame.contentWindow.location.href = 'gn-math.html#open='",
+   479→            "try { frame.contentWindow.location.href = (window.FATE_ENGINE_URL || 'gn-math.html') + '#open='",
+   480→        ))
+   481→        subs.append((
+   482→            "catch (err) { frame.src = 'gn-math.html#open='",
+   483→            "catch (err) { frame.src = (window.FATE_ENGINE_URL || 'gn-math.html') + '#open='",
+   484→        ))
+   485→    if name in ('games', 'index'):
+   486→        subs.append(("url: 'games.json'", "url: FATE_CAT_SRC('games.json')"))
+   487→        subs.append(("url: 'games3.json'", "url: FATE_CAT_SRC('games3.json')"))
+   488→        subs.append((
+   489→            "const res = await fetchWithTimeout(src.url);\n        if (!res.ok) throw new Error('HTTP ' + res.status);",
+   490→            "const _cands = Array.isArray(src.url) ? src.url : [src.url];\n"
+   491→            "        let res = null, _err = null;\n"
+   492→            "        for (const _cu of _cands){\n"
+   493→            "          try { const _r = await fetchWithTimeout(_cu); if (_r.ok){ res = _r; break; } _err = new Error('HTTP ' + _r.status); }\n"
+   494→            "          catch(e){ _err = e; }\n"
+   495→            "        }\n"
+   496→            "        if (!res) throw (_err || new Error('unavailable'));",
+   497→        ))
+   498→        subs.append((
+   499→            "if(src.base) return src.base + u;\n  return u;",
+   500→            "if(src.base) return src.base + u;\n  return (window.FATE_ORIGIN || '') + u;",
+   501→        ))
+   502→    if name == 's':
+   503→        subs.append((
+   504→            "if(location.search.indexOf('mini=1')>-1)",
+   505→            "if(location.search.indexOf('mini=1')>-1||location.hash.indexOf('mini=1')>-1)",
+   506→        ))
+   507→    if name in ('tv', 'w'):
+   508→        subs.append((
+   509→            '<iframe id="musicDock" src="s.html?mini=1" allow="autoplay" title="FATE Music"></iframe>',
+   510→            '<iframe id="musicDock" data-fate-mini="s" src="about:blank" allow="autoplay" title="FATE Music"></iframe>',
+   511→        ))
+   512→    for old, new in subs:
+   513→        n = html.count(old)
+   514→        assert n == 1, f'[{name}] pattern count={n} (want 1): {old[:70]!r}'
+   515→        html = html.replace(old, new)
+   516→    # route bare-filename location navigations through the bridge (inline
+   517→    # onclick handlers and JS assignments can never resolve against blob:)
+   518→    n_nav = 0
+   519→    def _nav(m):
+   520→        nonlocal n_nav
+   521→        n_nav += 1
+   522→        return f"FATE_NAV_FILE('{m.group(1)}')"
+   523→    html = re.sub(r"location\.href\s*=\s*'([\w.\-]+\.html)'", _nav, html)
+   524→    html = re.sub(r"location\.replace\s*\(\s*'([\w.\-]+\.html)'\s*\)", _nav, html)
+   525→    n_logo = html.count('media/logo.svg')
+   526→    n_ph = html.count('media/placeholder.svg')
+   527→    html = html.replace('media/logo.svg', LOGO).replace('media/placeholder.svg', PLACEHOLDER)
+   528→    print(f'  [{name}] {len(subs)} code patches, {n_nav} nav rewrites, {n_logo} logo refs, {n_ph} placeholder refs inlined')
+   529→    return html
+   530→
+   531→
+   532→def b64_wrap(data: bytes, width: int = 500000) -> str:
+   533→    raw = base64.b64encode(data).decode('ascii')
+   534→    return '\n'.join(raw[i:i + width] for i in range(0, len(raw), width))
+   535→
+   536→
+   537→def main():
+   538→    print('== FATE OS single-file builder ==')
+   539→    modules = {}
+   540→    for pid, fname in PAGE_ID_TO_FILE.items():
+   541→        src = SITE / fname
+   542→        html = src.read_text(encoding='utf-8')
+   543→        assert html.count('<head>') == 1, f'{fname}: <head> not found exactly once'
+   544→        html = patch(pid, html)
+   545→        html = html.replace('<head>', '<head>' + PRELUDE, 1)
+   546→        modules[pid] = html
+   547→        print(f'  {fname}: {len(html)/1024:.0f} KB after patch')
+   548→
+   549→    games_b64 = b64_wrap((SITE / 'games.json').read_bytes())
+   550→    engine_b64 = b64_wrap((SITE / 'gn-math.html').read_bytes())
+   551→    print(f'  games.json -> {len(games_b64)/1024:.0f} KB b64, engine -> {len(engine_b64)/1024/1024:.1f} MB b64')
+   552→    g3_path = SITE / 'games3.json'
+   553→    games3_tag = ''
+   554→    if g3_path.exists():
+   555→        g3_b64 = b64_wrap(g3_path.read_bytes())
+   556→        games3_tag = '<script type="text/plain" data-fate-data="games3">' + g3_b64 + '</script>'
+   557→        print(f'  games3.json embedded ({len(g3_b64)/1024:.0f} KB b64)')
+   558→    else:
+   559→        print('  games3.json not in site/ -> single file will fetch it from the server origin (put it next to FATE.html)')
+   560→
+   561→    tags = []
+   562→    for pid in ['index', 'games', 'apps', 'tv', 's', 'w', 'settings', 'b', 'scanner']:
+   563→        b64 = b64_wrap(modules[pid].encode('utf-8'))
+   564→        tags.append(f'<script type="text/plain" data-fate-module="{pid}">{b64}</script>')
+   565→
+   566→    doc = (SHELL
+   567→           .replace('__MODULE_TAGS__', '\n'.join(tags))
+   568→           .replace('__GAMES_B64__', games_b64)
+   569→           .replace('__GAMES3_TAG__', games3_tag)
+   570→           .replace('__ENGINE_B64__', engine_b64)
+   571→           .replace('__LOGO__', LOGO)
+   572→           .replace('__PLACEHOLDER__', PLACEHOLDER))
+   573→
+   574→    OUT_MAIN.write_text(doc, encoding='utf-8')
+   575→    OUT_COPY.write_text(doc, encoding='utf-8')
+   576→    print(f'== wrote {OUT_MAIN} ({OUT_MAIN.stat().st_size/1024/1024:.1f} MB) + copy in site/ ==')
+   577→
+   578→
+   579→if __name__ == '__main__':
+   580→    sys.exit(main())
+   581→

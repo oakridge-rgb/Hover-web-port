@@ -19,7 +19,11 @@ Architecture inside the single file:
       * window.open() override  -> routes page links back to the shell
       * capture-phase click interceptor for <a href> + inline onclick nav
       * tv/w music dock iframe fixup (s.html?mini=1 -> blob URL + #mini=1)
-  - games.json is embedded as a data: URL exposed on the top window.
+  - games.json is embedded as a data: URL exposed on the top window (used by
+    the index portal). The games module is the v5 page: its 22,727-game
+    jsDelivr vault (fate-games-cat.js -> window.FATE_GAMES_B64, gzip+base64)
+    and every other local <script src> (pass/seasonal/track/cloak/fate-extras)
+    are INLINED into the module, because blob: iframes have no base URL.
 """
 import base64
 import pathlib
@@ -86,7 +90,8 @@ PRELUDE = r"""<script>
     'index.html':'index','games.html':'games','apps.html':'apps','tv.html':'tv',
     's.html':'s','w.html':'w','settings.html':'settings','b.html':'b',
     'wisp-scanner.html':'scanner','gn-math.html':'engine',
-    'x.html':'index','e.html':'index','livetv.html':'tv','prox.html':'b','os.html':'index'
+    'x.html':'index','e.html':'index','livetv.html':'tv','prox.html':'b','os.html':'index',
+    'ai.html':'index'
   };
   function nav(page){ try { parent.postMessage({ __fate:'nav', page:page }, '*'); } catch(e){} }
   window.FATE_NAV_FILE = function(file){
@@ -482,7 +487,7 @@ def patch(name, html):
             "catch (err) { frame.src = 'gn-math.html#open='",
             "catch (err) { frame.src = (window.FATE_ENGINE_URL || 'gn-math.html') + '#open='",
         ))
-    if name in ('games', 'index'):
+    if name == 'index':
         subs.append(("url: 'games.json'", "url: FATE_CAT_SRC('games.json')"))
         subs.append(("url: 'games3.json'", "url: FATE_CAT_SRC('games3.json')"))
         subs.append((
@@ -525,7 +530,21 @@ def patch(name, html):
     n_logo = html.count('media/logo.svg')
     n_ph = html.count('media/placeholder.svg')
     html = html.replace('media/logo.svg', LOGO).replace('media/placeholder.svg', PLACEHOLDER)
-    print(f'  [{name}] {len(subs)} code patches, {n_nav} nav rewrites, {n_logo} logo refs, {n_ph} placeholder refs inlined')
+    # Inline local <script src="X.js"> tags: blob: iframes have no base URL,
+    # so relative script loads can never resolve. Only files that exist next
+    # to the site pages get inlined; anything else (CDNs) is left untouched.
+    inlined = []
+    def _inline_js(m):
+        fname = m.group(1)
+        f = SITE / fname
+        if not f.exists():
+            return m.group(0)
+        content = f.read_text(encoding='utf-8').replace('</script', '<\\/script')
+        inlined.append((fname, len(content)))
+        return '<script>\n' + content + '\n</script>'
+    html = re.sub(r'<script src="([\w.\-]+\.js)"[^>]*>\s*</script>', _inline_js, html)
+    il = ', '.join(f'{n}({sz//1024}KB)' for n, sz in inlined) or 'none'
+    print(f'  [{name}] {len(subs)} code patches, {n_nav} nav rewrites, {n_logo} logo refs, {n_ph} placeholder refs, scripts inlined: {il}')
     return html
 
 
