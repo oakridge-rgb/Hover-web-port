@@ -1,5 +1,60 @@
-FATE MOVIES 2.3 — the separate movie page (your confirmed servers + site vault)
+FATE MOVIES 2.4 — LIVE TMDB: every movie & show (the milkbox method)
 ================================================================================
+WHAT'S NEW
+  You said: "we need a way to fetch every movie like tmdb, and
+  milkbox.japan.is has that method". Correct — MILKBOX's own app.js ships a
+  PUBLIC TMDB v4 read token and calls api.themoviedb.org/3 with it. v2.4
+  reuses that exact method, plus a tunnel for blocked networks:
+
+  DATA LANES (see the chip under the title — click it to toggle)
+    1. DIRECT   browser fetch straight to api.themoviedb.org (CORS:* —
+                works wherever TMDB isn't blocked).
+    2. WISP     if TMDB is blocked (school wifi), the same request goes out
+                as a RAW HTTP/1.1 GET to api.themoviedb.org:80 THROUGH the
+                FATE wisp tunnel — token header intact — hopping the 8
+                engine lanes until one answers. The winning lane is sticky
+                (saved on the device). Verified live: lane "linuxontab ·
+                fly" carried /trending/all/day end-to-end.
+    Both lanes share a 6-hour device cache, so even a total outage keeps
+    everything you already browsed. Posters load from image.tmdb.org and
+    fall back to the wsrv.nl mirror on error.
+
+  WHAT YOU GET (all live, infinite scroll to 25 pages per view)
+    - Trending / Top Rated / Newest for BOTH Movies and Series.
+    - Every TMDB genre as a pill (Action ... War & Politics) = discover.
+    - Search hits ALL of TMDB (movies + shows, multi-search).
+    - Detail sheets: backdrop, rating, certification (R/PG-13...), runtime
+      or seasons, genres, top cast, "More like this" row.
+    - TV: full season picker + episode list (names, air dates) — click any
+      episode and it plays immediately on your server ring.
+    - Everything still plays through chips 1-2: VidZee (peak) and
+      MILKBOX · x8rr — every TMDB title feeds them its TMDB id.
+    - The 1247-title on-device catalog is still there as the "Vault"
+      pill: fully offline, instant, always available. When every TMDB lane
+      is down the page boots into the vault by itself.
+
+  TMDB LANE STATUS / TOOLS
+    - The chip under the header shows the live lane at all times.
+    - Sites vault -> "TMDB data lane": Test TMDB lane (probes direct,
+      then the tunnel, saves what works) + Clear TMDB cache.
+
+UPLOAD LIST v2.4 (site root)
+  1. movies.html         101 KB  (replaces the old one)
+  2. fate-movies-cat.js  unchanged | 3. msheets/ unchanged | 4. gn-math.html unchanged
+  (index.html unchanged from 2.3)
+
+VERIFIED ON 2026-11-09 (real browser, both lanes)
+  Direct lane: trending 20 cards + posters in ~2s, genre discover, search
+  "dune" -> 13 hits, detail sheet w/ cast+cert+recs, VisionQuest S1E1-8
+  listed, VidZee frame built as /embed/tv/213375/1/1, vault pill renders
+  sprites, scroll paging 20->60. Wisp lane: pref forced -> tunnel carried
+  the catalog (sticky "linuxontab · fly"), 20 cards via raw HTTP. Zero
+  console errors on both.
+
+================================================================================
+
+PREVIOUS (v2.3)
+
 WHAT CHANGED AND WHY
   You said: don't pack movie stuff into the single-file FATE.html anymore —
   make a separate movie page, and use the sources that work for you:
