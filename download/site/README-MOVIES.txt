@@ -1,5 +1,73 @@
-FATE MOVIES 2.4 — LIVE TMDB: every movie & show (the milkbox method)
+FATE MOVIES 2.5 — CINEMETA FAST LANE: the whole catalog without TMDB
 ================================================================================
+WHAT CHANGED AND WHY
+  You said: "Wisp method is too slow and it didn't even reach it". Fixed —
+  the page no longer needs TMDB (or the wisp tunnel) to show you movies.
+  v2.5 adds a PRIMARY data lane built on CINEMETA — Stremio's public
+  metadata CDN (the same kind of backend MILKBOX-style apps use):
+
+    https://v3-cinemeta.strem.io   (redirects to cinemeta-catalogs.strem.io)
+
+  Why it's perfect here:
+    - NOT TMDB. Different company, different domain — TMDB blocking on
+      your wifi is irrelevant.
+    - Made for direct browser use: CORS *, Cloudflare CDN, answers in
+      0.04-2.5s (measured). No tunnel, no proxy, no token.
+    - Every title carries imdb_id AND moviedb_id — moviedb_id IS the
+      TMDB id, so your verified player chips still get exactly the ids
+      they need: VidZee (peak) /embed/movie/438631 etc.
+    - Full episode lists with names, air dates and overviews ship inside
+      the series meta — season picker works with zero extra requests.
+
+  THE THREE LANES (chip under the title — click to cycle, choice saved)
+    1. CINEMETA fast lane   <- default, what boots now
+       Trending / Top Rated (imdbRating) / Newest (year picker, 20 yrs)
+       for Movies AND Series, every genre, search across both, detail
+       sheets (cast, director, runtime, rating, genres, awards), "More
+       like this" row, full TV season/episode picker. Infinite scroll,
+       50 titles per page, up to 3000 deep per view.
+    2. TMDB direct          <- automatic fallback if Cinemeta is blocked
+    3. TMDB over wisp       <- manual only. Never used at boot. Capped
+       at 2 lane tries so it can't hang the page. Boot only touches it
+       if YOU saved wisp as your lane.
+
+  PICTURES: posters/backdrops come from images.metahub.space (Cinemeta's
+  image CDN, same speed class). If an image 404s it falls back to the
+  wsrv.nl mirror, same as before.
+
+  RESILIENCE: 6-hour device cache — anything you browsed replays with
+  zero network. Transient fetch errors retry up to 3 times on scroll
+  before giving up. If BOTH direct lanes are blocked the page boots
+  into the 📀 Vault (1247-title offline catalog) exactly as before.
+
+  SMART ID RESOLVE: search hits arrive without a TMDB id sometimes —
+  the page silently resolves it from the Cinemeta meta the first time
+  you hit play, so VidZee/MILKBOX always get the right embed. Titles
+  with no TMDB id at all fall through to the IMDb-based chips.
+
+UPLOAD LIST v2.5 (site root)
+  1. movies.html         115 KB  (replaces the old one — the ONLY file
+                                  that changed)
+  2. fate-movies-cat.js  unchanged | 3. msheets/ unchanged
+  4. gn-math.html unchanged | index.html unchanged
+
+VERIFIED ON 2026-11-09 (real browser, every flow)
+  Boot -> "Cinemeta · fast lane" chip, 49 cards + posters in ~2s.
+  Infinite scroll 95 -> 195 cards. Search "dune" -> 26 hits (movies +
+  series). Dune detail: 2021 / 8.0 / 155 min / cast + director, and it
+  resolves TMDB 438631 -> VidZee frame /embed/movie/438631 (your tested
+  URL). Series: Dexter: Resurrection S1-S2 picker, episode names + air
+  dates, E1 click -> /embed/tv/259909/1/1. Search-only title (Dune:
+  Part Three) auto-resolved TMDB 1170608 -> /embed/movie/1170608.
+  Year pills 2026..2007 (2024 filter returns 2024 titles). Genre filter
+  Action. Top Rated. Vault pill offline mode. Simulated "Cinemeta
+  blocked" -> boot cascaded to "TMDB live · direct" by itself. Zero
+  console errors across all of it.
+
+================================================================================
+
+PREVIOUS (v2.4) — LIVE TMDB: every movie & show (the milkbox method)
+
 WHAT'S NEW
   You said: "we need a way to fetch every movie like tmdb, and
   milkbox.japan.is has that method". Correct — MILKBOX's own app.js ships a

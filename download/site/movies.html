@@ -237,7 +237,7 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
 .ep-item{display:flex;gap:12px;align-items:center;padding:9px 12px;border:1px solid var(--glass-border);border-radius:12px;background:rgba(255,255,255,0.03);cursor:pointer;transition:border-color .2s,background .2s;text-align:left;width:100%;font-family:inherit}
 .ep-item:hover{border-color:rgba(var(--primary-rgb),0.5);background:rgba(var(--primary-rgb),0.07)}
 .ep-num{flex:0 0 auto;font-family:"Space Grotesk",sans-serif;font-weight:800;color:var(--primary-soft);width:34px;text-align:center}
-.ep-body{min-width:0;flex:1}
+.ep-body{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
 .ep-name{font-size:.84rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ep-sub{font-size:.7rem;color:var(--text-muted)}
 .ep-play{flex:0 0 auto;width:30px;height:30px;border-radius:9px;border:1px solid rgba(var(--primary-rgb),0.4);background:rgba(var(--primary-rgb),0.1);display:flex;align-items:center;justify-content:center}
@@ -277,9 +277,9 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
 <main class="main">
   <div class="page-header">
     <h1>FATE Movies</h1>
-    <p>Search anything. Watch anything — every movie &amp; show, live from TMDB.</p>
+    <p>Search anything. Watch anything — every movie &amp; show, live from Cinemeta + TMDB.</p>
     <div class="source-chip" id="sourceChip"><span class="dot"></span><span id="sourceLabel">Catalog: connecting…</span></div>
-    <div style="margin-top:10px"><button class="net-chip wait" id="netChip" onclick="tmdbLaneCycle()" title="TMDB data lane — click to toggle direct / wisp tunnel"><span class="nd"></span><span id="netLabel">TMDB: connecting…</span></button></div>
+    <div style="margin-top:10px"><button class="net-chip wait" id="netChip" onclick="tmdbLaneCycle()" title="Data lane — click to cycle: Cinemeta fast lane → TMDB direct → wisp tunnel"><span class="nd"></span><span id="netLabel">Catalog: connecting…</span></button></div>
   </div>
 
   <div class="search-wrap">
@@ -372,9 +372,9 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
       <div class="s-sec">🛰 Wisp lanes <small>· live probe — the engine failovers between these on its own</small></div>
       <div class="lanes" id="laneRow"></div>
       <div class="sbtns" style="margin-top:10px"><button onclick="probeLanes()" style="flex:0 0 auto;min-width:120px">⚡ Probe lanes</button><button onclick="clearMarks()" style="flex:0 0 auto;min-width:120px">Clear ✓/✗ marks</button></div>
-      <div class="s-sec">🔎 TMDB data lane <small>· the milkbox.japan.is method — the same public v4 read token their app ships</small></div>
+      <div class="s-sec">🔎 Data lane <small>· lane 1 Cinemeta fast CDN (no TMDB) · lane 2 TMDB direct · lane 3 TMDB over wisp tunnel</small></div>
       <p class="p-hint" style="padding:0 0 8px"><span id="tmdbLaneInfo">Status line fills in after the page connects.</span></p>
-      <div class="sbtns"><button onclick="tmdbTest()" style="flex:0 0 auto;min-width:130px">⚡ Test TMDB lane</button><button onclick="tmdbCacheClear()" style="flex:0 0 auto;min-width:130px">Clear TMDB cache</button></div>
+      <div class="sbtns"><button onclick="tmdbTest()" style="flex:0 0 auto;min-width:130px">⚡ Test data lane</button><button onclick="tmdbCacheClear()" style="flex:0 0 auto;min-width:130px">Clear catalog cache</button></div>
       <div class="s-sec">⚙ Engine <small>· used for "Engine" opens — gn-math.html next to this page</small></div>
       <div class="engrow"><input id="engUrl" placeholder="gn-math.html  (or a full https:// URL to a hosted engine)"/><button onclick="saveEngine()">Save</button></div>
       <p class="p-hint" style="padding:12px 0 0"><b>Engine</b> opens go through <b>gn-math.html#open=…</b> — the same wisp tunnel the Apps module uses, with endpoint failover built in. <b>Direct</b> opens skip the tunnel: use them for sites that are not blocked on your network (like MILKBOX). ✓/✗ marks are remembered on this device so you always know which sites made the cut.</p>
@@ -671,7 +671,8 @@ function backToBrowse(){
   setState('');
   clearGrid();
   done = false; skip = 0;
-  tmDone = false; tmFetching = false;
+  tmDone = false; tmFetching = false; cineFails = 0;
+  catSeq++;
   if (liveMode && liveOK){
     mode = 'tmcat'; tmPage = 1;
     liveLoadPage();
@@ -773,7 +774,17 @@ function usableProviders(m){
   return out;
 }
 function openPlayer(m){
+  /* cine item without a TMDB id yet (search hits) — resolve it ONCE so
+     the VidZee/MILKBOX chips get the right embed id; titles that never
+     resolve fall through to the IMDb-based chips */
+  if (m.src === 'cine' && !m.tm && !m._tmTried){
+    m._tmTried = 1;
+    toast('Resolving stream id…');
+    withTM(m, function(){ openPlayer(m); });
+    return;
+  }
   var isSeries = m.t === 's';
+  currentMeta = m;
   currentSE = seOf(m.i) || { s: 1, e: 1 };
   $('pTitle').textContent = m.n || 'Now playing';
   $('detailOverlay').classList.remove('open');
@@ -938,6 +949,7 @@ function setCat(c, el){
   for (var i = 0; i < pills.length; i++) pills[i].classList.remove('active');
   if (el) el.classList.add('active');
   if (c === 'vault') liveMode = false; else if (liveOK) liveMode = true;
+  if (liveOK) renderGenrePills();   /* cine lane swaps pills for year mode */
   backToBrowse();
 }
 function setGenre(g, el){
@@ -948,6 +960,20 @@ function setGenre(g, el){
   backToBrowse();
 }
 function renderGenrePills(){
+  if (liveOK && liveLane === 'cine'){
+    var list;
+    if (cat === 'year'){
+      var yrs = [], y0 = new Date().getFullYear();
+      for (var iy = 0; iy < 20; iy++) yrs.push(String(y0 - iy));
+      list = yrs;
+    } else {
+      list = (kind === 'movie') ? CINE_GEN_M : CINE_GEN_S;
+    }
+    $('genrePills').innerHTML = ['All'].concat(list).map(function(g){
+      return '<button class="pill' + (g === genre ? ' active' : '') + '" data-g="' + esc(g) + '" onclick="setGenre(\'' + esc(g).replace(/'/g, "\\'") + '\',this)">' + esc(g) + '</button>';
+    }).join('');
+    return;
+  }
   if (liveOK){
     var lg = (kind === 'movie') ? GM_GEN : GTV_GEN;
     $('genrePills').innerHTML = lg.map(function(g){
@@ -1155,16 +1181,28 @@ window.__catCDN = function(){
 var TMDB_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkODIxZmZjZjFhMjQxOWFhMWZjZjY5MjMwMDZjZmNjNCIsIm5iZiI6MTc3NzU2MDc0My45NzMsInN1YiI6IjY5ZjM2Y2E3ZDZhZjA3Yjg2Zjg0MzA3MSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ._CFnVPW7SyxmHdzu3Uxee0LkMlGm4zdW2uCNFV2g9A8';
 var TMDB_HOST = 'api.themoviedb.org';
 var LS_TM = { CACHE: 'fate_tmdb_cache_v1', LANE: 'fate_tmdb_lane', PREF: 'fate_tmdb_pref' };
+/* ---- LANE 1: CINEMETA — the fast lane (no TMDB involved at all) ----
+   Stremio's public metadata CDN. Browser-direct fetch, CORS *, Cloudflare,
+   answers in 0.04-2.5s. Every title carries imdb_id AND moviedb_id (= the
+   TMDB id), so VidZee/MILKBOX chips work straight off this lane. Also
+   ships full episode lists, year catalogs and imdbRating catalogs. */
+var CINE_HOST = 'v3-cinemeta.strem.io';
+var CINE_PAGE = 50, CINE_MAX_PAGES = 60;   /* 3000 titles deep per view */
+var CINE_GEN_M = ['Action','Adventure','Animation','Biography','Comedy','Crime','Documentary','Drama','Family','Fantasy','History','Horror','Mystery','Romance','Sci-Fi','Sport','Thriller','War','Western'];
+var CINE_GEN_S = CINE_GEN_M.concat(['Reality-TV','Talk-Show','Game-Show']);
+var cineYear = String(new Date().getFullYear());
 /* baked TMDB genre lists (refreshed from the API when a lane is up) */
 var GM_GEN = [{id:28,n:'Action'},{id:12,n:'Adventure'},{id:16,n:'Animation'},{id:35,n:'Comedy'},{id:80,n:'Crime'},{id:99,n:'Documentary'},{id:18,n:'Drama'},{id:10751,n:'Family'},{id:14,n:'Fantasy'},{id:36,n:'History'},{id:27,n:'Horror'},{id:10402,n:'Music'},{id:9648,n:'Mystery'},{id:10749,n:'Romance'},{id:878,n:'Science Fiction'},{id:53,n:'Thriller'},{id:10752,n:'War'},{id:37,n:'Western'}];
 var GTV_GEN = [{id:10759,n:'Action & Adventure'},{id:16,n:'Animation'},{id:35,n:'Comedy'},{id:80,n:'Crime'},{id:99,n:'Documentary'},{id:18,n:'Drama'},{id:10751,n:'Family'},{id:10762,n:'Kids'},{id:9648,n:'Mystery'},{id:10763,n:'News'},{id:10764,n:'Reality'},{id:10765,n:'Sci-Fi & Fantasy'},{id:10766,n:'Soap'},{id:10767,n:'Talk'},{id:10768,n:'War & Politics'}];
 var LIVE = {};                 /* 'm:550' -> meta (this session) */
 var liveOK = false, liveMode = true, liveLane = 'direct';
-var tmPage = 1, tmDone = false, tmFetching = false, tmQuery = '';
+var tmPage = 1, tmDone = false, tmFetching = false, tmQuery = '', cineFails = 0;
+var catSeq = 0;   /* bumps on every view reset — stale lane responses self-discard */
 var dSeq = 0;
 
 function tmdbImg(path, size){
   if (!path) return '';
+  if (path.indexOf('http') === 0) return path;   /* Cinemeta: absolute metahub URLs */
   return 'https://image.tmdb.org/t/p/' + (size || 'w342') + path;
 }
 function tmdbImgErr(im){
@@ -1196,6 +1234,210 @@ function tmdbCachePut(key, d){
 function tmdbCacheClear(){
   try { localStorage.removeItem(LS_TM.CACHE); } catch(e){}
   toast('TMDB cache cleared');
+}
+/* ---- CINEMETA fast lane: fetch + map ---- */
+function cineGet(path){
+  var fresh = tmdbCacheGet('cine:' + path, false);
+  if (fresh) return Promise.resolve(fresh);
+  var ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var to = ac ? setTimeout(function(){ try { ac.abort(); } catch(e){} }, 9000) : null;
+  return fetch('https://' + CINE_HOST + path, { headers: { accept: 'application/json' }, signal: ac ? ac.signal : undefined })
+    .then(function(r){
+      if (to) clearTimeout(to);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function(d){
+      if (to) clearTimeout(to);
+      tmdbCachePut('cine:' + path, d);
+      return d;
+    }).catch(function(e){
+      if (to) clearTimeout(to);
+      var stale = tmdbCacheGet('cine:' + path, true);
+      if (stale) return stale;
+      throw e;
+    });
+}
+function cineToMeta(r, forcedType){
+  var isS = forcedType ? forcedType === 'series' : r.type === 'series';
+  var key = (isS ? 's:' : 'm:') + r.imdb_id;
+  return { i: key, lk: key, imdb: r.imdb_id, tm: r.moviedb_id || null, src: 'cine',
+           t: isS ? 's' : 'm', n: r.name || '',
+           y: parseInt(String(r.year || r.releaseInfo || r.released || '').slice(0, 4), 10) || null,
+           r: r.imdbRating ? parseFloat(r.imdbRating) : null,
+           p: r.poster || null, bp: r.background || null, d: r.description || '',
+           g: Array.isArray(r.genre) ? r.genre : [] };
+}
+function cineCatPath(){
+  var type = (kind === 'movie') ? 'movie' : 'series';
+  var cid = (cat === 'imdbRating' || cat === 'year') ? cat : 'top';
+  var ex = [];
+  if (cat === 'year') ex.push('genre=' + (/^\d{4}$/.test(genre) ? genre : cineYear));
+  else if (genre !== 'All') ex.push('genre=' + encodeURIComponent(genre));
+  if (mode !== 'tmsearch') ex.push('skip=' + (tmPage - 1) * CINE_PAGE);
+  return '/catalog/' + type + '/' + cid + '/' + ex.join('&') + '.json';
+}
+function cineSearchPaths(q){
+  var qq = encodeURIComponent(q);
+  return ['/catalog/movie/top/search=' + qq + '.json', '/catalog/series/top/search=' + qq + '.json'];
+}
+function cineLoadPage(){
+  if (tmFetching || tmDone) return;
+  tmFetching = true;
+  if (mode === 'tmsearch'){
+    if (!tmQuery){ tmFetching = false; return; }
+    var paths = cineSearchPaths(tmQuery), got = [];
+    setState($('grid').children.length ? '' : '<div class="big">⚡</div>Searching Cinemeta…');
+    Promise.all(paths.map(function(p){
+      return cineGet(p).then(function(d){ return (d && d.metas) || []; }).catch(function(){ return []; });
+    })).then(function(pair){
+      tmFetching = false;
+      if (mode !== 'tmsearch') return;
+      var items = pair[0].map(function(r){ return cineToMeta(r, 'movie'); })
+        .concat(pair[1].map(function(r){ return cineToMeta(r, 'series'); }))
+        .filter(function(m, ix, a){ return m.n && a.findIndex(function(x){ return x.imdb === m.imdb; }) === ix; });
+      items.forEach(function(m){ LIVE[m.lk] = m; });
+      tmDone = true;
+      setState('');
+      $('grid').insertAdjacentHTML('beforeend', items.map(cardHTML).join(''));
+      if (!$('grid').children.length){ liveEmpty(); }
+      localSearchAppend(tmQuery);
+    });
+    return;
+  }
+  if (tmPage > CINE_MAX_PAGES){ tmFetching = false; tmDone = true; return; }
+  if (!$('grid').children.length) setState('<div class="big">⚡</div>Fetching from Cinemeta…');
+  var seq = catSeq;
+  cineGet(cineCatPath()).then(function(d){
+    tmFetching = false; cineFails = 0;
+    if (mode !== 'tmcat' || seq !== catSeq) return;
+    setNet('ok', 'Cinemeta · fast lane');
+    var metas = (d && d.metas) || [];
+    if (!metas.length){ tmDone = true; if (!$('grid').children.length) liveEmpty(); return; }
+    var items = metas.map(function(r){ return cineToMeta(r, kind === 'movie' ? 'movie' : 'series'); }).filter(function(m){ return m.n; });
+    items.forEach(function(m){ LIVE[m.lk] = m; });
+    tmPage++;
+    setState('');
+    $('grid').insertAdjacentHTML('beforeend', items.map(cardHTML).join(''));
+  }).catch(function(){
+    /* transient hiccup — let the next scroll retry the same page (up to 3) */
+    tmFetching = false;
+    cineFails++;
+    if (cineFails >= 3){ tmDone = true; liveEmpty(true); }
+  });
+}
+/* cine detail: /meta/{type}/{imdb}.json — cast, runtime, genres, episodes,
+   and the moviedb_id that unlocks the VidZee/MILKBOX chips */
+function withTM(m, cb){
+  if (m.tm || m.src !== 'cine'){ cb(); return; }
+  var t = m.t === 's' ? 'series' : 'movie';
+  cineGet('/meta/' + t + '/' + m.imdb + '.json').then(function(d){
+    if (d && d.meta && d.meta.moviedb_id) m.tm = d.meta.moviedb_id;
+    cb();
+  }).catch(cb);
+}
+function cineDetailFlow(m){
+  var my = dSeq;
+  var t = m.t === 's' ? 'series' : 'movie';
+  cineGet('/meta/' + t + '/' + m.imdb + '.json').then(function(d){
+    if (my !== dSeq || !d || !d.meta) return;
+    cineDetailFill(m, d.meta);
+  }).catch(function(){});
+}
+function cineDetailFill(m, meta){
+  if (meta.moviedb_id) m.tm = meta.moviedb_id;
+  if (meta.description) m.d = meta.description;
+  var chips = '';
+  var y = meta.year || m.y;
+  if (y) chips += '<span class="d-chip">' + esc(String(y)) + '</span>';
+  var rt = parseFloat(meta.imdbRating) || m.r;
+  if (rt) chips += '<span class="d-chip gold"><svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>' + rt + '</span>';
+  chips += '<span class="d-chip">' + (m.t === 's' ? 'Series' : 'Movie') + '</span>';
+  if (meta.runtime) chips += '<span class="d-chip">' + esc(String(meta.runtime)) + '</span>';
+  (meta.genre || m.g || []).forEach(function(g){ chips += '<span class="d-chip">' + esc(g) + '</span>'; });
+  if (meta.awards) chips += '<span class="d-chip">🏆</span>';
+  $('dMeta').innerHTML = chips;
+  if (meta.description) $('dDesc').textContent = meta.description;
+  var cast = (meta.cast || []).map(function(c){ return typeof c === 'string' ? c : (c && c.name); }).filter(Boolean).slice(0, 6);
+  var dir = (meta.director || []).slice(0, 2);
+  var cl = '';
+  if (cast.length) cl += '<b>Cast:</b> ' + esc(cast.join(', '));
+  if (dir.length) cl += (cl ? ' &nbsp;·&nbsp; ' : '') + '<b>Director:</b> ' + esc(dir.join(', '));
+  if (cl) $('dCast').innerHTML = cl;
+  if (!m.bp && meta.background){
+    m.bp = meta.background;
+    var bg = $('dBg');
+    bg.style.backgroundImage = 'url("' + tmdbImg(m.bp, 'w780') + '")';
+    bg.style.backgroundSize = 'cover';
+    bg.style.backgroundPosition = 'center 20%';
+  }
+  if (m.t === 's'){
+    var vids = meta.videos || [];
+    var seasons = cineSeasons(vids);
+    if (seasons.length){
+      m.sp = seasons.map(function(s){ return s[0] + ':' + s[1]; }).join(',');
+      $('dPlayLabel').textContent = 'Play · ' + seasons.length + ' season' + (seasons.length > 1 ? 's' : '');
+      liveSeasonPickerCine(m, vids, seasons);
+    }
+  }
+  cineSimRow(m, meta);
+}
+function cineSeasons(vids){
+  var map = {}, order = [];
+  (vids || []).forEach(function(v){
+    var s = v.season;
+    if (!s || s < 1) return;
+    if (!map[s]){ map[s] = 0; order.push(s); }
+    map[s]++;
+  });
+  order.sort(function(a, b){ return a - b; });
+  return order.map(function(s){ return [s, map[s]]; });
+}
+function liveSeasonPickerCine(m, vids, seasons){
+  var html = '<div class="ep-tools"><label>Episodes</label><select id="epSel">';
+  seasons.forEach(function(s){
+    html += '<option value="' + s[0] + '">Season ' + s[0] + ' · ' + s[1] + ' ep</option>';
+  });
+  html += '</select></div><div class="ep-list" id="epList"></div>';
+  $('liveExtras').insertAdjacentHTML('afterbegin', html);
+  $('epSel').onchange = function(){ cineEpList(vids, parseInt(this.value, 10) || 1); };
+  cineEpList(vids, seasons[0][0]);
+}
+function cineEpList(vids, sn){
+  var box = $('epList');
+  if (!box) return;
+  var eps = (vids || []).filter(function(v){ return v.season === sn; })
+    .sort(function(a, b){ return (a.number || 0) - (b.number || 0); });
+  if (!eps.length){ box.innerHTML = '<div class="ep-sub" style="padding:6px 2px">No episode data for this season.</div>'; return; }
+  var html = '';
+  eps.forEach(function(ep){
+    var air = ep.firstAired ? String(ep.firstAired).slice(0, 10) : '';
+    var sub = air + (ep.overview ? ' · ' + ep.overview.slice(0, 90) + (ep.overview.length > 90 ? '…' : '') : '');
+    html += '<button class="ep-item" onclick="playEpisode(' + sn + ',' + (ep.number || 1) + ')" title="' + esc(ep.overview || '') + '">' +
+      '<span class="ep-num">' + (ep.number || '?') + '</span>' +
+      '<span class="ep-body"><span class="ep-name">' + esc(ep.name || ('Episode ' + ep.number)) + '</span><span class="ep-sub">' + esc(sub) + '</span></span>' +
+      '<span class="ep-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></button>';
+  });
+  box.innerHTML = html;
+}
+function cineSimRow(m, meta){
+  var g = (meta.genre || m.g || [])[0];
+  if (!g) return;
+  var my = dSeq;
+  var type = m.t === 's' ? 'series' : 'movie';
+  cineGet('/catalog/' + type + '/top/genre=' + encodeURIComponent(g) + '&skip=0.json').then(function(d){
+    if (my !== dSeq || !d || !d.metas) return;
+    var items = d.metas.filter(function(r){ return r.imdb_id !== m.imdb; }).slice(0, 14)
+      .map(function(r){ return cineToMeta(r, type); });
+    if (!items.length) return;
+    items.forEach(function(x){ LIVE[x.lk] = x; });
+    var html = '<div class="sim-title">More like this · ' + esc(g) + '</div><div class="sim-row">';
+    items.forEach(function(x){
+      html += '<button class="sim-card" onclick="openLive(\'' + x.lk + '\')">' +
+        '<img class="sp" loading="lazy" alt="" src="' + tmdbImg(x.p, 'w185') + '" onerror="tmdbImgErr(this)"/>' +
+        '<div class="sn">' + esc(x.n) + '</div></button>';
+    });
+    $('liveExtras').insertAdjacentHTML('beforeend', html + '</div>');
+  }).catch(function(){});
 }
 /* ---- lane status chip ---- */
 function setNet(state, text){
@@ -1319,7 +1561,8 @@ function tmdbDirect(full, key){
 function tmdbWisp(full, key, why){
   setNet('wait', 'TMDB: wisp tunnel…');
   return new Promise(function(resolve){
-    var order = laneOrder(), i = 0;
+    var order = laneOrder().slice(0, 2);   /* manual lane: 2 tries max, not 8 — keeps it from hanging */
+    var i = 0;
     function next(){
       if (i >= order.length){
         setNet('bad', 'TMDB unreachable' + (why ? ' · ' + why : ''));
@@ -1341,10 +1584,12 @@ function tmdbWisp(full, key, why){
   });
 }
 function tmdbLaneCycle(){
-  liveLane = (liveLane === 'direct') ? 'wisp' : 'direct';
+  var order = ['cine', 'direct', 'wisp'];
+  liveLane = order[(order.indexOf(liveLane) + 1) % order.length];
   try { localStorage.setItem(LS_TM.PREF, liveLane); } catch(e){}
-  toast('TMDB lane: ' + (liveLane === 'direct' ? 'direct' : 'wisp tunnel'));
-  if (liveOK) backToBrowse();
+  toast(liveLane === 'cine' ? 'Data lane: Cinemeta fast lane' : liveLane === 'direct' ? 'Data lane: TMDB direct' : 'Data lane: TMDB over wisp tunnel (slow)');
+  if (liveOK){ renderGenrePills(); backToBrowse(); }
+  else initLive();
 }
 /* ---- list mapping ---- */
 function tmToMeta(r){
@@ -1376,7 +1621,9 @@ function tmCatPath(){
 /* ---- live grid paging ---- */
 function liveLoadPage(){
   if (tmFetching || tmDone) return;
+  if (liveLane === 'cine'){ cineLoadPage(); return; }
   tmFetching = true;
+  var seq = catSeq;
   var base;
   if (mode === 'tmsearch'){
     if (!tmQuery){ tmFetching = false; return; }
@@ -1388,7 +1635,7 @@ function liveLoadPage(){
   if (!$('grid').children.length) setState('<div class="big">🛰</div>Fetching from TMDB…');
   tmdb(path).then(function(d){
     tmFetching = false;
-    if (mode !== 'tmcat' && mode !== 'tmsearch') return;
+    if ((mode !== 'tmcat' && mode !== 'tmsearch') || seq !== catSeq) return;
     if (!d || !d.results){ tmDone = true; liveEmpty(); return; }
     var items = d.results.filter(function(r){
       var mt = r.media_type || (r.title ? 'movie' : 'tv');
@@ -1409,7 +1656,7 @@ function liveLoadPage(){
 }
 function liveEmpty(fail){
   if ($('grid').children.length){ setState(''); return; }
-  setState('<div class="big">🍿</div>' + (fail ? 'The TMDB lane is down and nothing is cached for this view.' : 'Nothing here — try another category or search.') +
+  setState('<div class="big">🍿</div>' + (fail ? 'The data lane is down and nothing is cached for this view.' : 'Nothing here — try another category or search.') +
     '<br><span style="font-size:.8rem">The 📀 Vault pill always holds the 1247-title offline catalog.</span>');
 }
 function localMatches(q){
@@ -1474,6 +1721,7 @@ function openLive(key){
   } else {
     bg.style.backgroundImage = 'none';
   }
+  if (m.src === 'cine'){ cineDetailFlow(m); return; }   /* fast lane: no TMDB calls */
   var t = m.t === 's' ? 'tv' : 'movie';
   tmdb('/' + t + '/' + m.tm + '?append_to_response=credits,release_dates,content_ratings').then(function(d){
     if (my !== dSeq || !d) return;
@@ -1573,70 +1821,110 @@ function playEpisode(s, e){
   saveSE(currentMeta.i, s, e);
   openPlayer(currentMeta);
 }
-/* ---- live boot probe ---- */
-function liveUp(){
-  liveOK = true; liveMode = true; cat = 'top';
+/* ---- live boot: CINE fast lane first, TMDB direct second, wisp last ---- */
+function laneUp(lane){
+  liveOK = true; liveMode = true; liveLane = lane; cat = 'top';
+  try { localStorage.setItem(LS_TM.PREF, lane); } catch(e){}
+  setNet('ok', lane === 'cine' ? 'Cinemeta · fast lane' : lane === 'direct' ? 'TMDB live · direct' : 'TMDB live · wisp tunnel');
   renderGenrePills();
   backToBrowse();
+  if (lane === 'direct') refreshTMDBGenres();   /* cine lane never touches TMDB */
 }
-function initLive(){
-  try { if (localStorage.getItem(LS_TM.PREF) === 'wisp') liveLane = 'wisp'; } catch(e){}
-  setNet('wait', 'TMDB: connecting…');
-  tmdb('/trending/all/day').then(function(d){
-    if (!d || !d.results) throw new Error('bad payload');
-    liveUp();
-  }).catch(function(){
-    if (liveLane === 'wisp'){
-      /* wisp was preferred but died — give direct one clean shot */
-      liveLane = 'direct';
-      tmdb('/trending/all/day').then(function(d){
-        if (d && d.results) liveUp();
-        else throw new Error('bad payload');
-      }).catch(function(){
-        liveLane = 'wisp'; liveOK = false;
-        setNet('bad', 'TMDB unreachable — vault mode');
-      });
-    } else {
-      liveOK = false;
-      setNet('bad', 'TMDB unreachable — vault mode');
-    }
-  });
+function refreshTMDBGenres(){
   tmdb('/genre/movie/list').then(function(d){
     if (d && d.genres && d.genres.length){
       GM_GEN = d.genres.map(function(g){ return { id: g.id, n: g.name }; });
-      if (liveOK) renderGenrePills();
+      if (liveOK && liveLane !== 'cine') renderGenrePills();
     }
   }).catch(function(){});
   tmdb('/genre/tv/list').then(function(d){
     if (d && d.genres && d.genres.length) GTV_GEN = d.genres.map(function(g){ return { id: g.id, n: g.name }; });
   }).catch(function(){});
 }
+function cineProbe(){
+  return cineGet('/catalog/movie/top/skip=0.json').then(function(d){
+    if (!d || !d.metas || !d.metas.length) throw new Error('empty');
+  });
+}
+function tmdbProbe(){
+  var ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var to = ac ? setTimeout(function(){ try { ac.abort(); } catch(e){} }, 6000) : null;
+  return fetch('https://' + TMDB_HOST + '/3/trending/all/day?language=en-US', {
+    headers: { accept: 'application/json', Authorization: 'Bearer ' + TMDB_TOKEN },
+    signal: ac ? ac.signal : undefined
+  }).then(function(r){
+    if (to) clearTimeout(to);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }).then(function(d){ if (to) clearTimeout(to); if (!d || !d.results) throw new Error('bad'); });
+}
+function initLive(){
+  try { var p = localStorage.getItem(LS_TM.PREF); if (p) liveLane = p; } catch(e){}
+  setNet('wait', 'Data lane: connecting…');
+  var done = false;
+  function up(lane){ if (done) return; done = true; laneUp(lane); }
+  function next(label){
+    /* cascade: cine -> direct -> wisp (only if previously chosen) -> vault */
+    if (label === 'cine'){
+      cineProbe().then(function(){ up('cine'); }).catch(function(){ go('direct'); });
+    } else if (label === 'direct'){
+      setNet('wait', 'Cinemeta blocked — trying TMDB direct…');
+      tmdbProbe().then(function(){ up('direct'); }).catch(function(){ go('wisp'); });
+    } else {
+      var prefWisp = false;
+      try { prefWisp = localStorage.getItem(LS_TM.PREF) === 'wisp'; } catch(e){}
+      if (!prefWisp){
+        done = true; liveOK = false;
+        setNet('bad', 'Catalog blocked — vault mode · tap chip for wisp');
+        return;
+      }
+      setNet('wait', 'TMDB over wisp tunnel…');
+      var ep0 = laneOrder()[0];
+      wispHttpGet(ep0, '/configuration?language=en-US', function(ok){
+        if (ok){
+          try { localStorage.setItem(LS_TM.LANE, ep0); } catch(e){}
+          liveLane = 'wisp'; up('wisp');
+        }
+        else { done = true; liveOK = false; setNet('bad', 'All lanes down — vault mode'); }
+      });
+    }
+  }
+  function go(l){ setTimeout(function(){ next(l); }, 0); }
+  go('cine');
+}
 function tmdbTest(){
   var el = $('tmdbLaneInfo');
-  if (el) el.textContent = 'Probing lanes…';
+  if (el) el.textContent = 'Probing all three lanes…';
   var t0 = Date.now();
-  fetch('https://' + TMDB_HOST + '/3/configuration', { headers: { accept: 'application/json', Authorization: 'Bearer ' + TMDB_TOKEN } })
-    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function(){
-      liveLane = 'direct'; liveOK = true;
+  cineProbe().then(function(){
+    liveOK = true; liveLane = 'cine';
+    try { localStorage.setItem(LS_TM.PREF, 'cine'); } catch(e){}
+    if (el) el.textContent = 'CINEMETA fast lane OK in ' + (Date.now() - t0) + 'ms — full catalog, no TMDB needed. Lane saved.';
+    setNet('ok', 'Cinemeta · fast lane');
+    if (liveMode){ renderGenrePills(); backToBrowse(); } else { liveMode = true; backToBrowse(); }
+  }).catch(function(){
+    var t1 = Date.now();
+    tmdbProbe().then(function(){
+      liveOK = true; liveLane = 'direct';
       try { localStorage.setItem(LS_TM.PREF, 'direct'); } catch(e){}
-      if (el) el.textContent = 'Direct lane OK in ' + (Date.now() - t0) + 'ms — TMDB is not blocked on this network.';
+      if (el) el.textContent = 'Cinemeta failed, TMDB DIRECT ok in ' + (Date.now() - t1) + 'ms. Lane saved.';
       setNet('ok', 'TMDB live · direct');
-    })
-    .catch(function(){
-      var t1 = Date.now(), order = laneOrder();
+      renderGenrePills(); backToBrowse();
+    }).catch(function(){
+      var t2 = Date.now(), order = laneOrder();
       wispHttpGet(order[0], '/configuration?language=en-US', function(ok){
         if (ok){
           liveOK = true; liveLane = 'wisp';
           try { localStorage.setItem(LS_TM.LANE, order[0]); localStorage.setItem(LS_TM.PREF, 'wisp'); } catch(e){}
-          if (el) el.textContent = 'Direct blocked (school wifi does that) — the wisp tunnel carried TMDB in ' + (Date.now() - t1) + 'ms via ' + laneName(order[0]) + '. Lane saved.';
+          if (el) el.textContent = 'Direct lanes blocked — wisp tunnel carried TMDB in ' + (Date.now() - t2) + 'ms via ' + laneName(order[0]) + '. Lane saved.';
           setNet('ok', 'TMDB live · wisp (' + laneName(order[0]) + ')');
           if (liveMode){ renderGenrePills(); } else { liveMode = true; backToBrowse(); }
         } else if (el) {
-          el.textContent = 'Both lanes failed just now — vault mode stays. Streams are unaffected; try again later.';
+          el.textContent = 'All three lanes failed just now — vault mode stays. Streams are unaffected; try again later.';
         }
       });
     });
+  });
 }
 
 /* ================================================================
@@ -1760,7 +2048,7 @@ function openSites(){
   if (!$('youGrid').innerHTML) renderVault();
   try { $('engUrl').value = localStorage.getItem(LS_ENG) || ''; } catch(e){}
   var ti = $('tmdbLaneInfo');
-  if (ti && liveOK) ti.textContent = 'Status: live via the ' + (liveLane === 'direct' ? 'DIRECT' : 'WISP TUNNEL') + ' lane. If TMDB ever gets blocked here, hit Test — the wisp tunnel carries it the same way the engine does.';
+  if (ti && liveOK) ti.textContent = 'Status: live via the ' + (liveLane === 'cine' ? 'CINEMETA fast lane (no TMDB needed)' : liveLane === 'direct' ? 'TMDB DIRECT lane' : 'WISP TUNNEL') + '. Hit Test to re-probe all three; the winner is saved on this device.';
 }
 function closeSites(){ $('sitesOverlay').classList.remove('open'); }
 function saveEngine(){
