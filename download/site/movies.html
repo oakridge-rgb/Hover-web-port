@@ -277,9 +277,9 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
 <main class="main">
   <div class="page-header">
     <h1>FATE Movies</h1>
-    <p>Search anything. Watch anything — every movie &amp; show, live from Cinemeta + TMDB.</p>
+    <p>Search anything. Watch anything — every movie &amp; show, live from the Cinemeta CDN.</p>
     <div class="source-chip" id="sourceChip"><span class="dot"></span><span id="sourceLabel">Catalog: connecting…</span></div>
-    <div style="margin-top:10px"><button class="net-chip wait" id="netChip" onclick="tmdbLaneCycle()" title="Data lane — click to cycle: Cinemeta fast lane → TMDB direct → wisp tunnel"><span class="nd"></span><span id="netLabel">Catalog: connecting…</span></button></div>
+    <div style="margin-top:10px"><button class="net-chip wait" id="netChip" onclick="tmdbLaneCycle()" title="Catalog CDN — click to reconnect"><span class="nd"></span><span id="netLabel">Catalog: connecting…</span></button></div>
   </div>
 
   <div class="search-wrap">
@@ -369,12 +369,10 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
       <div class="sgrid" id="okGrid"></div>
       <div class="s-sec">⚠ Reachable but bot-walled <small>· Cloudflare check first — worth one try through the Browser module</small></div>
       <div class="sgrid" id="botGrid"></div>
-      <div class="s-sec">🛰 Wisp lanes <small>· live probe — the engine failovers between these on its own</small></div>
-      <div class="lanes" id="laneRow"></div>
-      <div class="sbtns" style="margin-top:10px"><button onclick="probeLanes()" style="flex:0 0 auto;min-width:120px">⚡ Probe lanes</button><button onclick="clearMarks()" style="flex:0 0 auto;min-width:120px">Clear ✓/✗ marks</button></div>
-      <div class="s-sec">🔎 Data lane <small>· lane 1 Cinemeta fast CDN (no TMDB) · lane 2 TMDB direct · lane 3 TMDB over wisp tunnel</small></div>
-      <p class="p-hint" style="padding:0 0 8px"><span id="tmdbLaneInfo">Status line fills in after the page connects.</span></p>
-      <div class="sbtns"><button onclick="tmdbTest()" style="flex:0 0 auto;min-width:130px">⚡ Test data lane</button><button onclick="tmdbCacheClear()" style="flex:0 0 auto;min-width:130px">Clear catalog cache</button></div>
+      <div class="sbtns" style="margin-top:10px"><button onclick="clearMarks()" style="flex:0 0 auto;min-width:120px">Clear ✓/✗ marks</button></div>
+      <div class="s-sec">🔎 Catalog CDN <small>· direct browser fetch — no wisp, no keys, no proxy in the normal path</small></div>
+      <p class="p-hint" style="padding:0 0 8px">Every title, poster, search and episode list streams straight from <b>Cinemeta</b> — Stremio's public metadata CDN (CORS-open, Cloudflare-fronted, the same one the Stremio app itself uses). Hosts fail over in order: <b>cinemeta-catalogs.strem.io/top</b> → <b>v3-cinemeta.strem.io</b> → allorigins relay. The winning host is remembered on this device and a 6-hour cache keeps browsing instant. <span id="tmdbLaneInfo">Status line fills in after the page connects.</span></p>
+      <div class="sbtns"><button onclick="tmdbTest()" style="flex:0 0 auto;min-width:130px">⚡ Test catalog CDN</button><button onclick="tmdbCacheClear()" style="flex:0 0 auto;min-width:130px">Clear catalog cache</button></div>
       <div class="s-sec">⚙ Engine <small>· used for "Engine" opens — gn-math.html next to this page</small></div>
       <div class="engrow"><input id="engUrl" placeholder="gn-math.html  (or a full https:// URL to a hosted engine)"/><button onclick="saveEngine()">Save</button></div>
       <p class="p-hint" style="padding:12px 0 0"><b>Engine</b> opens go through <b>gn-math.html#open=…</b> — the same wisp tunnel the Apps module uses, with endpoint failover built in. <b>Direct</b> opens skip the tunnel: use them for sites that are not blocked on your network (like MILKBOX). ✓/✗ marks are remembered on this device so you always know which sites made the cut.</p>
@@ -399,12 +397,14 @@ body{background:var(--bg-deep);color:var(--text);font-family:"Inter",sans-serif;
 
 <script>
 /* ================================================================
-   FATE MOVIES 2.4 — LIVE TMDB catalog via the milkbox.japan.is method
-   (public v4 read token + api.themoviedb.org/3), wisp-tunnel lane for
-   blocked networks, wsrv.nl poster mirror. Vault = offline mode.
+   FATE MOVIES 2.5 — LIVE catalog via the CINEMETA CDN (Stremio's
+   public metadata CDN): plain browser fetch, CORS-open, no API keys,
+   NO wisp, NO proxy in the normal path. Host chain: cinemeta-
+   catalogs.strem.io/top → v3-cinemeta.strem.io → relay, sticky
+   winner + 6h cache; wsrv.nl mirrors posters. Vault = offline mode.
    Catalog+posters ship WITH the site (fate-movies-cat.js + sheets).
-   Servers: the exact StormOS Cinema lineup (TMDB-id embeds) in their
-   auto-fallback order, plus 12s no-signal auto-switch like StormOS.
+   Servers: the exact StormOS Cinema lineup (TMDB-id embeds) with
+   12s no-signal auto-switch like StormOS.
    ================================================================ */
 var $ = function(id){ return document.getElementById(id); };
 
@@ -683,7 +683,7 @@ function backToBrowse(){
   loadPage();
 }
 
-/* ---------- search (TMDB live when a lane is up, vault otherwise) ---------- */
+/* ---------- search (Cinemeta CDN when up, vault otherwise) ---------- */
 function doSearch(q){
   clearGrid(); setState('');
   if (liveOK){
@@ -974,13 +974,6 @@ function renderGenrePills(){
     }).join('');
     return;
   }
-  if (liveOK){
-    var lg = (kind === 'movie') ? GM_GEN : GTV_GEN;
-    $('genrePills').innerHTML = lg.map(function(g){
-      return '<button class="pill' + (g.n === genre ? ' active' : '') + '" data-g="' + esc(g.n) + '" onclick="setGenre(\'' + esc(g.n).replace(/'/g, "\\'") + '\',this)">' + esc(g.n) + '</button>';
-    }).join('');
-    return;
-  }
   var list = (kind === 'movie') ? (CAT ? CAT.gm : []) : (CAT ? CAT.gs : []);
   $('genrePills').innerHTML = list.map(function(g){
     return '<button class="pill' + (g === genre ? ' active' : '') + '" data-g="' + esc(g) + '" onclick="setGenre(\'' + esc(g).replace(/'/g, "\\'") + '\',this)">' + esc(g) + '</button>';
@@ -1169,33 +1162,35 @@ window.__catCDN = function(){
 };
 
 /* ================================================================
-   LIVE TMDB — every movie & show, fetched the milkbox.japan.is way.
-   MILKBOX ships a public TMDB v4 READ token in its own app.js and
-   calls api.themoviedb.org/3 with it — we reuse that exact token.
-   Lane 1 DIRECT fetch (TMDB answers Access-Control-Allow-Origin:*).
-   Lane 2 WISP TUNNEL: raw HTTP/1.1 GET to api.themoviedb.org:80 over
-   the FATE wisp endpoints (TMDB still serves plain HTTP on port 80),
-   token header intact, sticky lane remembered. 6h JSON cache keeps
-   browsing alive when every lane dies. Posters fall back to wsrv.nl.
+   LIVE CATALOG — every movie & show via the CINEMETA CDN.
+   Stremio's public metadata CDN: plain browser fetch, CORS *,
+   Cloudflare, no API key, no wisp, no proxy in the normal path.
+   Every title carries imdb_id AND moviedb_id (= the TMDB id), so
+   VidZee/MILKBOX chips work straight off this lane. Also ships
+   full episode lists, year catalogs and imdbRating catalogs.
    ================================================================ */
-var TMDB_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkODIxZmZjZjFhMjQxOWFhMWZjZjY5MjMwMDZjZmNjNCIsIm5iZiI6MTc3NzU2MDc0My45NzMsInN1YiI6IjY5ZjM2Y2E3ZDZhZjA3Yjg2Zjg0MzA3MSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ._CFnVPW7SyxmHdzu3Uxee0LkMlGm4zdW2uCNFV2g9A8';
-var TMDB_HOST = 'api.themoviedb.org';
-var LS_TM = { CACHE: 'fate_tmdb_cache_v1', LANE: 'fate_tmdb_lane', PREF: 'fate_tmdb_pref' };
-/* ---- LANE 1: CINEMETA — the fast lane (no TMDB involved at all) ----
-   Stremio's public metadata CDN. Browser-direct fetch, CORS *, Cloudflare,
-   answers in 0.04-2.5s. Every title carries imdb_id AND moviedb_id (= the
-   TMDB id), so VidZee/MILKBOX chips work straight off this lane. Also
-   ships full episode lists, year catalogs and imdbRating catalogs. */
-var CINE_HOST = 'v3-cinemeta.strem.io';
+var CINE_HOSTS = [
+  'https://cinemeta-catalogs.strem.io/top',   /* catalogs: direct, no redirect */
+  'https://v3-cinemeta.strem.io'              /* meta + search direct; catalogs via 307 */
+];
+var CINE_RELAY = 'https://api.allorigins.win/raw?url=';   /* last-ditch only */
+var cineSticky = null;   /* winning CDN host, remembered on this device */
+var cineLast = '';
+var LS_TM = { CACHE: 'fate_tmdb_cache_v1', LANE: 'fate_cine_host' };
+try { cineSticky = localStorage.getItem(LS_TM.LANE); } catch(e){}
+function cineURLs(path){
+  var h0 = CINE_HOSTS[0], h1 = CINE_HOSTS[1];
+  if (cineSticky === CINE_HOSTS[1]){ h0 = CINE_HOSTS[1]; h1 = CINE_HOSTS[0]; }
+  if (path.indexOf('/catalog/') === 0)
+    return [h0 + path, h1 + path, CINE_RELAY + encodeURIComponent(h0 + path)];
+  return [CINE_HOSTS[1] + path, CINE_RELAY + encodeURIComponent(CINE_HOSTS[1] + path)];
+}
 var CINE_PAGE = 50, CINE_MAX_PAGES = 60;   /* 3000 titles deep per view */
 var CINE_GEN_M = ['Action','Adventure','Animation','Biography','Comedy','Crime','Documentary','Drama','Family','Fantasy','History','Horror','Mystery','Romance','Sci-Fi','Sport','Thriller','War','Western'];
 var CINE_GEN_S = CINE_GEN_M.concat(['Reality-TV','Talk-Show','Game-Show']);
 var cineYear = String(new Date().getFullYear());
-/* baked TMDB genre lists (refreshed from the API when a lane is up) */
-var GM_GEN = [{id:28,n:'Action'},{id:12,n:'Adventure'},{id:16,n:'Animation'},{id:35,n:'Comedy'},{id:80,n:'Crime'},{id:99,n:'Documentary'},{id:18,n:'Drama'},{id:10751,n:'Family'},{id:14,n:'Fantasy'},{id:36,n:'History'},{id:27,n:'Horror'},{id:10402,n:'Music'},{id:9648,n:'Mystery'},{id:10749,n:'Romance'},{id:878,n:'Science Fiction'},{id:53,n:'Thriller'},{id:10752,n:'War'},{id:37,n:'Western'}];
-var GTV_GEN = [{id:10759,n:'Action & Adventure'},{id:16,n:'Animation'},{id:35,n:'Comedy'},{id:80,n:'Crime'},{id:99,n:'Documentary'},{id:18,n:'Drama'},{id:10751,n:'Family'},{id:10762,n:'Kids'},{id:9648,n:'Mystery'},{id:10763,n:'News'},{id:10764,n:'Reality'},{id:10765,n:'Sci-Fi & Fantasy'},{id:10766,n:'Soap'},{id:10767,n:'Talk'},{id:10768,n:'War & Politics'}];
 var LIVE = {};                 /* 'm:550' -> meta (this session) */
-var liveOK = false, liveMode = true, liveLane = 'direct';
+var liveOK = false, liveMode = true, liveLane = 'cine';
 var tmPage = 1, tmDone = false, tmFetching = false, tmQuery = '', cineFails = 0;
 var catSeq = 0;   /* bumps on every view reset — stale lane responses self-discard */
 var dSeq = 0;
@@ -1233,29 +1228,43 @@ function tmdbCachePut(key, d){
 }
 function tmdbCacheClear(){
   try { localStorage.removeItem(LS_TM.CACHE); } catch(e){}
-  toast('TMDB cache cleared');
+  toast('Catalog cache cleared');
 }
-/* ---- CINEMETA fast lane: fetch + map ---- */
+/* ---- CINEMETA CDN: fetch + map (walks the host chain per call) ---- */
 function cineGet(path){
   var fresh = tmdbCacheGet('cine:' + path, false);
   if (fresh) return Promise.resolve(fresh);
-  var ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-  var to = ac ? setTimeout(function(){ try { ac.abort(); } catch(e){} }, 9000) : null;
-  return fetch('https://' + CINE_HOST + path, { headers: { accept: 'application/json' }, signal: ac ? ac.signal : undefined })
-    .then(function(r){
-      if (to) clearTimeout(to);
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    }).then(function(d){
-      if (to) clearTimeout(to);
-      tmdbCachePut('cine:' + path, d);
-      return d;
-    }).catch(function(e){
-      if (to) clearTimeout(to);
+  var urls = cineURLs(path), ix = 0;
+  function attempt(){
+    if (ix >= urls.length){
       var stale = tmdbCacheGet('cine:' + path, true);
-      if (stale) return stale;
-      throw e;
-    });
+      return stale ? Promise.resolve(stale) : Promise.reject(new Error('CDN chain exhausted'));
+    }
+    var isRelay = urls[ix].indexOf(CINE_RELAY) === 0;
+    var host = isRelay ? 'relay' : (urls[ix].indexOf('cinemeta-catalogs') > -1 ? 'cinemeta-catalogs' : 'v3-cinemeta');
+    var ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var to = ac ? setTimeout(function(){ try { ac.abort(); } catch(e){} }, 8000) : null;
+    return fetch(urls[ix], { headers: { accept: 'application/json' }, signal: ac ? ac.signal : undefined })
+      .then(function(r){
+        if (to) clearTimeout(to);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }).then(function(d){
+        if (to) clearTimeout(to);
+        tmdbCachePut('cine:' + path, d);
+        cineLast = host;
+        if (!isRelay){
+          cineSticky = (host === 'cinemeta-catalogs') ? CINE_HOSTS[0] : CINE_HOSTS[1];
+          try { localStorage.setItem(LS_TM.LANE, cineSticky); } catch(e){}
+        }
+        return d;
+      }).catch(function(e){
+        if (to) clearTimeout(to);
+        ix++;
+        return attempt();
+      });
+  }
+  return attempt();
 }
 function cineToMeta(r, forcedType){
   var isS = forcedType ? forcedType === 'series' : r.type === 'series';
@@ -1310,7 +1319,7 @@ function cineLoadPage(){
   cineGet(cineCatPath()).then(function(d){
     tmFetching = false; cineFails = 0;
     if (mode !== 'tmcat' || seq !== catSeq) return;
-    setNet('ok', 'Cinemeta · fast lane');
+    setNet('ok', 'Catalog CDN · ' + (cineLast || 'direct'));
     var metas = (d && d.metas) || [];
     if (!metas.length){ tmDone = true; if (!$('grid').children.length) liveEmpty(); return; }
     var items = metas.map(function(r){ return cineToMeta(r, kind === 'movie' ? 'movie' : 'series'); }).filter(function(m){ return m.n; });
@@ -1447,213 +1456,12 @@ function setNet(state, text){
   c.classList.add(state);
   $('netLabel').textContent = text;
 }
-/* ---- raw HTTP/1.1 GET over the wisp tunnel ---- */
-function wHttpBody(chunks){
-  var total = 0, i;
-  for (i = 0; i < chunks.length; i++) total += chunks[i].length;
-  if (!total) return null;
-  var all = new Uint8Array(total), p = 0;
-  for (i = 0; i < chunks.length; i++){ all.set(chunks[i], p); p += chunks[i].length; }
-  var raw = new TextDecoder('latin1').decode(all);
-  var sp = raw.indexOf('\r\n\r\n');
-  if (sp < 0) return null;
-  var head = raw.slice(0, sp);
-  var m = head.match(/HTTP\/1\.[01] (\d+)/);
-  var code = m ? parseInt(m[1], 10) : 0;
-  var hl = head.toLowerCase();
-  var bodyBytes = all.subarray(sp + 4);
-  var text;
-  if (hl.indexOf('transfer-encoding: chunked') > -1){
-    text = wDechunk(bodyBytes);
-  } else {
-    var cm = head.match(/Content-Length: (\d+)/i);
-    text = new TextDecoder().decode(cm ? bodyBytes.subarray(0, parseInt(cm[1], 10)) : bodyBytes);
-  }
-  return { code: code, text: text };
-}
-function wDechunk(b){
-  var out = [], i = 0, dec = new TextDecoder('latin1');
-  while (i < b.length){
-    var j = i;
-    while (j < b.length && !(b[j] === 13 && b[j + 1] === 10)) j++;
-    var n = parseInt(dec.decode(b.subarray(i, j)).split(';')[0].trim(), 16);
-    if (isNaN(n) || n === 0) break;
-    out.push(b.subarray(j + 2, Math.min(j + 2 + n, b.length)));
-    i = j + 2 + n + 2;
-  }
-  var total = 0; out.forEach(function(u){ total += u.length; });
-  var o = new Uint8Array(total), p = 0;
-  out.forEach(function(u){ o.set(u, p); p += u.length; });
-  return new TextDecoder().decode(o);
-}
-function wispHttpGet(ep, path, cb){   /* cb(ok, json, laneName) */
-  var fin = false, conn = null, chunks = [], size = 0;
-  var req = 'GET /3' + path + ' HTTP/1.1\r\nHost: ' + TMDB_HOST + '\r\naccept: application/json\r\nAuthorization: Bearer ' + TMDB_TOKEN + '\r\nUser-Agent: Mozilla/5.0 (FATE)\r\nConnection: close\r\n\r\n';
-  function done(ok, json, why){
-    if (fin) return; fin = true;
-    clearTimeout(to);
-    try { if (conn && conn.ws) conn.ws.close(); } catch(e){}
-    cb(ok, json, why);
-  }
-  var to = setTimeout(function(){ done(false, null, 'timeout'); }, 12000);
-  try { conn = new WConn(ep); } catch(e){ clearTimeout(to); return done(false, null, 'ctor'); }
-  conn.addEventListener('open', function(){
-    var s;
-    try { s = conn.create_stream(TMDB_HOST, 80); } catch(e){ return done(false, null, 'stream'); }
-    s.addEventListener('message', function(ev){
-      var u = new Uint8Array(ev.data);
-      chunks.push(u); size += u.length;
-      if (size > 3000000) done(false, null, 'too big');
-    });
-    s.addEventListener('close', function(){
-      var b = wHttpBody(chunks);
-      if (!b) return done(false, null, 'bad http');
-      if (b.code !== 200) return done(false, null, 'HTTP ' + b.code);
-      try { done(true, JSON.parse(b.text), ep); } catch(e){ done(false, null, 'json'); }
-    });
-    try { s.send(new TextEncoder().encode(req)); } catch(e){ done(false, null, 'send'); }
-  });
-  conn.addEventListener('error', function(){ done(false, null, 'ws error'); });
-}
-function laneOrder(){
-  var sticky = null;
-  try { sticky = localStorage.getItem(LS_TM.LANE); } catch(e){}
-  var rest = LANES.map(function(l){ return l[1]; }).filter(function(u){ return u !== sticky; });
-  if (sticky) rest.unshift(sticky);
-  return rest;
-}
-function laneName(ep){
-  for (var i = 0; i < LANES.length; i++) if (LANES[i][1] === ep) return LANES[i][0];
-  return 'wisp';
-}
-/* ---- main fetch: cache -> lane -> stale ---- */
-function tmdb(path){
-  var sep = path.indexOf('?') > -1 ? '&' : '?';
-  var full = path + sep + 'language=en-US';
-  var fresh = tmdbCacheGet(path, false);
-  if (fresh) return Promise.resolve(fresh);
-  if (liveLane === 'wisp') return tmdbWisp(full, path);
-  return tmdbDirect(full, path);
-}
-function tmdbDirect(full, key){
-  setNet('wait', 'TMDB: direct lane…');
-  var ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-  var to = ac ? setTimeout(function(){ try { ac.abort(); } catch(e){} }, 8000) : null;
-  return fetch('https://' + TMDB_HOST + '/3' + full, {
-    headers: { accept: 'application/json', Authorization: 'Bearer ' + TMDB_TOKEN },
-    signal: ac ? ac.signal : undefined
-  }).then(function(r){
-    if (to) clearTimeout(to);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  }).then(function(d){
-    tmdbCachePut(key, d);
-    liveLane = 'direct';
-    setNet('ok', 'TMDB live · direct');
-    return d;
-  }).catch(function(e){
-    if (to) clearTimeout(to);
-    var stale = tmdbCacheGet(key, true);
-    if (stale){ setNet('bad', 'TMDB: cached copy'); return stale; }
-    return tmdbWisp(full, key, String(e && e.message || e));
-  });
-}
-function tmdbWisp(full, key, why){
-  setNet('wait', 'TMDB: wisp tunnel…');
-  return new Promise(function(resolve){
-    var order = laneOrder().slice(0, 2);   /* manual lane: 2 tries max, not 8 — keeps it from hanging */
-    var i = 0;
-    function next(){
-      if (i >= order.length){
-        setNet('bad', 'TMDB unreachable' + (why ? ' · ' + why : ''));
-        resolve(tmdbCacheGet(key, true));
-        return;
-      }
-      var ep = order[i++];
-      wispHttpGet(ep, full, function(ok, d){
-        if (ok){
-          tmdbCachePut(key, d);
-          liveLane = 'wisp';
-          try { localStorage.setItem(LS_TM.LANE, ep); localStorage.setItem(LS_TM.PREF, 'wisp'); } catch(e){}
-          setNet('ok', 'TMDB live · wisp (' + laneName(ep) + ')');
-          resolve(d);
-        } else next();
-      });
-    }
-    next();
-  });
-}
 function tmdbLaneCycle(){
-  var order = ['cine', 'direct', 'wisp'];
-  liveLane = order[(order.indexOf(liveLane) + 1) % order.length];
-  try { localStorage.setItem(LS_TM.PREF, liveLane); } catch(e){}
-  toast(liveLane === 'cine' ? 'Data lane: Cinemeta fast lane' : liveLane === 'direct' ? 'Data lane: TMDB direct' : 'Data lane: TMDB over wisp tunnel (slow)');
-  if (liveOK){ renderGenrePills(); backToBrowse(); }
+  if (liveOK){ renderGenrePills(); backToBrowse(); toast('Catalog CDN reconnected'); }
   else initLive();
 }
-/* ---- list mapping ---- */
-function tmToMeta(r){
-  var isS = r.media_type ? r.media_type === 'tv' : (!r.title && !!r.name);
-  var n = r.title || r.name || '';
-  var y = parseInt(String(r.release_date || r.first_air_date || '').slice(0, 4), 10) || null;
-  var key = (isS ? 's:' : 'm:') + r.id;
-  return { i: key, lk: key, tm: r.id, t: isS ? 's' : 'm', n: n, y: y,
-           r: r.vote_average ? Math.round(r.vote_average * 10) / 10 : null,
-           p: r.poster_path || null, bp: r.backdrop_path || null, d: r.overview || '' };
-}
-function tmCatPath(){
-  var list = (kind === 'movie') ? GM_GEN : GTV_GEN;
-  var gid = null;
-  for (var i = 0; i < list.length; i++) if (list[i].n === genre) gid = list[i].id;
-  var withG = gid ? '&with_genres=' + gid : '';
-  var today = new Date().toISOString().slice(0, 10);
-  if (kind === 'movie'){
-    if (cat === 'imdbRating') return '/discover/movie?sort_by=vote_average.desc&vote_count.gte=1500' + withG;
-    if (cat === 'year') return '/discover/movie?sort_by=primary_release_date.desc&vote_count.gte=80&primary_release_date.lte=' + today + withG;
-    if (gid) return '/discover/movie?sort_by=popularity.desc' + withG;
-    return '/trending/movie/day';
-  }
-  if (cat === 'imdbRating') return '/discover/tv?sort_by=vote_average.desc&vote_count.gte=300' + withG;
-  if (cat === 'year') return '/discover/tv?sort_by=first_air_date.desc&vote_count.gte=40&first_air_date.lte=' + today + withG;
-  if (gid) return '/discover/tv?sort_by=popularity.desc' + withG;
-  return '/trending/tv/day';
-}
-/* ---- live grid paging ---- */
-function liveLoadPage(){
-  if (tmFetching || tmDone) return;
-  if (liveLane === 'cine'){ cineLoadPage(); return; }
-  tmFetching = true;
-  var seq = catSeq;
-  var base;
-  if (mode === 'tmsearch'){
-    if (!tmQuery){ tmFetching = false; return; }
-    base = '/search/multi?query=' + encodeURIComponent(tmQuery) + '&include_adult=false';
-  } else {
-    base = tmCatPath();
-  }
-  var path = base + (base.indexOf('?') > -1 ? '&' : '?') + 'page=' + tmPage;
-  if (!$('grid').children.length) setState('<div class="big">🛰</div>Fetching from TMDB…');
-  tmdb(path).then(function(d){
-    tmFetching = false;
-    if ((mode !== 'tmcat' && mode !== 'tmsearch') || seq !== catSeq) return;
-    if (!d || !d.results){ tmDone = true; liveEmpty(); return; }
-    var items = d.results.filter(function(r){
-      var mt = r.media_type || (r.title ? 'movie' : 'tv');
-      return mt !== 'person';
-    }).map(tmToMeta).filter(function(m){ return m.n; });
-    items.forEach(function(m){ LIVE[m.lk] = m; });
-    if (tmPage >= (d.total_pages || 1) || tmPage >= 25) tmDone = true;
-    tmPage++;
-    setState('');
-    $('grid').insertAdjacentHTML('beforeend', items.map(cardHTML).join(''));
-    if (!$('grid').children.length) liveEmpty();
-    if (mode === 'tmsearch' && tmDone) localSearchAppend(tmQuery);
-  }).catch(function(){
-    tmFetching = false; tmDone = true;
-    if (mode === 'tmsearch') localSearchAppend(tmQuery);
-    else liveEmpty(true);
-  });
-}
+/* ---- live grid paging (Cinemeta CDN only) ---- */
+function liveLoadPage(){ cineLoadPage(); }
 function liveEmpty(fail){
   if ($('grid').children.length){ setState(''); return; }
   setState('<div class="big">🍿</div>' + (fail ? 'The data lane is down and nothing is cached for this view.' : 'Nothing here — try another category or search.') +
@@ -1721,99 +1529,7 @@ function openLive(key){
   } else {
     bg.style.backgroundImage = 'none';
   }
-  if (m.src === 'cine'){ cineDetailFlow(m); return; }   /* fast lane: no TMDB calls */
-  var t = m.t === 's' ? 'tv' : 'movie';
-  tmdb('/' + t + '/' + m.tm + '?append_to_response=credits,release_dates,content_ratings').then(function(d){
-    if (my !== dSeq || !d) return;
-    liveDetailFill(m, d);
-  }).catch(function(){});
-  tmdb('/' + t + '/' + m.tm + '/recommendations').then(function(d){
-    if (my !== dSeq || !d) return;
-    liveSimRow(d);
-  }).catch(function(){});
-}
-function liveDetailFill(m, d){
-  var chips = '';
-  var y = parseInt(String(d.release_date || d.first_air_date || '').slice(0, 4), 10) || m.y;
-  if (y) chips += '<span class="d-chip">' + y + '</span>';
-  if (d.vote_average) chips += '<span class="d-chip gold"><svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>' + (Math.round(d.vote_average * 10) / 10) + '</span>';
-  chips += '<span class="d-chip">' + (m.t === 's' ? 'Series' : 'Movie') + '</span>';
-  var cert = liveCert(d, m.t);
-  if (cert) chips += '<span class="d-chip">' + esc(cert) + '</span>';
-  if (m.t === 's' && d.number_of_seasons) chips += '<span class="d-chip">' + d.number_of_seasons + ' season' + (d.number_of_seasons > 1 ? 's' : '') + '</span>';
-  if (d.runtime) chips += '<span class="d-chip">' + d.runtime + ' min</span>';
-  (d.genres || []).forEach(function(g){ chips += '<span class="d-chip">' + esc(g.name) + '</span>'; });
-  $('dMeta').innerHTML = chips;
-  if (d.overview) $('dDesc').textContent = d.overview;
-  var cast = (d.credits && d.credits.cast || []).slice(0, 6).map(function(c){ return c.name; });
-  if (cast.length) $('dCast').innerHTML = '<b>Cast:</b> ' + esc(cast.join(', '));
-  if (m.t === 's'){
-    var seasons = (d.seasons || []).filter(function(s){ return s.season_number >= 1 && s.episode_count > 0; });
-    if (seasons.length){
-      m.sp = seasons.map(function(s){ return s.season_number + ':' + s.episode_count; }).join(',');
-      $('dPlayLabel').textContent = 'Play · ' + d.number_of_seasons + ' season' + (d.number_of_seasons > 1 ? 's' : '');
-      liveSeasonPicker(m, seasons);
-    }
-  }
-}
-function liveCert(d, t){
-  try {
-    if (t === 's' && d.content_ratings && d.content_ratings.results){
-      for (var i = 0; i < d.content_ratings.results.length; i++)
-        if (d.content_ratings.results[i].iso_3166_1 === 'US') return d.content_ratings.results[i].rating || '';
-    }
-    if (d.release_dates && d.release_dates.results){
-      for (var j = 0; j < d.release_dates.results.length; j++){
-        if (d.release_dates.results[j].iso_3166_1 !== 'US') continue;
-        var rd = d.release_dates.results[j].release_dates || [];
-        for (var k = 0; k < rd.length; k++) if (rd[k].certification) return rd[k].certification;
-      }
-    }
-  } catch(e){}
-  return '';
-}
-function liveSimRow(d){
-  var items = (d.results || []).filter(function(r){ return r.poster_path; }).slice(0, 14);
-  if (!items.length) return;
-  var html = '<div class="sim-title">More like this</div><div class="sim-row">';
-  items.forEach(function(r){
-    var meta = tmToMeta(r);
-    LIVE[meta.lk] = meta;
-    html += '<button class="sim-card" onclick="openLive(\'' + meta.lk + '\')">' +
-      '<img class="sp" loading="lazy" alt="" src="' + tmdbImg(meta.p, 'w185') + '" onerror="tmdbImgErr(this)"/>' +
-      '<div class="sn">' + esc(meta.n) + '</div></button>';
-  });
-  $('liveExtras').insertAdjacentHTML('beforeend', html + '</div>');
-}
-function liveSeasonPicker(m, seasons){
-  var html = '<div class="ep-tools"><label>Episodes</label><select id="epSel">';
-  seasons.forEach(function(s){
-    html += '<option value="' + s.season_number + '">' + esc(s.name || ('Season ' + s.season_number)) + ' · ' + s.episode_count + ' ep</option>';
-  });
-  html += '</select></div><div class="ep-list" id="epList"><div class="ep-sub" style="padding:6px 2px">Pick a season to load episodes…</div></div>';
-  $('liveExtras').insertAdjacentHTML('afterbegin', html);
-  $('epSel').onchange = function(){ liveLoadEpisodes(m, parseInt(this.value, 10) || 1); };
-  liveLoadEpisodes(m, seasons[0].season_number);
-}
-function liveLoadEpisodes(m, sn){
-  var box = $('epList');
-  if (!box) return;
-  box.innerHTML = '<div class="ep-sub" style="padding:6px 2px">Loading season ' + sn + '…</div>';
-  var my = dSeq;
-  tmdb('/tv/' + m.tm + '/season/' + sn).then(function(d){
-    if (my !== dSeq || !d || !d.episodes){ if (box) box.innerHTML = '<div class="ep-sub" style="padding:6px 2px">Episodes unavailable.</div>'; return; }
-    var html = '';
-    d.episodes.forEach(function(ep){
-      var name = ep.name || ('Episode ' + ep.episode_number);
-      var air = ep.air_date || '';
-      var sub = (air ? air + (ep.vote_average ? ' · ★ ' + Math.round(ep.vote_average * 10) / 10 : '') : '');
-      html += '<button class="ep-item" onclick="playEpisode(' + sn + ',' + ep.episode_number + ')">' +
-        '<span class="ep-num">' + ep.episode_number + '</span>' +
-        '<span class="ep-body"><span class="ep-name">' + esc(name) + '</span><span class="ep-sub">' + esc(sub) + '</span></span>' +
-        '<span class="ep-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></button>';
-    });
-    box.innerHTML = html;
-  }).catch(function(){ if (box) box.innerHTML = '<div class="ep-sub" style="padding:6px 2px">Episodes unavailable — the lane dropped. Try again.</div>'; });
+  cineDetailFlow(m);   /* CDN lane: cast, runtime, episodes, moviedb_id, sim row */
 }
 function playEpisode(s, e){
   if (!currentMeta) return;
@@ -1821,114 +1537,44 @@ function playEpisode(s, e){
   saveSE(currentMeta.i, s, e);
   openPlayer(currentMeta);
 }
-/* ---- live boot: CINE fast lane first, TMDB direct second, wisp last ---- */
-function laneUp(lane){
-  liveOK = true; liveMode = true; liveLane = lane; cat = 'top';
-  try { localStorage.setItem(LS_TM.PREF, lane); } catch(e){}
-  setNet('ok', lane === 'cine' ? 'Cinemeta · fast lane' : lane === 'direct' ? 'TMDB live · direct' : 'TMDB live · wisp tunnel');
+/* ---- live boot: pure Cinemeta CDN — no wisp, no fallback circus ---- */
+function laneUp(){
+  liveOK = true; liveMode = true; liveLane = 'cine'; cat = 'top';
+  setNet('ok', 'Catalog CDN · ' + (cineLast || 'direct'));
   renderGenrePills();
   backToBrowse();
-  if (lane === 'direct') refreshTMDBGenres();   /* cine lane never touches TMDB */
-}
-function refreshTMDBGenres(){
-  tmdb('/genre/movie/list').then(function(d){
-    if (d && d.genres && d.genres.length){
-      GM_GEN = d.genres.map(function(g){ return { id: g.id, n: g.name }; });
-      if (liveOK && liveLane !== 'cine') renderGenrePills();
-    }
-  }).catch(function(){});
-  tmdb('/genre/tv/list').then(function(d){
-    if (d && d.genres && d.genres.length) GTV_GEN = d.genres.map(function(g){ return { id: g.id, n: g.name }; });
-  }).catch(function(){});
 }
 function cineProbe(){
   return cineGet('/catalog/movie/top/skip=0.json').then(function(d){
     if (!d || !d.metas || !d.metas.length) throw new Error('empty');
   });
 }
-function tmdbProbe(){
-  var ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-  var to = ac ? setTimeout(function(){ try { ac.abort(); } catch(e){} }, 6000) : null;
-  return fetch('https://' + TMDB_HOST + '/3/trending/all/day?language=en-US', {
-    headers: { accept: 'application/json', Authorization: 'Bearer ' + TMDB_TOKEN },
-    signal: ac ? ac.signal : undefined
-  }).then(function(r){
-    if (to) clearTimeout(to);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  }).then(function(d){ if (to) clearTimeout(to); if (!d || !d.results) throw new Error('bad'); });
-}
 function initLive(){
-  try { var p = localStorage.getItem(LS_TM.PREF); if (p) liveLane = p; } catch(e){}
-  setNet('wait', 'Data lane: connecting…');
-  var done = false;
-  function up(lane){ if (done) return; done = true; laneUp(lane); }
-  function next(label){
-    /* cascade: cine -> direct -> wisp (only if previously chosen) -> vault */
-    if (label === 'cine'){
-      cineProbe().then(function(){ up('cine'); }).catch(function(){ go('direct'); });
-    } else if (label === 'direct'){
-      setNet('wait', 'Cinemeta blocked — trying TMDB direct…');
-      tmdbProbe().then(function(){ up('direct'); }).catch(function(){ go('wisp'); });
-    } else {
-      var prefWisp = false;
-      try { prefWisp = localStorage.getItem(LS_TM.PREF) === 'wisp'; } catch(e){}
-      if (!prefWisp){
-        done = true; liveOK = false;
-        setNet('bad', 'Catalog blocked — vault mode · tap chip for wisp');
-        return;
-      }
-      setNet('wait', 'TMDB over wisp tunnel…');
-      var ep0 = laneOrder()[0];
-      wispHttpGet(ep0, '/configuration?language=en-US', function(ok){
-        if (ok){
-          try { localStorage.setItem(LS_TM.LANE, ep0); } catch(e){}
-          liveLane = 'wisp'; up('wisp');
-        }
-        else { done = true; liveOK = false; setNet('bad', 'All lanes down — vault mode'); }
-      });
-    }
-  }
-  function go(l){ setTimeout(function(){ next(l); }, 0); }
-  go('cine');
+  setNet('wait', 'Catalog CDN: connecting…');
+  cineProbe().then(laneUp).catch(function(){
+    liveOK = false; liveMode = false;
+    setNet('bad', 'Catalog CDN unreachable — vault mode · tap chip to retry');
+  });
 }
 function tmdbTest(){
   var el = $('tmdbLaneInfo');
-  if (el) el.textContent = 'Probing all three lanes…';
+  if (el) el.textContent = 'Probing the Cinemeta CDN host chain…';
   var t0 = Date.now();
-  cineProbe().then(function(){
-    liveOK = true; liveLane = 'cine';
-    try { localStorage.setItem(LS_TM.PREF, 'cine'); } catch(e){}
-    if (el) el.textContent = 'CINEMETA fast lane OK in ' + (Date.now() - t0) + 'ms — full catalog, no TMDB needed. Lane saved.';
-    setNet('ok', 'Cinemeta · fast lane');
-    if (liveMode){ renderGenrePills(); backToBrowse(); } else { liveMode = true; backToBrowse(); }
+  try { localStorage.removeItem(LS_TM.LANE); cineSticky = null; } catch(e){}
+  cineGet('/catalog/movie/top/skip=0.json').then(function(d){
+    liveOK = true; liveMode = true; liveLane = 'cine';
+    var ms = Date.now() - t0;
+    var n = (d && d.metas && d.metas.length) || 0;
+    if (el) el.textContent = 'Catalog CDN OK in ' + ms + 'ms via ' + (cineLast || 'direct') +
+      ' — ' + n + ' titles on page one. Catalog, search, episodes & posters all ride this one CDN.';
+    renderGenrePills(); backToBrowse();
   }).catch(function(){
-    var t1 = Date.now();
-    tmdbProbe().then(function(){
-      liveOK = true; liveLane = 'direct';
-      try { localStorage.setItem(LS_TM.PREF, 'direct'); } catch(e){}
-      if (el) el.textContent = 'Cinemeta failed, TMDB DIRECT ok in ' + (Date.now() - t1) + 'ms. Lane saved.';
-      setNet('ok', 'TMDB live · direct');
-      renderGenrePills(); backToBrowse();
-    }).catch(function(){
-      var t2 = Date.now(), order = laneOrder();
-      wispHttpGet(order[0], '/configuration?language=en-US', function(ok){
-        if (ok){
-          liveOK = true; liveLane = 'wisp';
-          try { localStorage.setItem(LS_TM.LANE, order[0]); localStorage.setItem(LS_TM.PREF, 'wisp'); } catch(e){}
-          if (el) el.textContent = 'Direct lanes blocked — wisp tunnel carried TMDB in ' + (Date.now() - t2) + 'ms via ' + laneName(order[0]) + '. Lane saved.';
-          setNet('ok', 'TMDB live · wisp (' + laneName(order[0]) + ')');
-          if (liveMode){ renderGenrePills(); } else { liveMode = true; backToBrowse(); }
-        } else if (el) {
-          el.textContent = 'All three lanes failed just now — vault mode stays. Streams are unaffected; try again later.';
-        }
-      });
-    });
+    if (el) el.textContent = 'Cinemeta hosts unreachable right now — vault mode holds the offline catalog, streams are unaffected. Hit Test again later.';
   });
 }
 
 /* ================================================================
-   SITES VAULT — confirmed sources + wisp-tested sites + lane prober
+   SITES VAULT — confirmed sources + wisp-tested sites
    ================================================================ */
 var LS_MARKS = 'fate_movies_marks', LS_ENG = 'fate_movies_engine';
 
@@ -1967,76 +1613,6 @@ var SITES_BOT = [
   ['AZMovies','azmovies.to'],['Noxx','noxx.gg']
 ];
 
-/* fastest lanes from the Nov 8 scan (ms to first HTTP byte) */
-var LANES = [
-  ['browserjs \u00b7 railway', 'wss://browserjs-production.up.railway.app/wisp/', 259],
-  ['tokyo \u00b7 new-updates', 'wss://tokyo.new-updates.info/wisp/', 467],
-  ['fern.best', 'wss://fern.best/wisp/', 788],
-  ['linuxontab \u00b7 fly', 'wss://linuxontab-net.fly.dev/wisp/', 872],
-  ['mercury \u00b7 api', 'wss://wisp.mercurywork.shop/api/wisp/', 884],
-  ['mercury \u00b7 root', 'wss://wisp.mercurywork.shop/', 891],
-  ['mercury \u00b7 w', 'wss://wisp.mercurywork.shop/w/', 895],
-  ['mercury \u00b7 wisp', 'wss://wisp.mercurywork.shop/wisp/', 900]
-];
-
-/* ---- the engine's wisp client (libcurl-wisp classes, browser build) ---- */
-var W_F = { CONNECT: 1, DATA: 2, CONTINUE: 3, CLOSE: 4 };
-function wAC(a){ if (a.length === 4) return new Uint32Array(a.buffer)[0]; if (a.length === 2) return new Uint16Array(a.buffer)[0]; return a[0]; }
-function wNB(v, n){ var b = new ArrayBuffer(n), d = new DataView(b); if (n === 1) d.setUint8(0, v, true); else if (n === 2) d.setUint16(0, v, true); else d.setUint32(0, v, true); return new Uint8Array(b); }
-function wJoin(){ var n = 0, i; for (i = 0; i < arguments.length; i++) n += arguments[i].length; var o = new Uint8Array(n), p = 0; for (i = 0; i < arguments.length; i++){ o.set(arguments[i], p); p += arguments[i].length; } return o; }
-function wPkt(t, id, pay){ return wJoin(wNB(t, 1), wNB(id, 4), pay); }
-class WStream extends EventTarget {
-  constructor(host, port, ws, id, conn){
-    super();
-    this.hostname = host; this.port = port; this.ws = ws;
-    this.buffer_size = null; this.stream_id = id; this.connection = conn;
-    this.stream_type = 1; this.send_buffer = []; this.open = true;
-  }
-  send(d){
-    if (this.buffer_size > 0 || !this.open){ this.ws.send(wPkt(2, this.stream_id, d)); if (this.buffer_size > 0) this.buffer_size--; }
-    else this.send_buffer.push(d);
-  }
-  continue_received(n){ this.buffer_size = n; while (this.buffer_size > 0 && this.send_buffer.length) this.send(this.send_buffer.shift()); }
-  close(c){
-    if (c === undefined) c = 1;
-    if (!this.open) return;
-    this.ws.send(wPkt(4, this.stream_id, wNB(c, 1)));
-    this.open = false;
-    delete this.connection.active_streams[this.stream_id];
-  }
-}
-class WConn extends EventTarget {
-  constructor(url){
-    super();
-    if (!/\/$/.test(url)) throw 'wisp endpoints must end with /';
-    this.wisp_url = url; this.active_streams = {}; this.connected = false; this.connecting = true; this.next_stream_id = 1;
-    var self = this;
-    this.ws = new WebSocket(url);
-    this.ws.binaryType = 'arraybuffer';
-    this.ws.addEventListener('error', function(){ self.connected = false; self.dispatchEvent(new Event('error')); });
-    this.ws.addEventListener('close', function(){ self.connected = false; self.dispatchEvent(new CloseEvent('close')); });
-    this.ws.addEventListener('message', function(e){ self._msg(e); if (self.connecting){ self.connected = true; self.connecting = false; self.dispatchEvent(new Event('open')); } });
-  }
-  create_stream(host, port){
-    var id = this.next_stream_id++;
-    var s = new WStream(host, port, this.ws, id, this);
-    s.open = this.connected;
-    this.active_streams[id] = s;
-    this.ws.send(wPkt(1, id, wJoin(wNB(1, 1), wNB(port, 2), new TextEncoder().encode(host))));
-    return s;
-  }
-  _msg(e){
-    var i = new Uint8Array(e.data);
-    if (i.length < 5) return;
-    var t = i[0], id = wAC(i.slice(1, 5)), pl = i.slice(5), s = this.active_streams[id];
-    if (!s && id !== 0) return;
-    if (t === W_F.DATA) s.dispatchEvent(new MessageEvent('message', { data: pl }));
-    else if (t === W_F.CONTINUE && id === 0) this.max_buffer = wAC(pl);
-    else if (t === W_F.CONTINUE) s.continue_received(wAC(pl));
-    else if (t === W_F.CLOSE){ s.open = false; s.dispatchEvent(new CloseEvent('close', { code: pl[0] })); delete this.active_streams[id]; }
-  }
-}
-
 /* ---- vault UI ---- */
 function engineURL(){ try { return localStorage.getItem(LS_ENG) || 'gn-math.html'; } catch(e){ return 'gn-math.html'; } }
 function openViaEngine(url){ window.open(engineURL() + '#open=' + encodeURIComponent(url), '_blank'); }
@@ -2048,7 +1624,7 @@ function openSites(){
   if (!$('youGrid').innerHTML) renderVault();
   try { $('engUrl').value = localStorage.getItem(LS_ENG) || ''; } catch(e){}
   var ti = $('tmdbLaneInfo');
-  if (ti && liveOK) ti.textContent = 'Status: live via the ' + (liveLane === 'cine' ? 'CINEMETA fast lane (no TMDB needed)' : liveLane === 'direct' ? 'TMDB DIRECT lane' : 'WISP TUNNEL') + '. Hit Test to re-probe all three; the winner is saved on this device.';
+  if (ti && liveOK) ti.textContent = 'Status: live via the Cinemeta CDN (' + (cineLast || 'direct host') + ') — no wisp, no keys. Hit Test to re-probe the host chain.';
 }
 function closeSites(){ $('sitesOverlay').classList.remove('open'); }
 function saveEngine(){
@@ -2092,49 +1668,8 @@ function renderVault(){
   }).join('');
   $('okGrid').innerHTML = SITES_OK.map(function(s){ return scard(s[0], s[1], ['ok', 'wisp ok'], '', s[2], false); }).join('');
   $('botGrid').innerHTML = SITES_BOT.map(function(s){ return scard(s[0], s[1], ['bot', 'bot wall'], '', '', false); }).join('');
-  $('laneRow').innerHTML = LANES.map(function(l, i){
-    return '<span class="lane" id="lane' + i + '" title="' + esc(l[1]) + '"><span class="ld"></span>' + esc(l[0]) + ' <span class="lms">~' + l[2] + 'ms</span></span>';
-  }).join('') + '';
   var m = getMarks();
   Object.keys(m).forEach(function(h){ applyMark(h, m[h]); });
-}
-
-/* ---- live lane prober (plain HTTP via the wisp tunnel) ---- */
-function probeOne(ep, cb){
-  var t0 = Date.now(), done = false, conn = null;
-  function fin(ok, err){
-    if (done) return; done = true;
-    try { if (conn && conn.ws) conn.ws.close(); } catch(e){}
-    cb(ok, Date.now() - t0, err);
-  }
-  var to = setTimeout(function(){ fin(false, 'timeout'); }, 9000);
-  try { conn = new WConn(ep); } catch(e){ clearTimeout(to); return fin(false, 'ctor'); }
-  conn.addEventListener('open', function(){
-    var s;
-    try { s = conn.create_stream('example.com', 80); } catch(e){ clearTimeout(to); return fin(false, 'stream'); }
-    s.addEventListener('message', function(e){
-      var txt = '';
-      try { txt = new TextDecoder().decode(e.data.slice(0, 16)); } catch(err){}
-      if (txt.indexOf('HTTP') === 0){ clearTimeout(to); fin(true); }
-    });
-    s.addEventListener('close', function(){ if (!done){ clearTimeout(to); fin(false, 'closed'); } });
-    try { s.send(new TextEncoder().encode('GET / HTTP/1.1\r\nHost: example.com\r\nConnection: close\r\n\r\n')); }
-    catch(err){ clearTimeout(to); fin(false, 'send'); }
-  });
-  conn.addEventListener('error', function(){ clearTimeout(to); fin(false, 'ws error'); });
-  conn.addEventListener('close', function(){ if (!done){ clearTimeout(to); fin(false, 'ws closed'); } });
-}
-function probeLanes(){
-  LANES.forEach(function(l, i){
-    var el = $('lane' + i);
-    el.classList.remove('p-ok', 'p-bad'); el.classList.add('p-run');
-    var ms = el.querySelector('.lms'); ms.textContent = '…';
-    probeOne(l[1], function(ok, t){
-      el.classList.remove('p-run');
-      if (ok){ el.classList.add('p-ok'); ms.textContent = t + 'ms'; }
-      else { el.classList.add('p-bad'); ms.textContent = 'dead'; }
-    });
-  });
 }
 
 /* ---------- boot (every step guarded) ---------- */

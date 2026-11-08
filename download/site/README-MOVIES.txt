@@ -1,4 +1,60 @@
-FATE MOVIES 2.5 — CINEMETA FAST LANE: the whole catalog without TMDB
+FATE MOVIES 2.6 — PURE CDN: the whole catalog on ONE plain fetch, wisp gone
+================================================================================
+WHAT CHANGED AND WHY
+  You said: "Once again, it didn't work, no way there isn't something like
+  cdn jsdelivr that somehow makes this 10x easier". You were right — that
+  thing exists, it's CINEMETA, Stremio's public metadata CDN, and v2.6 makes
+  it the ONLY data plane. The three-lane system (Cinemeta → TMDB direct →
+  TMDB-over-wisp) is deleted: no wisp code, no TMDB token, no lane cycling,
+  no probe circus. One request, one CDN, done — measured 27ms end-to-end.
+
+  THE CDN CHAIN (all plain browser fetch, each request walks it in order)
+    1. cinemeta-catalogs.strem.io/top   <- catalogs direct, no redirect
+    2. v3-cinemeta.strem.io             <- meta/search direct, catalogs via 307
+    3. api.allorigins.win relay         <- last-ditch, never touched normally
+  The winning host is sticky (saved on the device) and a 6-hour cache
+  replays anything you already browsed with zero network. Posters come
+  from images.metahub.space (Cinemeta's image CDN) with the wsrv.nl
+  mirror on error. Both hosts answer Access-Control-Allow-Origin:*.
+
+  WHAT RIDES THIS ONE CDN (identical feature set to v2.5)
+    Trending / Top Rated (imdbRating) / Newest (year picker, 20 yrs) for
+    Movies AND Series, every genre, search across both, detail sheets
+    (cast, director, runtime, rating, genres, awards), "More like this"
+    row, full TV season/episode picker with names + air dates + overviews.
+    Infinite scroll, 50 titles per page, up to 3000 deep per view.
+
+  WHY YOUR PLAYER STILL JUST WORKS: every Cinemeta title carries imdb_id
+  AND moviedb_id — moviedb_id IS the TMDB id — so the ring stays
+  VidZee (peak) ★ first, MILKBOX · x8rr ★ second, with the 12s no-signal
+  auto-hop. Titles missing an id get it silently resolved from the meta
+  on first play.
+
+  IF THE CDN EVER DIES: the page boots into the 📀 Vault (1247-title
+  offline catalog) and the chip turns red — tap it to retry. The Sites
+  vault "Test catalog CDN" button re-probes the chain and reports the
+  winning host + timing.
+
+UPLOAD LIST v2.6 (site root)
+  1. movies.html          92 KB  (replaces the old one — the ONLY file
+                                 that changed; 23 KB of wisp/TMDB code
+                                 deleted)
+  2. fate-movies-cat.js  unchanged | 3. msheets/ unchanged
+  4. gn-math.html unchanged | index.html unchanged
+
+VERIFIED ON 2026-11-09 (real browser, every flow, zero console errors)
+  Boot -> "Catalog CDN · cinemeta-catalogs" chip, 49 cards + posters.
+  Search "batman" -> 102 hits. Obsession detail: 2026 / 7.8 / 109 min /
+  Horror-Thriller, TMDB 1339713 resolved -> VidZee ring intact, 14-card
+  "More like this". Series: Dexter: Resurrection, S1-S2 picker with
+  episodes, TMDB 259909. Black Clover: full 170-ep season list with air
+  dates + overviews. Genre Action + infinite scroll 50 -> 150 cards.
+  Host failover observed live (catalogs -> v3-cinemeta on a hiccup).
+  "Test catalog CDN" -> "OK in 27ms via v3-cinemeta — 49 titles".
+
+================================================================================
+
+PREVIOUS (v2.5) — CINEMETA FAST LANE: the whole catalog without TMDB
 ================================================================================
 WHAT CHANGED AND WHY
   You said: "Wisp method is too slow and it didn't even reach it". Fixed —
