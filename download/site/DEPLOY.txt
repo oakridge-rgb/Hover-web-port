@@ -138,3 +138,17 @@ HOME = FATE V7 HUB (2026-11-08)
   file site they behave exactly as before.
   Inside FATE.html the hub's changelog fetch falls back to the a.json
   snapshot embedded at build time, so announcements work offline too.
+
+MOVIES = SEPARATE PAGE NOW (2026-11-09)
+  Per request, movie stuff is NOT merged into FATE.html anymore. The movie
+  page lives standalone at site root:
+    movies.html (v2.3, 74 KB) + fate-movies-cat.js + msheets/ (13 jpg)
+  Player ring starts with the two user-confirmed sources:
+    1. VidZee (peak)   player.vidzee.wtf  (TMDB embeds)
+    2. MILKBOX · x8rr  milky.japan.is    (not blocked on the user's network)
+  then the v2.2 six (VidSpark, CineSrc, YapGrid, 2Embed, Vidlink, IMDb).
+  New "Sites vault" overlay: 3 confirmed cards, 32 wisp-tested sites,
+  11 bot-wall sites, live wisp lane prober, engine-URL override.
+  Engine opens use gn-math.html#open=<url> from the same folder.
+  index.html: added a "Movies" side-rail link — re-upload index.html too.
+  FATE.html was NOT rebuilt or touched.
