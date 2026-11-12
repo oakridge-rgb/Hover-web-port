@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 push_hello_lineage.py — create the HelloLineage repo on the token's GitHub
-account and upload README.md + PORTING.md from download/HelloLineage/.
+account and upload the full tree from download/HelloLineage/ (README, docs/,
+scripts/, LICENSE, .gitignore).
 
 Token: scripts/.gh-token or env GH_TOKEN (never printed).
 Usage: python3 scripts/push_hello_lineage.py
@@ -14,7 +15,8 @@ SRC = f'{PROJECT}/download/HelloLineage'
 TOKEN_FILE = f'{PROJECT}/scripts/.gh-token'
 API = 'https://api.github.com'
 REPO_NAME = 'HelloLineage'
-DESC = 'LineageOS on Motorola — replace Hello UI. Official-build guide, GSI guide, and a OneLineage-style container port roadmap.'
+DESC = ('LineageOS GSI on the Moto G Power 5G 2024 (cancunn) the OneLineage/OneOS way: '
+        'container GSI on a locked bootloader with DFRoot root, plus the real fastbootd flash route.')
 
 
 def log(m):
@@ -49,6 +51,17 @@ def retry(fn, what, tries=6):
     return code, d
 
 
+def collect_files():
+    out = []
+    for root, dirs, files in os.walk(SRC):
+        dirs[:] = sorted(d for d in dirs if d not in ('.git',))
+        for name in sorted(files):
+            full = os.path.join(root, name)
+            rel = os.path.relpath(full, SRC).replace(os.sep, '/')
+            out.append((rel, full))
+    return out
+
+
 def main():
     tok = None
     if os.environ.get('GH_TOKEN'):
@@ -78,23 +91,28 @@ def main():
             log(f'REPO CREATE FAILED (HTTP {code}): {r.get("message", "?")}'); sys.exit(3)
         log(f'created repo: {full}')
 
-    # upload files via Contents API — works even on a repo with zero commits
-    msgs = {
-        'README.md': 'README: 3 routes to LineageOS on Motorola (official build, GSI, container)',
-        'PORTING.md': 'PORTING: OneLineage container approach adapted to Motorola Hello UI',
-    }
-    for name in ['README.md', 'PORTING.md']:
-        data = open(f'{SRC}/{name}', 'rb').read()
-        code, r = retry(lambda: api('PUT', f'/repos/{full}/contents/{name}', tok,
-                                    {'message': msgs[name],
-                                     'content': base64.b64encode(data).decode(),
-                                     'branch': 'main'}), f'contents {name}')
+    files = collect_files()
+    log(f'{len(files)} files to upload from {SRC}')
+    for rel, path in files:
+        data = open(path, 'rb').read()
+        if rel == 'scripts/check-device.sh':
+            data = data.replace(b'\r\n', b'\n')  # keep LF for on-device sh
+
+        # existing file? then its sha is required for the update
+        _, cur = api('GET', f'/repos/{full}/contents/{rel}?ref=main', tok)
+        body = {'message': f'add {rel}',
+                'content': base64.b64encode(data).decode(),
+                'branch': 'main'}
+        if cur and cur.get('sha'):
+            body['sha'] = cur['sha']
+
+        code, r = retry(lambda: api('PUT', f'/repos/{full}/contents/{rel}', tok, body),
+                        f'contents {rel}')
         if code not in (200, 201):
-            log(f'UPLOAD FAILED {name}: HTTP {code} {r.get("message", "?")}'); sys.exit(4)
-        log(f'  committed: {name} ({len(data)} bytes)')
+            log(f'UPLOAD FAILED {rel}: HTTP {code} {r.get("message", "?")}'); sys.exit(4)
+        log(f'  committed: {rel} ({len(data)} bytes)')
 
     log(f'COMMITTED to {full}@main')
-
     log('')
     log(f'REPO LIVE: https://github.com/{full}')
     log(f'Raw README: https://raw.githubusercontent.com/{full}/main/README.md')
