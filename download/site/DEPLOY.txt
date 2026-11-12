@@ -152,3 +152,14 @@ MOVIES = SEPARATE PAGE NOW (2026-11-09)
   Engine opens use gn-math.html#open=<url> from the same folder.
   index.html: added a "Movies" side-rail link — re-upload index.html too.
   FATE.html was NOT rebuilt or touched.
+
+VOTING SYSTEM — GAMES PAGE (2026-11-13)
+=======================================
+games.html now forces every visitor to vote before playing (hard lock, once
+per session): full-screen "FATE VOTES" card with the current poll question,
+no skip, Esc blocked. The "Votes" chip under the page title shows live
+results (percentage bars + leader). Backed by Firestore once you paste your
+Firebase config into the marked block in games.html (setup steps + security
+rules: FIREBASE-VOTES-SETUP.txt + firestore.rules). Until then it runs in
+local mode — gate works, counts are per-browser. Ask your own questions any
+time by editing the polls/current doc in the Firestore console (no redeploy).

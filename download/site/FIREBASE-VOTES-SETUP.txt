@@ -1,0 +1,73 @@
+FATE VOTES — SETUP (Firestore-backed voting on games.html)
+===========================================================
+games.html now has a voting system that forces every visitor to vote before
+they can play (hard lock, once per session). Votes are stored in Firestore so
+the tallies are real and global. Until you paste your Firebase config, it runs
+in LOCAL mode: the gate works, but counts live in each browser only.
+
+WHAT VISITORS SEE
+  - Opening Games pops a full-screen "FATE VOTES" card: one question, 2-3
+    option cards. No skip button, Esc does nothing, clicking outside does
+    nothing. They must pick one.
+  - After voting: "Vote counted" and the page carries on. They are not asked
+    again for the rest of the session (closing the tab resets it).
+  - The "Votes" chip in the button row under the title opens live results:
+    percentage bars, leader banner, total votes, their pick highlighted.
+
+ONE-TIME SETUP (10 minutes, all in the Firebase console of your web.app site)
+  1. Firebase console > Build > Firestore Database > Create database.
+     Production mode, pick a region. (Native mode, the default.)
+  2. Firebase console > Build > Authentication > Get started >
+     Sign-in method > enable "Anonymous". This is what makes one-vote-per-
+     player possible without accounts.
+  3. Firebase console > Project settings > General > Your apps > Web app
+     (the </> icon) > copy the firebaseConfig object (apiKey, authDomain,
+     projectId, storageBucket, messagingSenderId, appId).
+  4. Open games.html, find the block marked "PASTE YOUR FIREBASE WEB CONFIG
+     HERE" (near the bottom, in the FATE VOTE SYSTEM module) and paste the
+     values. Re-upload games.html.
+  5. Firebase console > Firestore > Rules: replace everything with the
+     contents of firestore.rules (ships next to this file) and Publish.
+     These rules make the poll doc read-only for visitors and let each
+     signed-in player create exactly one ballot per round.
+
+ASKING YOUR OWN QUESTIONS (the fun part)
+  The gate always shows the "current poll". To change the question at any
+  time - no redeploy, no code edit:
+    Firebase console > Firestore > Start collection:  polls
+      > Document ID:  current
+      > fields:
+          question  (string)   e.g. "Which game should FATE add next?"
+          options   (array)    e.g. ["Smash Karts", "Retro Bowl", "Bloxd.io"]
+          active    (boolean)  true
+          updatedAt (number)   any number that changes, e.g. 1, 2, 3...
+  Changing updatedAt starts a NEW round: everyone is asked again, old votes
+  stay in the voters collection but only the current round is tallied.
+  If the doc does not exist, the built-in default question is used.
+
+SEEING / MANAGING RESULTS
+  - Live: the Votes chip (visitors see it too).
+  - Raw ballots: Firestore > polls > current > voters - one doc per vote,
+    id <uid>__<round>, field choice = the option index (0 = first option).
+  - Reset a poll: delete the docs inside voters (or just bump updatedAt).
+
+BEHAVIOR / SAFETY DETAILS
+  - One ballot per player per round: ballot docs are keyed by the player's
+    anonymous UID + round, and the security rules only let that same player
+    create the ballot or move its choice field. Re-confirmation in a later
+    session MOVES the vote - tallies never double-count. Clearing browser
+    storage gives a new anonymous UID (not tamper-proof, but stops casual
+    abuse).
+  - If Firebase is unreachable, sign-in fails, or a vote write is rejected,
+    the page automatically falls back to counting that vote locally and
+    ALWAYS unlocks the games - the gate can never permanently trap someone.
+  - The gate also appears once per session even if the visitor never clicks a
+    game (that is the "once per session" rule you picked).
+  - Works inside FATE.html's games module too IF you rebuild the single-file
+    bundle (scripts/build_fate_single.py) after editing games.html. The
+    standalone multi-file site just needs the new games.html uploaded.
+
+FILES THAT CHANGED / SHIP TOGETHER
+  games.html              (vote system added - upload this)
+  firestore.rules         (paste into Firestore > Rules - one time)
+  FIREBASE-VOTES-SETUP.txt (this file - for you, not required on the site)
