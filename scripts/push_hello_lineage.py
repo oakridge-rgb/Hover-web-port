@@ -38,12 +38,12 @@ def api(method, path, tok, body=None):
             return e.code, {}
 
 
-def retry(fn, what, tries=5):
+def retry(fn, what, tries=6):
     for i in range(tries):
         code, d = fn()
         if code in (200, 201):
             return code, d
-        if code in (403, 429, 500, 502, 503):
+        if code in (403, 409, 429, 500, 502, 503):
             log(f'  retry {what} (HTTP {code})'); time.sleep(2 ** i * 2); continue
         break
     return code, d
@@ -78,34 +78,21 @@ def main():
             log(f'REPO CREATE FAILED (HTTP {code}): {r.get("message", "?")}'); sys.exit(3)
         log(f'created repo: {full}')
 
-    # upload files (empty repo -> standalone tree, parentless commit, create main)
-    entries = []
+    # upload files via Contents API — works even on a repo with zero commits
+    msgs = {
+        'README.md': 'README: 3 routes to LineageOS on Motorola (official build, GSI, container)',
+        'PORTING.md': 'PORTING: OneLineage container approach adapted to Motorola Hello UI',
+    }
     for name in ['README.md', 'PORTING.md']:
         data = open(f'{SRC}/{name}', 'rb').read()
-        code, b = retry(lambda: api('POST', f'/repos/{full}/git/blobs', tok,
-                                    {'content': base64.b64encode(data).decode(),
-                                     'encoding': 'base64'}), f'blob {name}')
+        code, r = retry(lambda: api('PUT', f'/repos/{full}/contents/{name}', tok,
+                                    {'message': msgs[name],
+                                     'content': base64.b64encode(data).decode(),
+                                     'branch': 'main'}), f'contents {name}')
         if code not in (200, 201):
-            log(f'BLOB FAILED {name}: HTTP {code}'); sys.exit(4)
-        entries.append({'path': name, 'mode': '100644', 'type': 'blob', 'sha': b['sha']})
-        log(f'  blob ok: {name} ({len(data)} bytes)')
+            log(f'UPLOAD FAILED {name}: HTTP {code} {r.get("message", "?")}'); sys.exit(4)
+        log(f'  committed: {name} ({len(data)} bytes)')
 
-    code, tree = retry(lambda: api('POST', f'/repos/{full}/git/trees', tok,
-                                   {'tree': entries}), 'tree')
-    if code not in (200, 201):
-        log(f'TREE FAILED: HTTP {code}'); sys.exit(5)
-
-    msg = 'HelloLineage: LineageOS on Motorola — official/GSI guides + OneLineage port roadmap'
-    code, commit = retry(lambda: api('POST', f'/repos/{full}/git/commits', tok,
-                                     {'message': msg, 'tree': tree['sha'], 'parents': []}),
-                         'commit')
-    if code not in (200, 201):
-        log(f'COMMIT FAILED: HTTP {code}'); sys.exit(6)
-
-    code, _ = retry(lambda: api('POST', f'/repos/{full}/git/refs', tok,
-                                {'ref': 'refs/heads/main', 'sha': commit['sha']}), 'ref')
-    if code not in (200, 201):
-        log(f'REF FAILED: HTTP {code}'); sys.exit(7)
     log(f'COMMITTED to {full}@main')
 
     log('')
