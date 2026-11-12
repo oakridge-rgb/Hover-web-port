@@ -3959,16 +3959,19 @@ function fateBrowseClose(){
    |  SDK setup and configuration > Config). Leave apiKey empty to    |
    | run in LOCAL mode (counts stay per-browser).                     |
    +------------------------------------------------------------------+ */
+/* Firebase project: nicexat-d7c56 (web app) */
 const FATE_FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyCBEtckpxwQLbFKtFhDb33ZtIEgRi9X4NQ",
+  authDomain: "nicexat-d7c56.firebaseapp.com",
+  databaseURL: "https://nicexat-d7c56-default-rtdb.firebaseio.com",
+  projectId: "nicexat-d7c56",
+  storageBucket: "nicexat-d7c56.firebasestorage.app",
+  messagingSenderId: "599721824331",
+  appId: "1:599721824331:web:5d7468f5ed8eb1680a3dce",
+  measurementId: "G-QP5YKE4SWV"
 };
 
-const DEFAULT_POLL = { question: 'Which game should FATE add next?', options: ['Smash Karts', 'Retro Bowl', 'Bloxd.io'] };
+const DEFAULT_POLL = { question: 'test', options: ['Yes', 'No', 'Maybe', 'IDK'] };
 const LS_COUNTS = 'fate_poll_counts_v1';
 const LS_MY = 'fate_poll_mychoice_v1';
 const LS_VOTED = 'fate_poll_voted_round';

@@ -153,13 +153,20 @@ MOVIES = SEPARATE PAGE NOW (2026-11-09)
   index.html: added a "Movies" side-rail link — re-upload index.html too.
   FATE.html was NOT rebuilt or touched.
 
-VOTING SYSTEM — GAMES PAGE (2026-11-13)
-=======================================
+VOTING SYSTEM — GAMES PAGE (2026-11-13, updated)
+================================================
 games.html now forces every visitor to vote before playing (hard lock, once
 per session): full-screen "FATE VOTES" card with the current poll question,
 no skip, Esc blocked. The "Votes" chip under the page title shows live
-results (percentage bars + leader). Backed by Firestore once you paste your
-Firebase config into the marked block in games.html (setup steps + security
-rules: FIREBASE-VOTES-SETUP.txt + firestore.rules). Until then it runs in
-local mode — gate works, counts are per-browser. Ask your own questions any
-time by editing the polls/current doc in the Firestore console (no redeploy).
+results (percentage bars + leader).
+
+STATUS: your Firebase config (nicexat-d7c56) is pasted in and verified
+working (the page signs in anonymously and runs in firebase mode). The
+current poll is the built-in test poll: "test" — Yes / No / Maybe / IDK.
+Two console steps make tallies global (see FIREBASE-VOTES-SETUP.txt):
+  1. Firestore Database > Create database (if not created yet).
+  2. Firestore > Rules > paste firestore.rules > Publish.
+Until rules are published the gate still works but counts stay per-browser
+(console shows permission warnings — expected). After publishing, reply and
+the polls/current doc gets seeded remotely; edit it any time in the console
+to ask new questions (no redeploy).
