@@ -93,3 +93,37 @@ patched win32hle. The pcrecomp/HLE patches are documented in
 Hover! is © 1995 Microsoft Corporation. The port ships the original data
 with attribution, as the ReactOS and PortMaster projects do; no Microsoft
 code is modified — the lifted C is generated from the binary at build time.
+
+
+## Session 4 (recovery + WaveMix mmioDescend root cause)
+
+- Sandbox wiped again mid-session; everything restored from git history
+  (commit 8d0836c = the session-2 snapshot incl. lift-and-hle.zip; the repo
+  root mirrors the old my-project tree).
+- Toolchain: emsdk 3.1.74 with a hand-written config; binaryen 122
+  downloaded standalone into upstream/binaryen. Constraints: binaryen
+  rejects musttail+asyncify, so recomp_types.h compiles RECOMP_TAIL_CALL as
+  a plain call and build.sh lost -mtail-call; build.sh BUILD DONE now uses
+  PIPESTATUS. hover-data is a symlink at /home/z/my-project/hover-data.
+- Data-pack artifact: both SOUNDS/ and Sounds/ plus up to four case
+  variants of each WAV exist in MEMFS; case-insensitive opens matter.
+- misc41.c (runtime/win32hle/misc41.c, registered in /tmp/hover-web/
+  web_host.c hw_boot) answers the 41 USER32/GDI32 imports the archived
+  runtime lacked. Boot: `350 imports, 0 unresolved`, `hw_boot -> 0`.
+- Crash root cause (verified by lift + trace): WaveMix V2.3 OpenWave
+  (sub_0043B150) opens skid_st.WAV (file mode, info=NULL, open succeeds),
+  then mmioDescend(hmmio, ck, NULL, 0x20) with ck.fccType='WAVE'. The
+  Win32 SDK flag values are 0x20=MMIO_FINDRIFF / 0x10=MMIO_FINDCHUNK /
+  0x40=MMIO_FINDLIST, and FINDRIFF matches ck.fccType(+12) not fccID(+0).
+  The shim's descend used Win16 values and fccID, so the RIFF walk skipped
+  the whole file (`walk-end pos=12530`) and the failure cascaded into the
+  caller's unvalidated store at 0x417AA3 (the "memory access out of
+  bounds"). Both descend branches now use Win32 flag values + fccType
+  semantics; trace prints `form=45564157` ('WAVE'). A build with this fix
+  completed at BUILD DONE: 0; the immediate next step is to deploy it and
+  confirm `[mmioD] hit mode=0` replaces `walk-end`, then watch how far the
+  boot gets.
+- Sources saved in src/ (winmm_web.c incl. memory-mode mmio + descend fix,
+  web_host.c, build.sh) and src/win32hle-patched/ (misc41.c, gdidc.c with
+  hle_gdi_window_palette, recomp_types.h, host_lite.c, traced winmm.c/
+  module.c/kernel32.c).
