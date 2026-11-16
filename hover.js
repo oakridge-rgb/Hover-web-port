@@ -1,6 +1,4 @@
 // include: shell.js
-// include: minimum_runtime_check.js
-// end include: minimum_runtime_check.js
 // The Module object: Our interface to the outside world. We import
 // and export values on it. There are various ways Module can be used:
 // 1. Not defined. We create it here
@@ -14,33 +12,35 @@
 // after the generated code, you will need to define   var Module = {};
 // before the code. Then that object will be used in the code, and you
 // can continue to use Module afterwards as well.
-var Module = typeof Module !== "undefined" ? Module : {};
+var Module = typeof Module != "undefined" ? Module : {};
 
 // Determine the runtime environment we are in. You can customize this by
 // setting the ENVIRONMENT setting at compile time (see settings.js).
 // Attempt to auto-detect the environment
-var ENVIRONMENT_IS_WEB = !!globalThis.window;
+var ENVIRONMENT_IS_WEB = typeof window == "object";
 
-var ENVIRONMENT_IS_WORKER = !!globalThis.WorkerGlobalScope;
+var ENVIRONMENT_IS_WORKER = typeof WorkerGlobalScope != "undefined";
 
 // N.b. Electron.js environment is simultaneously a NODE-environment, but
 // also a web environment.
-var ENVIRONMENT_IS_NODE = globalThis.process?.versions?.node && globalThis.process?.type != "renderer";
+var ENVIRONMENT_IS_NODE = typeof process == "object" && typeof process.versions == "object" && typeof process.versions.node == "string" && process.type != "renderer";
+
+if (ENVIRONMENT_IS_NODE) {}
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmp9gmo8pk1.js
-if (!Module["expectedDataFileDownloads"]) Module["expectedDataFileDownloads"] = 0;
+// include: /tmp/tmp3nl7xpny.js
+Module["expectedDataFileDownloads"] ??= 0;
 
 Module["expectedDataFileDownloads"]++;
 
-((() => {
+(() => {
   // Do not attempt to redownload the virtual filesystem data when in a pthread or a Wasm Worker context.
-  var isPthread = typeof ENVIRONMENT_IS_PTHREAD !== "undefined" && ENVIRONMENT_IS_PTHREAD;
-  var isWasmWorker = typeof ENVIRONMENT_IS_WASM_WORKER !== "undefined" && ENVIRONMENT_IS_WASM_WORKER;
+  var isPthread = typeof ENVIRONMENT_IS_PTHREAD != "undefined" && ENVIRONMENT_IS_PTHREAD;
+  var isWasmWorker = typeof ENVIRONMENT_IS_WASM_WORKER != "undefined" && ENVIRONMENT_IS_WASM_WORKER;
   if (isPthread || isWasmWorker) return;
-  var isNode = globalThis.process && globalThis.process.versions && globalThis.process.versions.node && globalThis.process.type != "renderer";
-  async function loadPackage(metadata) {
+  var isNode = typeof process === "object" && typeof process.versions === "object" && typeof process.versions.node === "string";
+  function loadPackage(metadata) {
     var PACKAGE_PATH = "";
     if (typeof window === "object") {
       PACKAGE_PATH = window["encodeURIComponent"](window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/")) + "/");
@@ -52,63 +52,83 @@ Module["expectedDataFileDownloads"]++;
     var REMOTE_PACKAGE_BASE = "hover.data";
     var REMOTE_PACKAGE_NAME = Module["locateFile"] ? Module["locateFile"](REMOTE_PACKAGE_BASE, "") : REMOTE_PACKAGE_BASE;
     var REMOTE_PACKAGE_SIZE = metadata["remote_package_size"];
-    async function fetchRemotePackage(packageName, packageSize) {
+    function fetchRemotePackage(packageName, packageSize, callback, errback) {
       if (isNode) {
-        var contents = require("fs").readFileSync(packageName);
-        return new Uint8Array(contents).buffer;
-      }
-      if (!Module["dataFileDownloads"]) Module["dataFileDownloads"] = {};
-      try {
-        var response = await fetch(packageName);
-      } catch (e) {
-        throw new Error(`Network Error: ${packageName}`, {
-          e
+        require("fs").readFile(packageName, (err, contents) => {
+          if (err) {
+            errback(err);
+          } else {
+            callback(contents.buffer);
+          }
         });
+        return;
       }
-      if (!response.ok) {
-        throw new Error(`${response.status}: ${response.url}`);
-      }
-      const chunks = [];
-      const headers = response.headers;
-      const total = Number(headers.get("Content-Length") || packageSize);
-      let loaded = 0;
-      Module["setStatus"] && Module["setStatus"]("Downloading data...");
-      const reader = response.body.getReader();
-      while (1) {
-        var {done, value} = await reader.read();
-        if (done) break;
-        chunks.push(value);
-        loaded += value.length;
-        Module["dataFileDownloads"][packageName] = {
-          loaded,
-          total
-        };
-        let totalLoaded = 0;
-        let totalSize = 0;
-        for (const download of Object.values(Module["dataFileDownloads"])) {
-          totalLoaded += download.loaded;
-          totalSize += download.total;
+      Module["dataFileDownloads"] ??= {};
+      fetch(packageName).catch(cause => Promise.reject(new Error(`Network Error: ${packageName}`, {
+        cause
+      }))).then(// If fetch fails, rewrite the error to include the failing URL & the cause.
+      response => {
+        if (!response.ok) {
+          return Promise.reject(new Error(`${response.status}: ${response.url}`));
         }
-        Module["setStatus"] && Module["setStatus"](`Downloading data... (${totalLoaded}/${totalSize})`);
-      }
-      const packageData = new Uint8Array(chunks.map(c => c.length).reduce((a, b) => a + b, 0));
-      let offset = 0;
-      for (const chunk of chunks) {
-        packageData.set(chunk, offset);
-        offset += chunk.length;
-      }
-      return packageData.buffer;
+        if (!response.body && response.arrayBuffer) {
+          // If we're using the polyfill, readers won't be available...
+          return response.arrayBuffer().then(callback);
+        }
+        const reader = response.body.getReader();
+        const iterate = () => reader.read().then(handleChunk).catch(cause => Promise.reject(new Error(`Unexpected error while handling : ${response.url} ${cause}`, {
+          cause
+        })));
+        const chunks = [];
+        const headers = response.headers;
+        const total = Number(headers.get("Content-Length") ?? packageSize);
+        let loaded = 0;
+        const handleChunk = ({done, value}) => {
+          if (!done) {
+            chunks.push(value);
+            loaded += value.length;
+            Module["dataFileDownloads"][packageName] = {
+              loaded,
+              total
+            };
+            let totalLoaded = 0;
+            let totalSize = 0;
+            for (const download of Object.values(Module["dataFileDownloads"])) {
+              totalLoaded += download.loaded;
+              totalSize += download.total;
+            }
+            Module["setStatus"]?.(`Downloading data... (${totalLoaded}/${totalSize})`);
+            return iterate();
+          } else {
+            const packageData = new Uint8Array(chunks.map(c => c.length).reduce((a, b) => a + b, 0));
+            let offset = 0;
+            for (const chunk of chunks) {
+              packageData.set(chunk, offset);
+              offset += chunk.length;
+            }
+            callback(packageData.buffer);
+          }
+        };
+        Module["setStatus"]?.("Downloading data...");
+        return iterate();
+      });
     }
-    var fetchPromise;
-    var fetched = Module["getPreloadedPackage"] && Module["getPreloadedPackage"](REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE);
-    if (!fetched) {
-      // Note that we don't use await here because we want to execute the
-      // the rest of this function immediately.
-      fetchPromise = fetchRemotePackage(REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE);
+    function handleError(error) {
+      console.error("package error:", error);
     }
-    async function runWithFS(Module) {
+    var fetchedCallback = null;
+    var fetched = Module["getPreloadedPackage"] ? Module["getPreloadedPackage"](REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE) : null;
+    if (!fetched) fetchRemotePackage(REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE, data => {
+      if (fetchedCallback) {
+        fetchedCallback(data);
+        fetchedCallback = null;
+      } else {
+        fetched = data;
+      }
+    }, handleError);
+    function runWithFS(Module) {
       function assert(check, msg) {
-        if (!check) throw new Error(msg);
+        if (!check) throw msg + (new Error).stack;
       }
       Module["FS_createPath"]("/", "c", true, true);
       Module["FS_createPath"]("/c", "HOVER", true, true);
@@ -117,37 +137,71 @@ Module["expectedDataFileDownloads"]++;
       Module["FS_createPath"]("/c/HOVER/SOUNDS", "MIXED", true, true);
       Module["FS_createPath"]("/c/HOVER/SOUNDS", "MUSIC", true, true);
       Module["FS_createPath"]("/c/HOVER/SOUNDS", "UNMIXED", true, true);
-      async function processPackageData(arrayBuffer) {
+      Module["FS_createPath"]("/", "usr", true, true);
+      Module["FS_createPath"]("/usr", "share", true, true);
+      Module["FS_createPath"]("/usr/share", "fonts", true, true);
+      Module["FS_createPath"]("/usr/share/fonts", "truetype", true, true);
+      Module["FS_createPath"]("/usr/share/fonts/truetype", "liberation", true, true);
+      /** @constructor */ function DataRequest(start, end, audio) {
+        this.start = start;
+        this.end = end;
+        this.audio = audio;
+      }
+      DataRequest.prototype = {
+        requests: {},
+        open: function(mode, name) {
+          this.name = name;
+          this.requests[name] = this;
+          Module["addRunDependency"](`fp ${this.name}`);
+        },
+        send: function() {},
+        onload: function() {
+          var byteArray = this.byteArray.subarray(this.start, this.end);
+          this.finish(byteArray);
+        },
+        finish: function(byteArray) {
+          var that = this;
+          // canOwn this data in the filesystem, it is a slide into the heap that will never change
+          Module["FS_createDataFile"](this.name, null, byteArray, true, true, true);
+          Module["removeRunDependency"](`fp ${that.name}`);
+          this.requests[this.name] = null;
+        }
+      };
+      var files = metadata["files"];
+      for (var i = 0; i < files.length; ++i) {
+        new DataRequest(files[i]["start"], files[i]["end"], files[i]["audio"] || 0).open("GET", files[i]["filename"]);
+      }
+      function processPackageData(arrayBuffer) {
         assert(arrayBuffer, "Loading data file failed.");
-        assert(arrayBuffer.constructor.name === ArrayBuffer.name, "bad input to processPackageData " + arrayBuffer.constructor.name);
+        assert(arrayBuffer.constructor.name === ArrayBuffer.name, "bad input to processPackageData");
         var byteArray = new Uint8Array(arrayBuffer);
         // Reuse the bytearray from the XHR as the source for file reads.
-        for (var file of metadata["files"]) {
-          var name = file["filename"];
-          var data = byteArray.subarray(file["start"], file["end"]);
-          // canOwn this data in the filesystem, it is a slice into the heap that will never change
-          Module["FS_createDataFile"](name, null, data, true, true, true);
+        DataRequest.prototype.byteArray = byteArray;
+        var files = metadata["files"];
+        for (var i = 0; i < files.length; ++i) {
+          DataRequest.prototype.requests[files[i].filename].onload();
         }
         Module["removeRunDependency"]("datafile_/home/z/my-project/download/hover/hover.data");
       }
       Module["addRunDependency"]("datafile_/home/z/my-project/download/hover/hover.data");
-      if (!Module["preloadResults"]) Module["preloadResults"] = {};
+      Module["preloadResults"] ??= {};
       Module["preloadResults"][PACKAGE_NAME] = {
         fromCache: false
       };
-      if (!fetched) {
-        fetched = await fetchPromise;
+      if (fetched) {
+        processPackageData(fetched);
+        fetched = null;
+      } else {
+        fetchedCallback = processPackageData;
       }
-      await processPackageData(fetched);
     }
-    // Detect whether the module JS file has already been loaded.
-    if (Module["FS_createPath"]) {
+    if (Module["calledRun"]) {
       runWithFS(Module);
     } else {
-      if (!Module["preRun"]) Module["preRun"] = [];
-      Module["preRun"].push(runWithFS);
+      (Module["preRun"] ??= []).push(runWithFS);
     }
   }
+  // FS is not initialized yet, wait for it
   loadPackage({
     "files": [ {
       "filename": "/c/HOVER/DASHRES.DLL",
@@ -485,30 +539,34 @@ Module["expectedDataFileDownloads"]++;
       "filename": "/c/HOVER/WAVEMIX.INF",
       "start": 16841008,
       "end": 16857571
+    }, {
+      "filename": "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+      "start": 16857571,
+      "end": 17566491
+    }, {
+      "filename": "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+      "start": 17566491,
+      "end": 18326211
     } ],
-    "remote_package_size": 16857571
+    "remote_package_size": 18326211
   });
-}))();
+})();
 
-// end include: /tmp/tmp9gmo8pk1.js
-var programArgs = [];
+// end include: /tmp/tmp3nl7xpny.js
+// Sometimes an existing Module object exists with properties
+// meant to overwrite the default module functionality. Here
+// we collect those properties and reapply _after_ we configure
+// the current environment's defaults to avoid having to be so
+// defensive during initialization.
+var moduleOverrides = Object.assign({}, Module);
+
+var arguments_ = [];
 
 var thisProgram = "./this.program";
 
 var quit_ = (status, toThrow) => {
   throw toThrow;
 };
-
-// In MODULARIZE mode _scriptName needs to be captured already at the very top of the page immediately when the page is parsed, so it is generated there
-// before the page load. In non-MODULARIZE modes generate it here.
-var _scriptName = globalThis.document?.currentScript?.src;
-
-if (typeof __filename !== "undefined") {
-  // Node
-  _scriptName = __filename;
-} else if (ENVIRONMENT_IS_WORKER) {
-  _scriptName = self.location.href;
-}
 
 // `/` should be present at the end if `scriptDirectory` is not empty
 var scriptDirectory = "";
@@ -526,7 +584,8 @@ var readAsync, readBinary;
 if (ENVIRONMENT_IS_NODE) {
   // These modules will usually be used on Node.js. Load them eagerly to avoid
   // the complexity of lazy-loading.
-  var fs = require("node:fs");
+  var fs = require("fs");
+  var nodePath = require("path");
   scriptDirectory = __dirname + "/";
   // include: node_shell_read.js
   readBinary = filename => {
@@ -542,12 +601,11 @@ if (ENVIRONMENT_IS_NODE) {
     return ret;
   };
   // end include: node_shell_read.js
-  if (process.argv.length > 1) {
+  if (!Module["thisProgram"] && process.argv.length > 1) {
     thisProgram = process.argv[1].replace(/\\/g, "/");
   }
-  programArgs = process.argv.slice(2);
-  // MODULARIZE will export the module in the proper place outside, we don't need to export here
-  if (typeof module !== "undefined") {
+  arguments_ = process.argv.slice(2);
+  if (typeof module != "undefined") {
     module["exports"] = Module;
   }
   quit_ = (status, toThrow) => {
@@ -558,9 +616,24 @@ if (ENVIRONMENT_IS_NODE) {
 // Node.js workers are detected as a combination of ENVIRONMENT_IS_WORKER and
 // ENVIRONMENT_IS_NODE.
 if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
-  try {
-    scriptDirectory = new URL(".", _scriptName).href;
-  } catch {}
+  if (ENVIRONMENT_IS_WORKER) {
+    // Check worker, not web, since window could be polyfilled
+    scriptDirectory = self.location.href;
+  } else if (typeof document != "undefined" && document.currentScript) {
+    // web
+    scriptDirectory = document.currentScript.src;
+  }
+  // blob urls look like blob:http://site.com/etc/etc and we cannot infer anything from them.
+  // otherwise, slice off the final part of the url to find the script directory.
+  // if scriptDirectory does not contain a slash, lastIndexOf will return -1,
+  // and scriptDirectory will correctly be replaced with an empty string.
+  // If scriptDirectory contains a query (starting with ?) or a fragment (starting with #),
+  // they are removed because they could contain a slash.
+  if (scriptDirectory.startsWith("blob:")) {
+    scriptDirectory = "";
+  } else {
+    scriptDirectory = scriptDirectory.substr(0, scriptDirectory.replace(/[?#].*/, "").lastIndexOf("/") + 1);
+  }
   {
     // include: web_or_worker_shell_read.js
     if (ENVIRONMENT_IS_WORKER) {
@@ -603,12 +676,29 @@ if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
       throw new Error(response.status + " : " + response.url);
     };
   }
-} else {}
+} else // end include: web_or_worker_shell_read.js
+{}
 
-var out = console.log.bind(console);
+var out = Module["print"] || console.log.bind(console);
 
-var err = console.error.bind(console);
+var err = Module["printErr"] || console.error.bind(console);
 
+// Merge back in the overrides
+Object.assign(Module, moduleOverrides);
+
+// Free the object hierarchy contained in the overrides, this lets the GC
+// reclaim data used.
+moduleOverrides = null;
+
+// Emit code to handle expected values on the Module object. This applies Module.x
+// to the proper local x. This has two benefits: first, we only emit it if it is
+// expected to arrive, and second, by using a local everywhere else that can be
+// minified.
+if (Module["arguments"]) arguments_ = Module["arguments"];
+
+if (Module["thisProgram"]) thisProgram = Module["thisProgram"];
+
+// perform assertions in shell.js after we set up out() and err(), as otherwise if an assertion fails it cannot print the message
 // end include: shell.js
 // include: preamble.js
 // === Preamble library stuff ===
@@ -619,9 +709,27 @@ var err = console.error.bind(console);
 // You can also build docs locally as HTML or other formats in site/
 // An online HTML version (which may be of a different version of Emscripten)
 //    is up at http://kripken.github.io/emscripten-site/docs/api_reference/preamble.js.html
-var wasmBinary;
+var wasmBinary = Module["wasmBinary"];
 
+// include: base64Utils.js
+// Converts a string of base64 into a byte array (Uint8Array).
+function intArrayFromBase64(s) {
+  if (typeof ENVIRONMENT_IS_NODE != "undefined" && ENVIRONMENT_IS_NODE) {
+    var buf = Buffer.from(s, "base64");
+    return new Uint8Array(buf.buffer, buf.byteOffset, buf.length);
+  }
+  var decoded = atob(s);
+  var bytes = new Uint8Array(decoded.length);
+  for (var i = 0; i < decoded.length; ++i) {
+    bytes[i] = decoded.charCodeAt(i);
+  }
+  return bytes;
+}
+
+// end include: base64Utils.js
 // Wasm globals
+var wasmMemory;
+
 //========================================
 // Runtime essentials
 //========================================
@@ -630,97 +738,122 @@ var wasmBinary;
 var ABORT = false;
 
 // set by exit() and abort().  Passed to 'onExit' handler.
-// NOTE: This is also used as the process return code in shell environments
+// NOTE: This is also used as the process return code code in shell environments
 // but only when noExitRuntime is false.
 var EXITSTATUS;
 
-/**
- * Indicates whether filename is delivered via file protocol (as opposed to http/https)
- * @noinline
- */ var isFileURI = filename => filename.startsWith("file://");
+// Memory management
+var /** @type {!Int8Array} */ HEAP8, /** @type {!Uint8Array} */ HEAPU8, /** @type {!Int16Array} */ HEAP16, /** @type {!Uint16Array} */ HEAPU16, /** @type {!Int32Array} */ HEAP32, /** @type {!Uint32Array} */ HEAPU32, /** @type {!Float32Array} */ HEAPF32, /** @type {!Float64Array} */ HEAPF64;
 
-// include: runtime_common.js
-// include: runtime_exceptions.js
-// Base Emscripten EH error class
-class EmscriptenEH {}
-
-class EmscriptenSjLj extends EmscriptenEH {}
-
-class CppException extends EmscriptenEH {
-  constructor(excPtr) {
-    super();
-    this.excPtr = excPtr;
-  }
+// include: runtime_shared.js
+function updateMemoryViews() {
+  var b = wasmMemory.buffer;
+  Module["HEAP8"] = HEAP8 = new Int8Array(b);
+  Module["HEAP16"] = HEAP16 = new Int16Array(b);
+  Module["HEAPU8"] = HEAPU8 = new Uint8Array(b);
+  Module["HEAPU16"] = HEAPU16 = new Uint16Array(b);
+  Module["HEAP32"] = HEAP32 = new Int32Array(b);
+  Module["HEAPU32"] = HEAPU32 = new Uint32Array(b);
+  Module["HEAPF32"] = HEAPF32 = new Float32Array(b);
+  Module["HEAPF64"] = HEAPF64 = new Float64Array(b);
 }
 
-// end include: runtime_exceptions.js
-// include: runtime_debug.js
-// end include: runtime_debug.js
-// Memory management
+// end include: runtime_shared.js
+// include: runtime_stack_check.js
+// end include: runtime_stack_check.js
+var __ATPRERUN__ = [];
+
+// functions called before the runtime is initialized
+var __ATINIT__ = [];
+
+// functions called during shutdown
+var __ATPOSTRUN__ = [];
+
+// functions called after the main() is called
 var runtimeInitialized = false;
 
-// When ALLOW_MEMORY_GROWTH is enabled, the conversion from Wasm
-// memory to ArrayBuffer requires some additional logic.
-function getMemoryBuffer() {
-  return wasmMemory.buffer;
-}
-
-function updateMemoryViews() {
-  // If we already have a heap that is resizeable/growable buffer we don't
-  // need to do anything in updateMemoryViews.
-  if (HEAP8?.buffer?.resizable) return;
-  var b = getMemoryBuffer();
-  HEAP8 = new Int8Array(b);
-  HEAP16 = new Int16Array(b);
-  Module["HEAPU8"] = HEAPU8 = new Uint8Array(b);
-  HEAPU16 = new Uint16Array(b);
-  HEAP32 = new Int32Array(b);
-  Module["HEAPU32"] = HEAPU32 = new Uint32Array(b);
-  HEAPF32 = new Float32Array(b);
-  HEAPF64 = new Float64Array(b);
-  HEAP64 = new BigInt64Array(b);
-  HEAPU64 = new BigUint64Array(b);
-}
-
-// include: memoryprofiler.js
-// end include: memoryprofiler.js
-// end include: runtime_common.js
 function preRun() {
-  var preRun = Module["preRun"];
-  if (preRun) {
-    if (typeof preRun === "function") preRun = [ preRun ];
-    onPreRuns.push(...preRun);
+  if (Module["preRun"]) {
+    if (typeof Module["preRun"] == "function") Module["preRun"] = [ Module["preRun"] ];
+    while (Module["preRun"].length) {
+      addOnPreRun(Module["preRun"].shift());
+    }
   }
-  // Begin ATPRERUNS hooks
-  callRuntimeCallbacks(onPreRuns);
+  callRuntimeCallbacks(__ATPRERUN__);
 }
 
 function initRuntime() {
   runtimeInitialized = true;
-  // Begin ATINITS hooks
   if (!Module["noFSInit"] && !FS.initialized) FS.init();
-  TTY.init();
-  // End ATINITS hooks
-  wasmExports["__wasm_call_ctors"]();
-  // Begin ATPOSTCTORS hooks
   FS.ignorePermissions = false;
+  TTY.init();
+  callRuntimeCallbacks(__ATINIT__);
 }
 
 function postRun() {
-  var postRun = Module["postRun"];
-  if (postRun) {
-    if (typeof postRun === "function") postRun = [ postRun ];
-    onPostRuns.push(...postRun);
+  if (Module["postRun"]) {
+    if (typeof Module["postRun"] == "function") Module["postRun"] = [ Module["postRun"] ];
+    while (Module["postRun"].length) {
+      addOnPostRun(Module["postRun"].shift());
+    }
   }
-  // Begin ATPOSTRUNS hooks
-  callRuntimeCallbacks(onPostRuns);
+  callRuntimeCallbacks(__ATPOSTRUN__);
 }
 
-/**
- * @param {string|number=} what
- */ function abort(what) {
+function addOnPreRun(cb) {
+  __ATPRERUN__.unshift(cb);
+}
+
+function addOnInit(cb) {
+  __ATINIT__.unshift(cb);
+}
+
+function addOnPostRun(cb) {
+  __ATPOSTRUN__.unshift(cb);
+}
+
+// include: runtime_math.js
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/imul
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/fround
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/clz32
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/trunc
+// end include: runtime_math.js
+// A counter of dependencies for calling run(). If we need to
+// do asynchronous work before running, increment this and
+// decrement it. Incrementing must happen in a place like
+// Module.preRun (used by emcc to add file preloading).
+// Note that you can add dependencies in preRun, even though
+// it happens right before run - run will be postponed until
+// the dependencies are met.
+var runDependencies = 0;
+
+var dependenciesFulfilled = null;
+
+// overridden to take different actions when all run dependencies are fulfilled
+function getUniqueRunDependency(id) {
+  return id;
+}
+
+function addRunDependency(id) {
+  runDependencies++;
+  Module["monitorRunDependencies"]?.(runDependencies);
+}
+
+function removeRunDependency(id) {
+  runDependencies--;
+  Module["monitorRunDependencies"]?.(runDependencies);
+  if (runDependencies == 0) {
+    if (dependenciesFulfilled) {
+      var callback = dependenciesFulfilled;
+      dependenciesFulfilled = null;
+      callback();
+    }
+  }
+}
+
+/** @param {string|number=} what */ function abort(what) {
   Module["onAbort"]?.(what);
-  what = `Aborted(${what})`;
+  what = "Aborted(" + what + ")";
   // TODO(sbc): Should we remove printing and leave it up to whoever
   // catches the exception?
   err(what);
@@ -734,21 +867,53 @@ function postRun() {
   // a trap or not based on a hidden field within the object. So at the moment
   // we don't have a way of throwing a wasm trap from JS. TODO Make a JS API that
   // allows this in the wasm spec.
-  throw new WebAssembly.RuntimeError(what);
+  // Suppress closure compiler warning here. Closure compiler's builtin extern
+  // definition for WebAssembly.RuntimeError claims it takes no arguments even
+  // though it can.
+  // TODO(https://github.com/google/closure-compiler/pull/3913): Remove if/when upstream closure gets fixed.
+  /** @suppress {checkTypes} */ var e = new WebAssembly.RuntimeError(what);
+  // Throw the error whether or not MODULARIZE is set because abort is used
+  // in code paths apart from instantiation where an exception is expected
+  // to be thrown when abort is called.
+  throw e;
+}
+
+// include: memoryprofiler.js
+// end include: memoryprofiler.js
+// include: URIUtils.js
+// Prefix of data URIs emitted by SINGLE_FILE and related options.
+var dataURIPrefix = "data:application/octet-stream;base64,";
+
+/**
+ * Indicates whether filename is a base64 data URI.
+ * @noinline
+ */ var isDataURI = filename => filename.startsWith(dataURIPrefix);
+
+/**
+ * Indicates whether filename is delivered via file protocol (as opposed to http/https)
+ * @noinline
+ */ var isFileURI = filename => filename.startsWith("file://");
+
+// end include: URIUtils.js
+// include: runtime_exceptions.js
+// end include: runtime_exceptions.js
+function findWasmBinary() {
+  var f = "hover.wasm";
+  if (!isDataURI(f)) {
+    return locateFile(f);
+  }
+  return f;
 }
 
 var wasmBinaryFile;
 
-function findWasmBinary() {
-  return locateFile("hover.wasm");
-}
-
 function getBinarySync(file) {
+  if (file == wasmBinaryFile && wasmBinary) {
+    return new Uint8Array(wasmBinary);
+  }
   if (readBinary) {
     return readBinary(file);
   }
-  // Throwing a plain string here, even though it not normally advisable since
-  // this gets turning into an `abort` in instantiateArrayBuffer.
   throw "both async and sync fetching of the wasm failed";
 }
 
@@ -757,8 +922,8 @@ async function getWasmBinary(binaryFile) {
   if (!wasmBinary) {
     // Fetch the binary using readAsync
     try {
-      // Await so a rejection is caught and falls back to getBinarySync.
-      return await readAsync(binaryFile);
+      var response = await readAsync(binaryFile);
+      return new Uint8Array(response);
     } catch {}
   }
   // Otherwise, getBinarySync should be able to get it synchronously
@@ -777,7 +942,13 @@ async function instantiateArrayBuffer(binaryFile, imports) {
 }
 
 async function instantiateAsync(binary, binaryFile, imports) {
-  if (!binary && !isFileURI(binaryFile) && !ENVIRONMENT_IS_NODE) {
+  if (!binary && typeof WebAssembly.instantiateStreaming == "function" && !isDataURI(binaryFile) && // Don't use streaming for file:// delivered objects in a webview, fetch them synchronously.
+  !isFileURI(binaryFile) && // Avoid instantiateStreaming() on Node.js environment for now, as while
+  // Node.js v18.1.0 implements it, it does not have a full fetch()
+  // implementation yet.
+  // Reference:
+  //   https://github.com/emscripten-core/emscripten/pull/16917
+  !ENVIRONMENT_IS_NODE && typeof fetch == "function") {
     try {
       var response = fetch(binaryFile, {
         credentials: "same-origin"
@@ -796,11 +967,10 @@ async function instantiateAsync(binary, binaryFile, imports) {
 
 function getWasmImports() {
   // prepare imports
-  var imports = {
+  return {
     "env": wasmImports,
     "wasi_snapshot_preview1": wasmImports
   };
-  return imports;
 }
 
 // Create the wasm instance.
@@ -809,21 +979,26 @@ async function createWasm() {
   // Load the wasm module and create an instance of using native support in the JS engine.
   // handle a generated wasm instance, receiving its exports and
   // performing other necessary setup
-  function receiveInstance(instance) {
+  /** @param {WebAssembly.Module=} module*/ function receiveInstance(instance, module) {
     wasmExports = instance.exports;
     wasmExports = Asyncify.instrumentWasmExports(wasmExports);
     wasmExports = applySignatureConversions(wasmExports);
-    assignWasmExports(wasmExports);
+    wasmMemory = wasmExports["memory"];
     updateMemoryViews();
+    wasmTable = wasmExports["__indirect_function_table"];
+    addOnInit(wasmExports["__wasm_call_ctors"]);
+    removeRunDependency("wasm-instantiate");
     return wasmExports;
   }
+  // wait for the pthread pool (if any)
+  addRunDependency("wasm-instantiate");
   // Prefer streaming instantiation if available.
   function receiveInstantiationResult(result) {
     // 'result' is a ResultObject object which has both the module and instance.
     // receiveInstance() will swap in the exports (to Module.asm) so they can be called
     // TODO: Due to Closure regression https://github.com/google/closure-compiler/issues/3193, the above line no longer optimizes out down to the following line.
     // When the regression is fixed, can restore the above PTHREADS-enabled path.
-    return receiveInstance(result["instance"]);
+    receiveInstance(result["instance"]);
   }
   var info = getWasmImports();
   // User shell pages can write their own Module.instantiateWasm = function(imports, successCallback) callback
@@ -832,20 +1007,44 @@ async function createWasm() {
   // performing.
   // Also pthreads and wasm workers initialize the wasm instance through this
   // path.
-  var instantiateWasm = Module["instantiateWasm"];
-  if (instantiateWasm) {
-    return new Promise(resolve => {
-      instantiateWasm(info, inst => resolve(receiveInstance(inst)));
-    });
+  if (Module["instantiateWasm"]) {
+    try {
+      return Module["instantiateWasm"](info, receiveInstance);
+    } catch (e) {
+      err(`Module.instantiateWasm callback failed with error: ${e}`);
+      return false;
+    }
   }
   wasmBinaryFile ??= findWasmBinary();
   var result = await instantiateAsync(wasmBinary, wasmBinaryFile, info);
-  var exports = receiveInstantiationResult(result);
-  return exports;
+  receiveInstantiationResult(result);
+  return result;
 }
 
+// Globals used by JS i64 conversions (see makeSetValue)
+var tempDouble;
+
+var tempI64;
+
+// include: runtime_debug.js
+// end include: runtime_debug.js
+// === Body ===
+var ASM_CONSTS = {
+  17079956: ($0, $1) => {
+    if (window.HoverWave) HoverWave.write($0, $1);
+  },
+  17080007: ($0, $1) => {
+    if (window.HoverWave) HoverWave.sndPlay($0, $1);
+  },
+  17080060: ($0, $1) => {
+    if (window.HoverMidi) HoverMidi.short($1);
+  },
+  17080107: ($0, $1) => {
+    if (window.HoverMidi) HoverMidi.stream($0, $1);
+  }
+};
+
 // end include: preamble.js
-// Begin JS library code
 class ExitStatus {
   name="ExitStatus";
   constructor(status) {
@@ -854,8 +1053,6 @@ class ExitStatus {
   }
 }
 
-/** @type {!Int8Array} */ var HEAP8;
-
 var callRuntimeCallbacks = callbacks => {
   while (callbacks.length > 0) {
     // Pass the module as the first argument.
@@ -863,42 +1060,120 @@ var callRuntimeCallbacks = callbacks => {
   }
 };
 
-var onPostRuns = [];
-
-var onPreRuns = [];
-
-var dynCalls = {};
-
-var dynCallLegacy = (sig, ptr, args) => {
-  sig = sig.replace(/p/g, "i");
-  var f = dynCalls[sig];
-  return f(ptr, ...args);
-};
-
-var noExitRuntime = true;
+var noExitRuntime = Module["noExitRuntime"] || true;
 
 var stackRestore = val => __emscripten_stack_restore(val);
 
 var stackSave = () => _emscripten_stack_get_current();
 
-const FS_MAX_OPEN_FDS = 4096;
+var exceptionCaught = [];
 
-var FS_createDataFile = (...args) => FS.createDataFile(...args);
+var uncaughtExceptionCount = 0;
 
-var preloadPlugins = [];
+var convertI32PairToI53Checked = (lo, hi) => ((hi + 2097152) >>> 0 < 4194305 - !!lo) ? (lo >>> 0) + hi * 4294967296 : NaN;
 
-var FS_handledByPreloadPlugin = async (byteArray, fullname) => {
-  // Ensure plugins are ready.
-  if (typeof Browser !== "undefined") Browser.init();
-  for (var plugin of preloadPlugins) {
-    if (plugin["canHandle"](fullname)) {
-      return plugin["handle"](byteArray, fullname);
+function ___cxa_begin_catch(ptr) {
+  ptr >>>= 0;
+  var info = new ExceptionInfo(ptr);
+  if (!info.get_caught()) {
+    info.set_caught(true);
+    uncaughtExceptionCount--;
+  }
+  info.set_rethrown(false);
+  exceptionCaught.push(info);
+  ___cxa_increment_exception_refcount(ptr);
+  return ___cxa_get_exception_ptr(ptr);
+}
+
+var exceptionLast = 0;
+
+class ExceptionInfo {
+  // excPtr - Thrown object pointer to wrap. Metadata pointer is calculated from it.
+  constructor(excPtr) {
+    this.excPtr = excPtr;
+    this.ptr = excPtr - 24;
+  }
+  set_type(type) {
+    HEAPU32[(((this.ptr) + (4)) >>> 2) >>> 0] = type;
+  }
+  get_type() {
+    return HEAPU32[(((this.ptr) + (4)) >>> 2) >>> 0];
+  }
+  set_destructor(destructor) {
+    HEAPU32[(((this.ptr) + (8)) >>> 2) >>> 0] = destructor;
+  }
+  get_destructor() {
+    return HEAPU32[(((this.ptr) + (8)) >>> 2) >>> 0];
+  }
+  set_caught(caught) {
+    caught = caught ? 1 : 0;
+    HEAP8[(this.ptr) + (12) >>> 0] = caught;
+  }
+  get_caught() {
+    return HEAP8[(this.ptr) + (12) >>> 0] != 0;
+  }
+  set_rethrown(rethrown) {
+    rethrown = rethrown ? 1 : 0;
+    HEAP8[(this.ptr) + (13) >>> 0] = rethrown;
+  }
+  get_rethrown() {
+    return HEAP8[(this.ptr) + (13) >>> 0] != 0;
+  }
+  // Initialize native structure fields. Should be called once after allocated.
+  init(type, destructor) {
+    this.set_adjusted_ptr(0);
+    this.set_type(type);
+    this.set_destructor(destructor);
+  }
+  set_adjusted_ptr(adjustedPtr) {
+    HEAPU32[(((this.ptr) + (16)) >>> 2) >>> 0] = adjustedPtr;
+  }
+  get_adjusted_ptr() {
+    return HEAPU32[(((this.ptr) + (16)) >>> 2) >>> 0];
+  }
+}
+
+var setTempRet0 = val => __emscripten_tempret_set(val);
+
+var findMatchingCatch = args => {
+  var thrown = exceptionLast;
+  if (!thrown) {
+    // just pass through the null ptr
+    setTempRet0(0);
+    return 0;
+  }
+  var info = new ExceptionInfo(thrown);
+  info.set_adjusted_ptr(thrown);
+  var thrownType = info.get_type();
+  if (!thrownType) {
+    // just pass through the thrown ptr
+    setTempRet0(0);
+    return thrown;
+  }
+  // can_catch receives a **, add indirection
+  // The different catch blocks are denoted by different types.
+  // Due to inheritance, those types may not precisely match the
+  // type of the thrown object. Find one which matches, and
+  // return the type of the catch block which should be called.
+  for (var caughtType of args) {
+    if (caughtType === 0 || caughtType === thrownType) {
+      // Catch all clause matched or exactly the same type is caught
+      break;
+    }
+    var adjusted_ptr_addr = info.ptr + 16;
+    if (___cxa_can_catch(caughtType, thrownType, adjusted_ptr_addr)) {
+      setTempRet0(caughtType);
+      return thrown;
     }
   }
-  // If no plugin handled this file then return the original/unmodified
-  // byteArray.
-  return byteArray;
+  setTempRet0(thrownType);
+  return thrown;
 };
+
+function ___cxa_find_matching_catch_3(arg0) {
+  arg0 >>>= 0;
+  return findMatchingCatch([ arg0 ]);
+}
 
 var PATH = {
   isAbs: path => path.charAt(0) === "/",
@@ -930,7 +1205,7 @@ var PATH = {
     return parts;
   },
   normalize: path => {
-    var isAbsolute = PATH.isAbs(path), trailingSlash = path.slice(-1) === "/";
+    var isAbsolute = PATH.isAbs(path), trailingSlash = path.substr(-1) === "/";
     // Normalize the path
     path = PATH.normalizeArray(path.split("/").filter(p => !!p), !isAbsolute).join("/");
     if (!path && !isAbsolute) {
@@ -949,14 +1224,47 @@ var PATH = {
     }
     if (dir) {
       // It has a dirname, strip trailing slash
-      dir = dir.slice(0, -1);
+      dir = dir.substr(0, dir.length - 1);
     }
     return root + dir;
   },
-  basename: path => path && path.match(/([^\/]+|\/)\/*$/)[1],
+  basename: path => {
+    // EMSCRIPTEN return '/'' for '/', not an empty string
+    if (path === "/") return "/";
+    path = PATH.normalize(path);
+    path = path.replace(/\/$/, "");
+    var lastSlash = path.lastIndexOf("/");
+    if (lastSlash === -1) return path;
+    return path.substr(lastSlash + 1);
+  },
   join: (...paths) => PATH.normalize(paths.join("/")),
   join2: (l, r) => PATH.normalize(l + "/" + r)
 };
+
+var initRandomFill = () => {
+  if (typeof crypto == "object" && typeof crypto["getRandomValues"] == "function") {
+    // for modern web browsers
+    return view => crypto.getRandomValues(view);
+  } else if (ENVIRONMENT_IS_NODE) {
+    // for nodejs with or without crypto support included
+    try {
+      var crypto_module = require("crypto");
+      var randomFillSync = crypto_module["randomFillSync"];
+      if (randomFillSync) {
+        // nodejs with LTS crypto support
+        return view => crypto_module["randomFillSync"](view);
+      }
+      // very old nodejs with the original crypto API
+      var randomBytes = crypto_module["randomBytes"];
+      return view => (view.set(randomBytes(view.byteLength)), // Return the original view to match modern native implementations.
+      view);
+    } catch (e) {}
+  }
+  // we couldn't find a proper implementation, as Math.random() is not suitable for /dev/random, see emscripten-core/emscripten/pull/7096
+  abort("initRandomDevice");
+};
+
+var randomFill = view => (randomFill = initRandomFill())(view);
 
 var PATH_FS = {
   resolve: (...args) => {
@@ -964,11 +1272,12 @@ var PATH_FS = {
     for (var i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
       var path = (i >= 0) ? args[i] : FS.cwd();
       // Skip empty and invalid entries
-      if (typeof path !== "string") {
+      if (typeof path != "string") {
         throw new TypeError("Arguments to path.resolve must be strings");
       } else if (!path) {
         return "";
       }
+      // an invalid portion invalidates the whole thing
       resolvedPath = path + "/" + resolvedPath;
       resolvedAbsolute = PATH.isAbs(path);
     }
@@ -978,8 +1287,8 @@ var PATH_FS = {
     return ((resolvedAbsolute ? "/" : "") + resolvedPath) || ".";
   },
   relative: (from, to) => {
-    from = PATH_FS.resolve(from).slice(1);
-    to = PATH_FS.resolve(to).slice(1);
+    from = PATH_FS.resolve(from).substr(1);
+    to = PATH_FS.resolve(to).substr(1);
     function trim(arr) {
       var start = 0;
       for (;start < arr.length; start++) {
@@ -1011,78 +1320,83 @@ var PATH_FS = {
   }
 };
 
-var dependenciesPromise = null;
+var UTF8Decoder = typeof TextDecoder != "undefined" ? new TextDecoder : undefined;
 
-var dependenciesPromiseResolve = null;
-
-var resolveRunDependencies = async () => dependenciesPromise;
-
-var runDependencies = 0;
-
-var removeRunDependency = id => {
-  runDependencies--;
-  Module["monitorRunDependencies"]?.(runDependencies);
-  if (!runDependencies) {
-    dependenciesPromiseResolve();
+/**
+     * Given a pointer 'idx' to a null-terminated UTF8-encoded string in the given
+     * array that contains uint8 values, returns a copy of that string as a
+     * Javascript String object.
+     * heapOrArray is either a regular array, or a JavaScript typed array view.
+     * @param {number=} idx
+     * @param {number=} maxBytesToRead
+     * @return {string}
+     */ var UTF8ArrayToString = (heapOrArray, idx = 0, maxBytesToRead = NaN) => {
+  idx >>>= 0;
+  var endIdx = idx + maxBytesToRead;
+  var endPtr = idx;
+  // TextDecoder needs to know the byte length in advance, it doesn't stop on
+  // null terminator by itself.  Also, use the length info to avoid running tiny
+  // strings through TextDecoder, since .subarray() allocates garbage.
+  // (As a tiny code save trick, compare endPtr against endIdx using a negation,
+  // so that undefined/NaN means Infinity)
+  while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr;
+  if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
+    return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr));
   }
-};
-
-var addRunDependency = id => {
-  if (!runDependencies) {
-    dependenciesPromise = new Promise(resolve => dependenciesPromiseResolve = resolve);
-  }
-  runDependencies++;
-  Module["monitorRunDependencies"]?.(runDependencies);
-};
-
-var asyncLoad = async url => {
-  var arrayBuffer = await readAsync(url);
-  return new Uint8Array(arrayBuffer);
-};
-
-var getUniqueRunDependency = id => id;
-
-var FS_preloadFile = async (parent, name, url, canRead = undefined, canWrite = undefined, dontCreateFile = undefined, canOwn = undefined, preFinish = undefined) => {
-  // TODO we should allow people to just pass in a complete filename instead
-  // of parent and name being that we just join them anyways
-  var fullname = name ? PATH_FS.resolve(PATH.join2(parent, name)) : parent;
-  var dep = getUniqueRunDependency(`cp ${fullname}`);
-  // might have several active requests for the same fullname
-  addRunDependency(dep);
-  try {
-    var byteArray = url;
-    if (typeof url === "string") {
-      byteArray = await asyncLoad(url);
+  var str = "";
+  // If building with TextDecoder, we have already computed the string length
+  // above, so test loop end condition against that
+  while (idx < endPtr) {
+    // For UTF8 byte structure, see:
+    // http://en.wikipedia.org/wiki/UTF-8#Description
+    // https://www.ietf.org/rfc/rfc2279.txt
+    // https://tools.ietf.org/html/rfc3629
+    var u0 = heapOrArray[idx++];
+    if (!(u0 & 128)) {
+      str += String.fromCharCode(u0);
+      continue;
     }
-    byteArray = await FS_handledByPreloadPlugin(byteArray, fullname);
-    preFinish?.();
-    if (!dontCreateFile) {
-      FS_createDataFile(parent, name, byteArray, canRead, canWrite, canOwn);
+    var u1 = heapOrArray[idx++] & 63;
+    if ((u0 & 224) == 192) {
+      str += String.fromCharCode(((u0 & 31) << 6) | u1);
+      continue;
     }
-  } finally {
-    removeRunDependency(dep);
+    var u2 = heapOrArray[idx++] & 63;
+    if ((u0 & 240) == 224) {
+      u0 = ((u0 & 15) << 12) | (u1 << 6) | u2;
+    } else {
+      u0 = ((u0 & 7) << 18) | (u1 << 12) | (u2 << 6) | (heapOrArray[idx++] & 63);
+    }
+    if (u0 < 65536) {
+      str += String.fromCharCode(u0);
+    } else {
+      var ch = u0 - 65536;
+      str += String.fromCharCode(55296 | (ch >> 10), 56320 | (ch & 1023));
+    }
   }
+  return str;
 };
 
-var FS_createPreloadedFile = (parent, name, url, canRead = undefined, canWrite = undefined, onload = undefined, onerror = undefined, dontCreateFile = undefined, canOwn = undefined, preFinish = undefined) => {
-  FS_preloadFile(parent, name, url, canRead, canWrite, dontCreateFile, canOwn, preFinish).then(onload).catch(onerror);
-};
+var FS_stdin_getChar_buffer = [];
 
 var lengthBytesUTF8 = str => {
   var len = 0;
   for (var i = 0; i < str.length; ++i) {
-    var u = str.codePointAt(i);
-    if (u <= 127) {
+    // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code
+    // unit, not a Unicode code point of the character! So decode
+    // UTF16->UTF32->UTF8.
+    // See http://unicode.org/faq/utf_bom.html#utf16-3
+    var c = str.charCodeAt(i);
+    // possibly a lead surrogate
+    if (c <= 127) {
       len++;
-    } else if (u <= 2047) {
+    } else if (c <= 2047) {
       len += 2;
-    } else if (u <= 65535) {
-      len += 3;
-    } else {
+    } else if (c >= 55296 && c <= 57343) {
       len += 4;
-      // Gotcha: if codePoint is over 0xFFFF, it is represented as a surrogate pair in UTF-16.
-      // We need to manually skip over the second code unit for correct iteration.
-      i++;
+      ++i;
+    } else {
+      len += 3;
     }
   }
   return len;
@@ -1097,10 +1411,19 @@ var stringToUTF8Array = (str, heap, outIdx, maxBytesToWrite) => {
   var endIdx = outIdx + maxBytesToWrite - 1;
   // -1 for string null terminator.
   for (var i = 0; i < str.length; ++i) {
+    // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code
+    // unit, not a Unicode code point of the character! So decode
+    // UTF16->UTF32->UTF8.
+    // See http://unicode.org/faq/utf_bom.html#utf16-3
     // For UTF8 byte structure, see http://en.wikipedia.org/wiki/UTF-8#Description
     // and https://www.ietf.org/rfc/rfc2279.txt
     // and https://tools.ietf.org/html/rfc3629
-    var u = str.codePointAt(i);
+    var u = str.charCodeAt(i);
+    // possibly a lead surrogate
+    if (u >= 55296 && u <= 57343) {
+      var u1 = str.charCodeAt(++i);
+      u = 65536 + ((u & 1023) << 10) | (u1 & 1023);
+    }
     if (u <= 127) {
       if (outIdx >= endIdx) break;
       heap[outIdx++ >>> 0] = u;
@@ -1119,9 +1442,6 @@ var stringToUTF8Array = (str, heap, outIdx, maxBytesToWrite) => {
       heap[outIdx++ >>> 0] = 128 | ((u >> 12) & 63);
       heap[outIdx++ >>> 0] = 128 | ((u >> 6) & 63);
       heap[outIdx++ >>> 0] = 128 | (u & 63);
-      // Gotcha: if codePoint is over 0xFFFF, it is represented as a surrogate pair in UTF-16.
-      // We need to manually skip over the second code unit for correct iteration.
-      i++;
     }
   }
   // Null-terminate the pointer to the buffer.
@@ -1129,53 +1449,202 @@ var stringToUTF8Array = (str, heap, outIdx, maxBytesToWrite) => {
   return outIdx - startIdx;
 };
 
-/** @type {function(string, boolean=, number=)} */ var intArrayFromString = (stringy, dontAddNull, length) => {
+/** @type {function(string, boolean=, number=)} */ function intArrayFromString(stringy, dontAddNull, length) {
   var len = length > 0 ? length : lengthBytesUTF8(stringy) + 1;
   var u8array = new Array(len);
   var numBytesWritten = stringToUTF8Array(stringy, u8array, 0, u8array.length);
   if (dontAddNull) u8array.length = numBytesWritten;
   return u8array;
+}
+
+var FS_stdin_getChar = () => {
+  if (!FS_stdin_getChar_buffer.length) {
+    var result = null;
+    if (ENVIRONMENT_IS_NODE) {
+      // we will read data by chunks of BUFSIZE
+      var BUFSIZE = 256;
+      var buf = Buffer.alloc(BUFSIZE);
+      var bytesRead = 0;
+      // For some reason we must suppress a closure warning here, even though
+      // fd definitely exists on process.stdin, and is even the proper way to
+      // get the fd of stdin,
+      // https://github.com/nodejs/help/issues/2136#issuecomment-523649904
+      // This started to happen after moving this logic out of library_tty.js,
+      // so it is related to the surrounding code in some unclear manner.
+      /** @suppress {missingProperties} */ var fd = process.stdin.fd;
+      try {
+        bytesRead = fs.readSync(fd, buf, 0, BUFSIZE);
+      } catch (e) {
+        // Cross-platform differences: on Windows, reading EOF throws an
+        // exception, but on other OSes, reading EOF returns 0. Uniformize
+        // behavior by treating the EOF exception to return 0.
+        if (e.toString().includes("EOF")) bytesRead = 0; else throw e;
+      }
+      if (bytesRead > 0) {
+        result = buf.slice(0, bytesRead).toString("utf-8");
+      }
+    } else if (typeof window != "undefined" && typeof window.prompt == "function") {
+      // Browser.
+      result = window.prompt("Input: ");
+      // returns null on cancel
+      if (result !== null) {
+        result += "\n";
+      }
+    } else {}
+    if (!result) {
+      return null;
+    }
+    FS_stdin_getChar_buffer = intArrayFromString(result, true);
+  }
+  return FS_stdin_getChar_buffer.shift();
 };
 
-var FS_fileDataToTypedArray = data => {
-  if (typeof data === "string") {
-    data = intArrayFromString(data, true);
+var TTY = {
+  ttys: [],
+  init() {},
+  // https://github.com/emscripten-core/emscripten/pull/1555
+  // if (ENVIRONMENT_IS_NODE) {
+  //   // currently, FS.init does not distinguish if process.stdin is a file or TTY
+  //   // device, it always assumes it's a TTY device. because of this, we're forcing
+  //   // process.stdin to UTF8 encoding to at least make stdin reading compatible
+  //   // with text files until FS.init can be refactored.
+  //   process.stdin.setEncoding('utf8');
+  // }
+  shutdown() {},
+  // https://github.com/emscripten-core/emscripten/pull/1555
+  // if (ENVIRONMENT_IS_NODE) {
+  //   // inolen: any idea as to why node -e 'process.stdin.read()' wouldn't exit immediately (with process.stdin being a tty)?
+  //   // isaacs: because now it's reading from the stream, you've expressed interest in it, so that read() kicks off a _read() which creates a ReadReq operation
+  //   // inolen: I thought read() in that case was a synchronous operation that just grabbed some amount of buffered data if it exists?
+  //   // isaacs: it is. but it also triggers a _read() call, which calls readStart() on the handle
+  //   // isaacs: do process.stdin.pause() and i'd think it'd probably close the pending call
+  //   process.stdin.pause();
+  // }
+  register(dev, ops) {
+    TTY.ttys[dev] = {
+      input: [],
+      output: [],
+      ops
+    };
+    FS.registerDevice(dev, TTY.stream_ops);
+  },
+  stream_ops: {
+    open(stream) {
+      var tty = TTY.ttys[stream.node.rdev];
+      if (!tty) {
+        throw new FS.ErrnoError(43);
+      }
+      stream.tty = tty;
+      stream.seekable = false;
+    },
+    close(stream) {
+      // flush any pending line data
+      stream.tty.ops.fsync(stream.tty);
+    },
+    fsync(stream) {
+      stream.tty.ops.fsync(stream.tty);
+    },
+    read(stream, buffer, offset, length, pos) {
+      /* ignored */ if (!stream.tty || !stream.tty.ops.get_char) {
+        throw new FS.ErrnoError(60);
+      }
+      var bytesRead = 0;
+      for (var i = 0; i < length; i++) {
+        var result;
+        try {
+          result = stream.tty.ops.get_char(stream.tty);
+        } catch (e) {
+          throw new FS.ErrnoError(29);
+        }
+        if (result === undefined && bytesRead === 0) {
+          throw new FS.ErrnoError(6);
+        }
+        if (result === null || result === undefined) break;
+        bytesRead++;
+        buffer[offset + i] = result;
+      }
+      if (bytesRead) {
+        stream.node.atime = Date.now();
+      }
+      return bytesRead;
+    },
+    write(stream, buffer, offset, length, pos) {
+      if (!stream.tty || !stream.tty.ops.put_char) {
+        throw new FS.ErrnoError(60);
+      }
+      try {
+        for (var i = 0; i < length; i++) {
+          stream.tty.ops.put_char(stream.tty, buffer[offset + i]);
+        }
+      } catch (e) {
+        throw new FS.ErrnoError(29);
+      }
+      if (length) {
+        stream.node.mtime = stream.node.ctime = Date.now();
+      }
+      return i;
+    }
+  },
+  default_tty_ops: {
+    get_char(tty) {
+      return FS_stdin_getChar();
+    },
+    put_char(tty, val) {
+      if (val === null || val === 10) {
+        out(UTF8ArrayToString(tty.output));
+        tty.output = [];
+      } else {
+        if (val != 0) tty.output.push(val);
+      }
+    },
+    // val == 0 would cut text output off in the middle.
+    fsync(tty) {
+      if (tty.output && tty.output.length > 0) {
+        out(UTF8ArrayToString(tty.output));
+        tty.output = [];
+      }
+    },
+    ioctl_tcgets(tty) {
+      // typical setting
+      return {
+        c_iflag: 25856,
+        c_oflag: 5,
+        c_cflag: 191,
+        c_lflag: 35387,
+        c_cc: [ 3, 28, 127, 21, 4, 0, 1, 0, 17, 19, 26, 0, 18, 15, 23, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+      };
+    },
+    ioctl_tcsets(tty, optional_actions, data) {
+      // currently just ignore
+      return 0;
+    },
+    ioctl_tiocgwinsz(tty) {
+      return [ 24, 80 ];
+    }
+  },
+  default_tty1_ops: {
+    put_char(tty, val) {
+      if (val === null || val === 10) {
+        err(UTF8ArrayToString(tty.output));
+        tty.output = [];
+      } else {
+        if (val != 0) tty.output.push(val);
+      }
+    },
+    fsync(tty) {
+      if (tty.output && tty.output.length > 0) {
+        err(UTF8ArrayToString(tty.output));
+        tty.output = [];
+      }
+    }
   }
-  if (!data.subarray) {
-    data = new Uint8Array(data);
-  }
-  return data;
 };
 
-var FS_getMode = (canRead, canWrite) => {
-  var mode = 0;
-  if (canRead) mode |= 292 | 73;
-  if (canWrite) mode |= 146;
-  return mode;
-};
-
-var FS_modeStringToFlags = str => {
-  if (typeof str !== "string") return str;
-  var flagModes = {
-    "r": 0,
-    "r+": 2,
-    "w": 512 | 64 | 1,
-    "w+": 512 | 64 | 2,
-    "a": 1024 | 64 | 1,
-    "a+": 1024 | 64 | 2
-  };
-  var flags = flagModes[str];
-  if (typeof flags === "undefined") {
-    throw new Error(`Unknown file open mode: ${str}`);
-  }
-  return flags;
+var zeroMemory = (address, size) => {
+  HEAPU8.fill(0, address, address + size);
 };
 
 var alignMemory = (size, alignment) => Math.ceil(size / alignment) * alignment;
-
-/** @type {!Uint8Array} */ var HEAPU8;
-
-var zeroMemory = (ptr, size) => HEAPU8.fill(0, ptr, ptr + size);
 
 var mmapAlloc = size => {
   size = alignMemory(size, 65536);
@@ -1189,9 +1658,9 @@ var MEMFS = {
   mount(mount) {
     return MEMFS.createNode(null, "/", 16895, 0);
   },
-  createNode(parent, name, mode, dev = undefined) {
+  createNode(parent, name, mode, dev) {
     if (FS.isBlkdev(mode) || FS.isFIFO(mode)) {
-      // not supported
+      // no supported
       throw new FS.ErrnoError(63);
     }
     MEMFS.ops_table ||= {
@@ -1220,6 +1689,7 @@ var MEMFS = {
           llseek: MEMFS.stream_ops.llseek,
           read: MEMFS.stream_ops.read,
           write: MEMFS.stream_ops.write,
+          allocate: MEMFS.stream_ops.allocate,
           mmap: MEMFS.stream_ops.mmap,
           msync: MEMFS.stream_ops.msync
         }
@@ -1248,14 +1718,12 @@ var MEMFS = {
     } else if (FS.isFile(node.mode)) {
       node.node_ops = MEMFS.ops_table.file.node;
       node.stream_ops = MEMFS.ops_table.file.stream;
-      // The actual number of bytes used in the typed array, as opposed to
-      // contents.length which gives the whole capacity.
       node.usedBytes = 0;
-      // The byte data of the file is stored in a typed array.
-      // Note: typed arrays are not resizable like normal JS arrays are, so
-      // there is a small penalty involved for appending file writes that
-      // continuously grow a file similar to std::vector capacity vs used.
-      node.contents = MEMFS.emptyFileContents ??= new Uint8Array(0);
+      // The actual number of bytes used in the typed array, as opposed to contents.length which gives the whole capacity.
+      // When the byte data of the file is populated, this will point to either a typed array, or a normal JS array. Typed arrays are preferred
+      // for performance, and used by default. However, typed arrays are not resizable like normal JS arrays are, so there is a small disk size
+      // penalty involved for appending file writes that continuously grow a file similar to std::vector capacity vs used -scheme.
+      node.contents = null;
     } else if (FS.isLink(node.mode)) {
       node.node_ops = MEMFS.ops_table.link.node;
       node.stream_ops = MEMFS.ops_table.link.stream;
@@ -1272,34 +1740,44 @@ var MEMFS = {
     return node;
   },
   getFileDataAsTypedArray(node) {
-    return node.contents.subarray(0, node.usedBytes);
+    if (!node.contents) return new Uint8Array(0);
+    if (node.contents.subarray) return node.contents.subarray(0, node.usedBytes);
+    // Make sure to not return excess unused bytes.
+    return new Uint8Array(node.contents);
   },
   expandFileStorage(node, newCapacity) {
-    var prevCapacity = node.contents.length;
+    var prevCapacity = node.contents ? node.contents.length : 0;
     if (prevCapacity >= newCapacity) return;
     // No need to expand, the storage was already large enough.
-    // Don't expand strictly to the given requested limit if it's only a very
-    // small increase, but instead geometrically grow capacity.
-    // For small filesizes (<1MB), perform size*2 geometric increase, but for
-    // large sizes, do a much more conservative size*1.125 increase to avoid
-    // overshooting the allocation cap by a very large margin.
-    const CAPACITY_DOUBLING_MAX = 1024 * 1024;
+    // Don't expand strictly to the given requested limit if it's only a very small increase, but instead geometrically grow capacity.
+    // For small filesizes (<1MB), perform size*2 geometric increase, but for large sizes, do a much more conservative size*1.125 increase to
+    // avoid overshooting the allocation cap by a very large margin.
+    var CAPACITY_DOUBLING_MAX = 1024 * 1024;
     newCapacity = Math.max(newCapacity, (prevCapacity * (prevCapacity < CAPACITY_DOUBLING_MAX ? 2 : 1.125)) >>> 0);
-    if (prevCapacity) newCapacity = Math.max(newCapacity, 256);
+    if (prevCapacity != 0) newCapacity = Math.max(newCapacity, 256);
     // At minimum allocate 256b for each file when expanding.
-    var oldContents = MEMFS.getFileDataAsTypedArray(node);
+    var oldContents = node.contents;
     node.contents = new Uint8Array(newCapacity);
     // Allocate new storage.
-    node.contents.set(oldContents);
+    if (node.usedBytes > 0) node.contents.set(oldContents.subarray(0, node.usedBytes), 0);
   },
+  // Copy old data over to the new storage.
   resizeFileStorage(node, newSize) {
     if (node.usedBytes == newSize) return;
-    var oldContents = node.contents;
-    node.contents = new Uint8Array(newSize);
-    // Allocate new storage.
-    node.contents.set(oldContents.subarray(0, Math.min(newSize, node.usedBytes)));
-    // Copy old data over to the new storage.
-    node.usedBytes = newSize;
+    if (newSize == 0) {
+      node.contents = null;
+      // Fully decommit when requesting a resize to zero.
+      node.usedBytes = 0;
+    } else {
+      var oldContents = node.contents;
+      node.contents = new Uint8Array(newSize);
+      // Allocate new storage.
+      if (oldContents) {
+        node.contents.set(oldContents.subarray(0, Math.min(newSize, node.usedBytes)));
+      }
+      // Copy old data over to the new storage.
+      node.usedBytes = newSize;
+    }
   },
   node_ops: {
     getattr(node) {
@@ -1332,7 +1810,7 @@ var MEMFS = {
     },
     setattr(node, attr) {
       for (const key of [ "mode", "atime", "mtime", "ctime" ]) {
-        if (attr[key] != null) {
+        if (attr[key]) {
           node[key] = attr[key];
         }
       }
@@ -1341,15 +1819,9 @@ var MEMFS = {
       }
     },
     lookup(parent, name) {
-      // This error may happen quite a bit. To avoid overhead we reuse it (and
-      // suffer a lack of stack info).
-      if (!MEMFS.doesNotExistError) {
-        MEMFS.doesNotExistError = new FS.ErrnoError(44);
-        /** @suppress {checkTypes} */ MEMFS.doesNotExistError.stack = "<generic error, no stack>";
-      }
       throw MEMFS.doesNotExistError;
     },
-    mknod(parent, name, mode, dev = undefined) {
+    mknod(parent, name, mode, dev) {
       return MEMFS.createNode(parent, name, mode, dev);
     },
     rename(old_node, new_dir, new_name) {
@@ -1357,11 +1829,14 @@ var MEMFS = {
       try {
         new_node = FS.lookupNode(new_dir, new_name);
       } catch (e) {}
-      if (new_node && FS.isDir(old_node.mode)) {
-        // if we're overwriting a directory at new_name, make sure it's empty.
-        for (var i in new_node.contents) {
-          throw new FS.ErrnoError(55);
+      if (new_node) {
+        if (FS.isDir(old_node.mode)) {
+          // if we're overwriting a directory at new_name, make sure it's empty.
+          for (var i in new_node.contents) {
+            throw new FS.ErrnoError(55);
+          }
         }
+        FS.hashRemoveNode(new_node);
       }
       // do the internal rewiring
       delete old_node.parent.contents[old_node.name];
@@ -1401,33 +1876,53 @@ var MEMFS = {
       var contents = stream.node.contents;
       if (position >= stream.node.usedBytes) return 0;
       var size = Math.min(stream.node.usedBytes - position, length);
-      buffer.set(contents.subarray(position, position + size), offset);
+      if (size > 8 && contents.subarray) {
+        // non-trivial, and typed array
+        buffer.set(contents.subarray(position, position + size), offset);
+      } else {
+        for (var i = 0; i < size; i++) buffer[offset + i] = contents[position + i];
+      }
       return size;
     },
     write(stream, buffer, offset, length, position, canOwn) {
       // If the buffer is located in main memory (HEAP), and if
       // memory can grow, we can't hold on to references of the
       // memory buffer, as they may get invalidated. That means we
-      // need to copy its contents.
+      // need to do copy its contents.
       if (buffer.buffer === HEAP8.buffer) {
         canOwn = false;
       }
       if (!length) return 0;
       var node = stream.node;
       node.mtime = node.ctime = Date.now();
-      if (canOwn) {
-        node.contents = buffer.subarray(offset, offset + length);
-        node.usedBytes = length;
-      } else if (!node.usedBytes && !position) {
-        // If this is a simple first write to an empty file, do a fast set since we don't need to care about old data.
-        node.contents = buffer.slice(offset, offset + length);
-        node.usedBytes = length;
-      } else {
-        MEMFS.expandFileStorage(node, position + length);
+      if (buffer.subarray && (!node.contents || node.contents.subarray)) {
+        // This write is from a typed array to a typed array?
+        if (canOwn) {
+          node.contents = buffer.subarray(offset, offset + length);
+          node.usedBytes = length;
+          return length;
+        } else if (node.usedBytes === 0 && position === 0) {
+          // If this is a simple first write to an empty file, do a fast set since we don't need to care about old data.
+          node.contents = buffer.slice(offset, offset + length);
+          node.usedBytes = length;
+          return length;
+        } else if (position + length <= node.usedBytes) {
+          // Writing to an already allocated and used subrange of the file?
+          node.contents.set(buffer.subarray(offset, offset + length), position);
+          return length;
+        }
+      }
+      // Appending to an existing file and we need to reallocate, or source data did not come as a typed array.
+      MEMFS.expandFileStorage(node, position + length);
+      if (node.contents.subarray && buffer.subarray) {
         // Use typed array write which is available.
         node.contents.set(buffer.subarray(offset, offset + length), position);
-        node.usedBytes = Math.max(node.usedBytes, position + length);
+      } else {
+        for (var i = 0; i < length; i++) {
+          node.contents[position + i] = buffer[offset + i];
+        }
       }
+      node.usedBytes = Math.max(node.usedBytes, position + length);
       return length;
     },
     llseek(stream, offset, whence) {
@@ -1444,6 +1939,10 @@ var MEMFS = {
       }
       return position;
     },
+    allocate(stream, offset, length) {
+      MEMFS.expandFileStorage(stream.node, offset + length);
+      stream.node.usedBytes = Math.max(stream.node.usedBytes, offset + length);
+    },
     mmap(stream, length, position, prot, flags) {
       if (!FS.isFile(stream.node.mode)) {
         throw new FS.ErrnoError(43);
@@ -1452,7 +1951,7 @@ var MEMFS = {
       var allocated;
       var contents = stream.node.contents;
       // Only make a new copy when MAP_PRIVATE is specified.
-      if (!(flags & 2) && contents.buffer === HEAP8.buffer) {
+      if (!(flags & 2) && contents && contents.buffer === HEAP8.buffer) {
         // We can't emulate MAP_SHARED when the file is not backed by the
         // buffer we're mapping to (e.g. the HEAP buffer).
         allocated = false;
@@ -1469,7 +1968,7 @@ var MEMFS = {
             if (contents.subarray) {
               contents = contents.subarray(position, position + length);
             } else {
-              contents = contents.slice(position, position + length);
+              contents = Array.prototype.slice.call(contents, position, position + length);
             }
           }
           HEAP8.set(contents, ptr >>> 0);
@@ -1488,246 +1987,86 @@ var MEMFS = {
   }
 };
 
-var FS_stdin_getChar_buffer = [];
-
-var FS_stdin_getChar = () => {
-  if (!FS_stdin_getChar_buffer.length) {
-    var result = null;
-    if (ENVIRONMENT_IS_NODE) {
-      // we will read data by chunks of BUFSIZE
-      var BUFSIZE = 256;
-      var buf = Buffer.alloc(BUFSIZE);
-      var bytesRead = 0;
-      try {
-        bytesRead = fs.readSync(process.stdin.fd, buf, 0, BUFSIZE);
-      } catch (e) {
-        // Cross-platform differences: on Windows, reading EOF throws an
-        // exception, but on other OSes, reading EOF returns 0. Uniformize
-        // behavior by treating the EOF exception to return 0.
-        if (e.toString().includes("EOF")) bytesRead = 0; else throw e;
-      }
-      if (bytesRead > 0) {
-        result = buf.toString("utf-8", 0, bytesRead);
-      }
-    } else if (globalThis.window?.prompt) {
-      // Browser.
-      result = window.prompt("Input: ");
-      // returns null on cancel
-      if (result !== null) {
-        result += "\n";
-      }
-    } else {}
-    if (!result) {
-      return null;
-    }
-    FS_stdin_getChar_buffer = intArrayFromString(result, true);
-  }
-  return FS_stdin_getChar_buffer.shift();
+var asyncLoad = async url => {
+  var arrayBuffer = await readAsync(url);
+  return new Uint8Array(arrayBuffer);
 };
 
-var UTF8Decoder = globalThis.TextDecoder && new TextDecoder;
+asyncLoad.isAsync = true;
 
-/**
-   * heapOrArray is either a regular array, or a JavaScript typed array view.
-   * @param {number} idx
-   * @param {number=} maxBytesToRead
-   * @param {boolean=} ignoreNul
-   * @return {number}
-   */ var findStringEnd = (heapOrArray, idx, maxBytesToRead, ignoreNul) => {
-  var maxIdx = idx + maxBytesToRead;
-  if (ignoreNul) return maxIdx;
-  // TextDecoder needs to know the byte length in advance, it doesn't stop on
-  // null terminator by itself.
-  // As a tiny code save trick, compare idx against maxIdx using a negation,
-  // so that maxBytesToRead=undefined/NaN means Infinity.
-  while (heapOrArray[idx] && !(idx >= maxIdx)) ++idx;
-  return idx;
+var FS_createDataFile = (parent, name, fileData, canRead, canWrite, canOwn) => {
+  FS.createDataFile(parent, name, fileData, canRead, canWrite, canOwn);
 };
 
-/**
-   * Given a pointer 'idx' to a null-terminated UTF8-encoded string in the given
-   * array that contains uint8 values, returns a copy of that string as a
-   * Javascript String object.
-   * heapOrArray is either a regular array, or a JavaScript typed array view.
-   * @param {number=} idx
-   * @param {number=} maxBytesToRead
-   * @param {boolean=} ignoreNul - If true, the function will not stop on a NUL character.
-   * @return {string}
-   */ var UTF8ArrayToString = (heapOrArray, idx = 0, maxBytesToRead, ignoreNul) => {
-  idx >>>= 0;
-  var endPtr = findStringEnd(heapOrArray, idx, maxBytesToRead, ignoreNul);
-  // When using conditional TextDecoder, skip it for short strings as the overhead of the native call is not worth it.
-  if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
-    return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr));
-  }
-  var str = "";
-  while (idx < endPtr) {
-    // For UTF8 byte structure, see:
-    // http://en.wikipedia.org/wiki/UTF-8#Description
-    // https://www.ietf.org/rfc/rfc2279.txt
-    // https://tools.ietf.org/html/rfc3629
-    var u0 = heapOrArray[idx++];
-    if (!(u0 & 128)) {
-      str += String.fromCharCode(u0);
-      continue;
+var preloadPlugins = Module["preloadPlugins"] || [];
+
+var FS_handledByPreloadPlugin = (byteArray, fullname, finish, onerror) => {
+  // Ensure plugins are ready.
+  if (typeof Browser != "undefined") Browser.init();
+  var handled = false;
+  preloadPlugins.forEach(plugin => {
+    if (handled) return;
+    if (plugin["canHandle"](fullname)) {
+      plugin["handle"](byteArray, fullname, finish, onerror);
+      handled = true;
     }
-    var u1 = heapOrArray[idx++] & 63;
-    if ((u0 & 224) == 192) {
-      str += String.fromCharCode(((u0 & 31) << 6) | u1);
-      continue;
-    }
-    var u2 = heapOrArray[idx++] & 63;
-    if ((u0 & 240) == 224) {
-      u0 = ((u0 & 15) << 12) | (u1 << 6) | u2;
-    } else {
-      u0 = ((u0 & 7) << 18) | (u1 << 12) | (u2 << 6) | (heapOrArray[idx++] & 63);
-    }
-    if (u0 < 65536) {
-      str += String.fromCharCode(u0);
-    } else {
-      var ch = u0 - 65536;
-      str += String.fromCharCode(55296 | (ch >> 10), 56320 | (ch & 1023));
-    }
-  }
-  return str;
+  });
+  return handled;
 };
 
-var TTY = {
-  ttys: [],
-  init() {},
-  shutdown() {},
-  register(dev, ops) {
-    TTY.ttys[dev] = {
-      input: [],
-      output: [],
-      ops
-    };
-    FS.registerDevice(dev, TTY.stream_ops);
-  },
-  stream_ops: {
-    open(stream) {
-      var tty = TTY.ttys[stream.node.rdev];
-      if (!tty) {
-        throw new FS.ErrnoError(43);
+var FS_createPreloadedFile = (parent, name, url, canRead, canWrite, onload, onerror, dontCreateFile, canOwn, preFinish) => {
+  // TODO we should allow people to just pass in a complete filename instead
+  // of parent and name being that we just join them anyways
+  var fullname = name ? PATH_FS.resolve(PATH.join2(parent, name)) : parent;
+  var dep = getUniqueRunDependency(`cp ${fullname}`);
+  // might have several active requests for the same fullname
+  function processData(byteArray) {
+    function finish(byteArray) {
+      preFinish?.();
+      if (!dontCreateFile) {
+        FS_createDataFile(parent, name, byteArray, canRead, canWrite, canOwn);
       }
-      stream.tty = tty;
-      stream.seekable = false;
-    },
-    close(stream) {
-      // flush any pending line data
-      stream.tty.ops.fsync(stream.tty);
-    },
-    fsync(stream) {
-      stream.tty.ops.fsync(stream.tty);
-    },
-    read(stream, buffer, offset, length, pos) {
-      if (!stream.tty || !stream.tty.ops.get_char) {
-        throw new FS.ErrnoError(60);
-      }
-      var bytesRead = 0;
-      for (var i = 0; i < length; i++) {
-        var result;
-        try {
-          result = stream.tty.ops.get_char(stream.tty);
-        } catch (e) {
-          throw new FS.ErrnoError(29);
-        }
-        if (result === undefined && !bytesRead) {
-          throw new FS.ErrnoError(6);
-        }
-        if (result === null || result === undefined) break;
-        bytesRead++;
-        buffer[offset + i] = result;
-        // We currently only support canonical mode (ICANON), where
-        // read(2) returns as soon as a line delimiter is read.
-        if (result === 10) break;
-      }
-      if (bytesRead) {
-        stream.node.atime = Date.now();
-      }
-      return bytesRead;
-    },
-    write(stream, buffer, offset, length, pos) {
-      if (!stream.tty || !stream.tty.ops.put_char) {
-        throw new FS.ErrnoError(60);
-      }
-      try {
-        for (var i = 0; i < length; i++) {
-          stream.tty.ops.put_char(stream.tty, buffer[offset + i]);
-        }
-      } catch (e) {
-        throw new FS.ErrnoError(29);
-      }
-      if (length) {
-        stream.node.mtime = stream.node.ctime = Date.now();
-      }
-      return i;
+      onload?.();
+      removeRunDependency(dep);
     }
-  },
-  default_tty_ops: {
-    get_char(tty) {
-      return FS_stdin_getChar();
-    },
-    put_char(tty, val) {
-      if (val === null || val === 10) {
-        out(UTF8ArrayToString(tty.output));
-        tty.output = [];
-      } else {
-        if (val != 0) tty.output.push(val);
-      }
-    },
-    fsync(tty) {
-      if (tty.output?.length > 0) {
-        out(UTF8ArrayToString(tty.output));
-        tty.output = [];
-      }
-    },
-    ioctl_tcgets(tty) {
-      // typical setting
-      return {
-        c_iflag: 25856,
-        c_oflag: 5,
-        c_cflag: 191,
-        c_lflag: 35387,
-        c_cc: [ 3, 28, 127, 21, 4, 0, 1, 0, 17, 19, 26, 0, 18, 15, 23, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-      };
-    },
-    ioctl_tcsets(tty, optional_actions, data) {
-      // currently just ignore
-      return 0;
-    },
-    ioctl_tiocgwinsz(tty) {
-      return [ 24, 80 ];
+    if (FS_handledByPreloadPlugin(byteArray, fullname, finish, () => {
+      onerror?.();
+      removeRunDependency(dep);
+    })) {
+      return;
     }
-  },
-  default_tty1_ops: {
-    put_char(tty, val) {
-      if (val === null || val === 10) {
-        err(UTF8ArrayToString(tty.output));
-        tty.output = [];
-      } else {
-        if (val != 0) tty.output.push(val);
-      }
-    },
-    fsync(tty) {
-      if (tty.output?.length > 0) {
-        err(UTF8ArrayToString(tty.output));
-        tty.output = [];
-      }
-    }
+    finish(byteArray);
+  }
+  addRunDependency(dep);
+  if (typeof url == "string") {
+    asyncLoad(url).then(processData, onerror);
+  } else {
+    processData(url);
   }
 };
 
-var initRandomFill = () => {
-  // This block is not needed on v19+ since crypto.getRandomValues is builtin
-  if (ENVIRONMENT_IS_NODE) {
-    var nodeCrypto = require("node:crypto");
-    return view => (nodeCrypto.randomFillSync(view), 0);
+var FS_modeStringToFlags = str => {
+  var flagModes = {
+    "r": 0,
+    "r+": 2,
+    "w": 512 | 64 | 1,
+    "w+": 512 | 64 | 2,
+    "a": 1024 | 64 | 1,
+    "a+": 1024 | 64 | 2
+  };
+  var flags = flagModes[str];
+  if (typeof flags == "undefined") {
+    throw new Error(`Unknown file open mode: ${str}`);
   }
-  return view => (crypto.getRandomValues(view), 0);
+  return flags;
 };
 
-var randomFill = view => (randomFill = initRandomFill())(view);
+var FS_getMode = (canRead, canWrite) => {
+  var mode = 0;
+  if (canRead) mode |= 292 | 73;
+  if (canWrite) mode |= 146;
+  return mode;
+};
 
 var FS = {
   root: null,
@@ -1735,11 +2074,10 @@ var FS = {
   devices: {},
   streams: [],
   nextInode: 1,
-  nameTable: [],
+  nameTable: null,
   currentPath: "/",
   initialized: false,
   ignorePermissions: true,
-  syncFSRequests: 0,
   ErrnoError: class {
     name="ErrnoError";
     // We set the `name` property to be able to identify `FS.ErrnoError`
@@ -1752,6 +2090,9 @@ var FS = {
       this.errno = errno;
     }
   },
+  filesystems: null,
+  syncFSRequests: 0,
+  readFiles: {},
   FSStream: class {
     shared={};
     get object() {
@@ -1792,6 +2133,7 @@ var FS = {
       if (!parent) {
         parent = this;
       }
+      // root node sets parent to itself
       this.parent = parent;
       this.mount = parent.mount;
       this.id = FS.nextInode++;
@@ -1818,66 +2160,20 @@ var FS = {
     get isDevice() {
       return FS.isChrdev(this.mode);
     }
-    // The per-inode readiness wait-queue. The node carries a Set of listener
-    // entries {cb}; producers (SOCKFS, PIPEFS) call notifyListeners on a
-    // readiness transition, and poll()/epoll consume it. It lives on the node
-    // (not the fd) so dup'd fds share one queue. Only nodes that derive real
-    // readiness (sockets, pipes, and an epoll's own node) ever use this -
-    // always-ready types (regular files, ttys) never register or notify.
-    addListener(cb, exclusive = false) {
-      var entry = {
-        cb,
-        exclusive
-      };
-      var listeners = (this.listeners ??= new Set);
-      listeners.add(entry);
-      return {
-        listeners,
-        entry
-      };
-    }
-    notifyListeners(flags) {
-      // Iterates the set without copying, which is safe ONLY under a
-      // load-bearing contract that every internal listener must honour:
-      //   1. A listener must not run user code synchronously (a poll waiter only
-      //      resolves a Promise; an epoll registration only re-lists +
-      //      re-notifies; the epoll callback only schedules a tick). User code
-      //      runs on a later tick, never inside this loop.
-      //   2. A listener may delete entries only from ITS OWN waiter, never from
-      //      a sibling node's set that may be mid-iteration. (Deleting an entry
-      //      of the set being iterated here is fine - a Set tolerates removal of
-      //      a not-yet-visited entry mid-iteration; mutating a *different* node's
-      //      set is fine because that set is not being iterated.)
-      // Violating either gives silently skipped wakeups that are near-impossible
-      // to reproduce. Any new producer/listener must preserve it.
-      if (!this.listeners) return;
-      // Fire every non-exclusive listener. Among EPOLLEXCLUSIVE registrations
-      // (one fd watched by several epolls) wake only one, rotating round-robin
-      // per node, to avoid a thundering herd. (Only epoll registrations are ever
-      // exclusive; poll waiters and a node's own consumers are not.)
-      var excl;
-      for (var entry of this.listeners) {
-        if (entry.exclusive) (excl ||= []).push(entry); else entry.cb(flags);
-      }
-      if (excl) {
-        var i = (this.exclTurn || 0) % excl.length;
-        this.exclTurn = i + 1;
-        excl[i].cb(flags);
-      }
-    }
   },
   lookupPath(path, opts = {}) {
-    if (!path) {
-      throw new FS.ErrnoError(44);
-    }
+    if (!path) return {
+      path: "",
+      node: null
+    };
     opts.follow_mount ??= true;
     if (!PATH.isAbs(path)) {
       path = FS.cwd() + "/" + path;
     }
-    // limit max consecutive symlinks to SYMLOOP_MAX.
+    // limit max consecutive symlinks to 40 (SYMLOOP_MAX).
     linkloop: for (var nlinks = 0; nlinks < 40; nlinks++) {
       // split the absolute path
-      var parts = path.split("/").filter(p => !!p);
+      var parts = path.split("/").filter(p => !!p && (p !== "."));
       // start at the root
       var current = FS.root;
       var current_path = "/";
@@ -1887,20 +2183,9 @@ var FS = {
           // stop resolving
           break;
         }
-        if (parts[i] === ".") {
-          continue;
-        }
         if (parts[i] === "..") {
           current_path = PATH.dirname(current_path);
-          if (FS.isRoot(current)) {
-            path = current_path + "/" + parts.slice(i + 1).join("/");
-            // We're making progress here, don't let many consecutive ..'s
-            // lead to ELOOP
-            nlinks--;
-            continue linkloop;
-          } else {
-            current = current.parent;
-          }
+          current = current.parent;
           continue;
         }
         current_path = PATH.join2(current_path, parts[i]);
@@ -1996,7 +2281,7 @@ var FS = {
     // if we failed to find it in the cache, call into the VFS
     return FS.lookup(parent, name);
   },
-  createNode(parent, name, mode, rdev = undefined) {
+  createNode(parent, name, mode, rdev) {
     var node = new FS.FSNode(parent, name, mode, rdev);
     FS.hashAddNode(node);
     return node;
@@ -2045,11 +2330,9 @@ var FS = {
     // return 0 if any user, group or owner bits are set.
     if (perms.includes("r") && !(node.mode & 292)) {
       return 2;
-    }
-    if (perms.includes("w") && !(node.mode & 146)) {
+    } else if (perms.includes("w") && !(node.mode & 146)) {
       return 2;
-    }
-    if (perms.includes("x") && !(node.mode & 73)) {
+    } else if (perms.includes("x") && !(node.mode & 73)) {
       return 2;
     }
     return 0;
@@ -2089,8 +2372,10 @@ var FS = {
       if (FS.isRoot(node) || FS.getPath(node) === FS.cwd()) {
         return 10;
       }
-    } else if (FS.isDir(node.mode)) {
-      return 31;
+    } else {
+      if (FS.isDir(node.mode)) {
+        return 31;
+      }
     }
     return 0;
   },
@@ -2100,25 +2385,18 @@ var FS = {
     }
     if (FS.isLink(node.mode)) {
       return 32;
-    }
-    var mode = FS.flagsToPermissionString(flags);
-    if (FS.isDir(node.mode)) {
-      // opening for write
-      // TODO: check for O_SEARCH? (== search for dir only)
-      if (mode !== "r" || (flags & (512 | 64))) {
+    } else if (FS.isDir(node.mode)) {
+      if (FS.flagsToPermissionString(flags) !== "r" || // opening for write
+      (flags & 512)) {
+        // TODO: check for O_SEARCH? (== search for dir only)
         return 31;
       }
     }
-    return FS.nodePermissions(node, mode);
+    return FS.nodePermissions(node, FS.flagsToPermissionString(flags));
   },
-  checkOpExists(op, err) {
-    if (!op) {
-      throw new FS.ErrnoError(err);
-    }
-    return op;
-  },
+  MAX_OPEN_FDS: 4096,
   nextfd() {
-    for (var fd = 0; fd <= FS_MAX_OPEN_FDS; fd++) {
+    for (var fd = 0; fd <= FS.MAX_OPEN_FDS; fd++) {
       if (!FS.streams[fd]) {
         return fd;
       }
@@ -2150,20 +2428,6 @@ var FS = {
     var stream = FS.createStream(origStream, fd);
     stream.stream_ops?.dup?.(stream);
     return stream;
-  },
-  doSetAttr(stream, node, attr) {
-    var setattr = stream?.stream_ops.setattr;
-    var arg = setattr ? stream : node;
-    setattr ??= node.node_ops.setattr;
-    FS.checkOpExists(setattr, 63);
-    try {
-      setattr(arg, attr);
-    } catch (e) {
-      if (e instanceof RangeError) {
-        throw new FS.ErrnoError(22);
-      }
-      throw e;
-    }
   },
   chrdev_stream_ops: {
     open(stream) {
@@ -2197,7 +2461,7 @@ var FS = {
     return mounts;
   },
   syncfs(populate, callback) {
-    if (typeof populate === "function") {
+    if (typeof populate == "function") {
       callback = populate;
       populate = false;
     }
@@ -2224,13 +2488,12 @@ var FS = {
       }
     }
     // sync all mounts
-    for (var mount of mounts) {
-      if (mount.type.syncfs) {
-        mount.type.syncfs(mount, populate, done);
-      } else {
-        done(null);
+    mounts.forEach(mount => {
+      if (!mount.type.syncfs) {
+        return done(null);
       }
-    }
+      mount.type.syncfs(mount, populate, done);
+    });
   },
   mount(type, opts, mountpoint) {
     var root = mountpoint === "/";
@@ -2285,7 +2548,8 @@ var FS = {
     var node = lookup.node;
     var mount = node.mounted;
     var mounts = FS.getMounts(mount);
-    for (var [hash, current] of Object.entries(FS.nameTable)) {
+    Object.keys(FS.nameTable).forEach(hash => {
+      var current = FS.nameTable[hash];
       while (current) {
         var next = current.name_next;
         if (mounts.includes(current.mount)) {
@@ -2293,7 +2557,7 @@ var FS = {
         }
         current = next;
       }
-    }
+    });
     // no longer a mountpoint
     node.mounted = null;
     // remove this mount from the child mounts
@@ -2309,11 +2573,8 @@ var FS = {
     });
     var parent = lookup.node;
     var name = PATH.basename(path);
-    if (!name) {
+    if (!name || name === "." || name === "..") {
       throw new FS.ErrnoError(28);
-    }
-    if (name === "." || name === "..") {
-      throw new FS.ErrnoError(20);
     }
     var errCode = FS.mayCreate(parent, name);
     if (errCode) {
@@ -2325,20 +2586,8 @@ var FS = {
     return parent.node_ops.mknod(parent, name, mode, dev);
   },
   statfs(path) {
-    return FS.statfsNode(FS.lookupPath(path, {
-      follow: true
-    }).node);
-  },
-  statfsStream(stream) {
-    // We keep a separate statfsStream function because noderawfs overrides
-    // it. In noderawfs, stream.node is sometimes null. Instead, we need to
-    // look at stream.path.
-    return FS.statfsNode(stream.node);
-  },
-  statfsNode(node) {
     // NOTE: None of the defaults here are true. We're just returning safe and
-    //       sane values. Currently nodefs and rawfs replace these defaults,
-    //       other file systems leave them alone.
+    //       sane values.
     var rtn = {
       bsize: 4096,
       frsize: 4096,
@@ -2351,8 +2600,11 @@ var FS = {
       flags: 2,
       namelen: 255
     };
-    if (node.node_ops.statfs) {
-      Object.assign(rtn, node.node_ops.statfs(node.mount.opts.root));
+    var parent = FS.lookupPath(path, {
+      follow: true
+    }).node;
+    if (parent?.node_ops.statfs) {
+      Object.assign(rtn, parent.node_ops.statfs(parent.mount.opts.root));
     }
     return rtn;
   },
@@ -2366,13 +2618,12 @@ var FS = {
     mode |= 16384;
     return FS.mknod(path, mode, 0);
   },
-  mkdirTree(path, mode = 511) {
+  mkdirTree(path, mode) {
     var dirs = path.split("/");
     var d = "";
-    for (var dir of dirs) {
-      if (!dir) continue;
-      if (d || PATH.isAbs(path)) d += "/";
-      d += dir;
+    for (var i = 0; i < dirs.length; ++i) {
+      if (!dirs[i]) continue;
+      d += "/" + dirs[i];
       try {
         FS.mkdir(d, mode);
       } catch (e) {
@@ -2380,8 +2631,8 @@ var FS = {
       }
     }
   },
-  mkdev(path, mode, dev = undefined) {
-    if (typeof dev === "undefined") {
+  mkdev(path, mode, dev) {
+    if (typeof dev == "undefined") {
       dev = mode;
       mode = 438;
     }
@@ -2408,27 +2659,6 @@ var FS = {
       throw new FS.ErrnoError(63);
     }
     return parent.node_ops.symlink(parent, newname, oldpath);
-  },
-  link(oldpath, newpath, flags) {
-    var lookup = FS.lookupPath(newpath, {
-      parent: true
-    });
-    var parent = lookup.node;
-    if (!parent) {
-      throw new FS.ErrnoError(44);
-    }
-    var newname = PATH.basename(newpath);
-    var errCode = FS.mayCreate(parent, newname);
-    if (errCode) {
-      throw new FS.ErrnoError(errCode);
-    }
-    // Hardlinks are only supported by filesystem backends that provide a
-    // `link` node op (e.g. NODERAWFS backed by the host). NODEFS omits it:
-    // a host hardlink cannot be confined to the mount root.
-    if (!parent.node_ops.link) {
-      throw new FS.ErrnoError(34);
-    }
-    return parent.node_ops.link(parent, newname, oldpath, flags);
   },
   rename(old_path, new_path) {
     var old_dirname = PATH.dirname(old_path);
@@ -2502,11 +2732,6 @@ var FS = {
     // do the underlying fs rename
     try {
       old_dir.node_ops.rename(old_node, new_dir, new_name);
-      // The replaced node is stale now. Evict it only after the rename
-      // succeeded: backends like NODEFS report node.id as st_ino.
-      if (new_node) {
-        FS.hashRemoveNode(new_node);
-      }
       // update old node (we do this here to avoid each backend
       // needing to)
       old_node.parent = new_dir;
@@ -2543,8 +2768,10 @@ var FS = {
       follow: true
     });
     var node = lookup.node;
-    var readdir = FS.checkOpExists(node.node_ops.readdir, 54);
-    return readdir(node);
+    if (!node.node_ops.readdir) {
+      throw new FS.ErrnoError(54);
+    }
+    return node.node_ops.readdir(node);
   },
   unlink(path) {
     var lookup = FS.lookupPath(path, {
@@ -2583,36 +2810,25 @@ var FS = {
     }
     return link.node_ops.readlink(link);
   },
-  stat(path, dontFollow = false) {
+  stat(path, dontFollow) {
     var lookup = FS.lookupPath(path, {
       follow: !dontFollow
     });
     var node = lookup.node;
-    var getattr = FS.checkOpExists(node.node_ops.getattr, 63);
-    return getattr(node);
-  },
-  fstat(fd) {
-    var stream = FS.getStreamChecked(fd);
-    var node = stream.node;
-    var getattr = stream.stream_ops.getattr;
-    var arg = getattr ? stream : node;
-    getattr ??= node.node_ops.getattr;
-    FS.checkOpExists(getattr, 63);
-    return getattr(arg);
+    if (!node) {
+      throw new FS.ErrnoError(44);
+    }
+    if (!node.node_ops.getattr) {
+      throw new FS.ErrnoError(63);
+    }
+    return node.node_ops.getattr(node);
   },
   lstat(path) {
     return FS.stat(path, true);
   },
-  doChmod(stream, node, mode, dontFollow = false) {
-    FS.doSetAttr(stream, node, {
-      mode: (mode & 4095) | (node.mode & ~4095),
-      ctime: Date.now(),
-      dontFollow
-    });
-  },
-  chmod(path, mode, dontFollow = false) {
+  chmod(path, mode, dontFollow) {
     var node;
-    if (typeof path === "string") {
+    if (typeof path == "string") {
       var lookup = FS.lookupPath(path, {
         follow: !dontFollow
       });
@@ -2620,24 +2836,24 @@ var FS = {
     } else {
       node = path;
     }
-    FS.doChmod(null, node, mode, dontFollow);
+    if (!node.node_ops.setattr) {
+      throw new FS.ErrnoError(63);
+    }
+    node.node_ops.setattr(node, {
+      mode: (mode & 4095) | (node.mode & ~4095),
+      ctime: Date.now()
+    });
   },
   lchmod(path, mode) {
     FS.chmod(path, mode, true);
   },
   fchmod(fd, mode) {
     var stream = FS.getStreamChecked(fd);
-    FS.doChmod(stream, stream.node, mode, false);
+    FS.chmod(stream.node, mode);
   },
-  doChown(stream, node, dontFollow = false) {
-    FS.doSetAttr(stream, node, {
-      timestamp: Date.now(),
-      dontFollow
-    });
-  },
-  chown(path, uid, gid, dontFollow = false) {
+  chown(path, uid, gid, dontFollow) {
     var node;
-    if (typeof path === "string") {
+    if (typeof path == "string") {
       var lookup = FS.lookupPath(path, {
         follow: !dontFollow
       });
@@ -2645,16 +2861,37 @@ var FS = {
     } else {
       node = path;
     }
-    FS.doChown(null, node, dontFollow);
+    if (!node.node_ops.setattr) {
+      throw new FS.ErrnoError(63);
+    }
+    node.node_ops.setattr(node, {
+      timestamp: Date.now()
+    });
   },
+  // we ignore the uid / gid for now
   lchown(path, uid, gid) {
     FS.chown(path, uid, gid, true);
   },
   fchown(fd, uid, gid) {
     var stream = FS.getStreamChecked(fd);
-    FS.doChown(stream, stream.node, false);
+    FS.chown(stream.node, uid, gid);
   },
-  doTruncate(stream, node, len) {
+  truncate(path, len) {
+    if (len < 0) {
+      throw new FS.ErrnoError(28);
+    }
+    var node;
+    if (typeof path == "string") {
+      var lookup = FS.lookupPath(path, {
+        follow: true
+      });
+      node = lookup.node;
+    } else {
+      node = path;
+    }
+    if (!node.node_ops.setattr) {
+      throw new FS.ErrnoError(63);
+    }
     if (FS.isDir(node.mode)) {
       throw new FS.ErrnoError(31);
     }
@@ -2665,59 +2902,42 @@ var FS = {
     if (errCode) {
       throw new FS.ErrnoError(errCode);
     }
-    FS.doSetAttr(stream, node, {
+    node.node_ops.setattr(node, {
       size: len,
       timestamp: Date.now()
     });
   },
-  truncate(path, len) {
-    if (len < 0) {
-      throw new FS.ErrnoError(28);
-    }
-    var node;
-    if (typeof path === "string") {
-      var lookup = FS.lookupPath(path, {
-        follow: true
-      });
-      node = lookup.node;
-    } else {
-      node = path;
-    }
-    FS.doTruncate(null, node, len);
-  },
   ftruncate(fd, len) {
     var stream = FS.getStreamChecked(fd);
-    if (len < 0 || (stream.flags & 2097155) === 0) {
+    if ((stream.flags & 2097155) === 0) {
       throw new FS.ErrnoError(28);
     }
-    FS.doTruncate(stream, stream.node, len);
+    FS.truncate(stream.node, len);
   },
-  utime(path, atime, mtime, dontFollow = false) {
+  utime(path, atime, mtime) {
     var lookup = FS.lookupPath(path, {
-      follow: !dontFollow
+      follow: true
     });
-    FS.doSetAttr(null, lookup.node, {
+    var node = lookup.node;
+    node.node_ops.setattr(node, {
       atime,
-      mtime,
-      dontFollow
+      mtime
     });
   },
   open(path, flags, mode = 438) {
     if (path === "") {
       throw new FS.ErrnoError(44);
     }
-    flags = FS_modeStringToFlags(flags);
+    flags = typeof flags == "string" ? FS_modeStringToFlags(flags) : flags;
     if ((flags & 64)) {
       mode = (mode & 4095) | 32768;
     } else {
       mode = 0;
     }
     var node;
-    var isDirPath;
-    if (typeof path === "object") {
+    if (typeof path == "object") {
       node = path;
     } else {
-      isDirPath = path.endsWith("/");
       // noent_okay makes it so that if the final component of the path
       // doesn't exist, lookupPath returns `node: undefined`. `path` will be
       // updated to point to the target of all symlinks.
@@ -2736,14 +2956,9 @@ var FS = {
         if ((flags & 128)) {
           throw new FS.ErrnoError(20);
         }
-      } else if (isDirPath) {
-        throw new FS.ErrnoError(31);
       } else {
         // node doesn't exist, try to create it
-        // Ignore the permission bits here to ensure we can `open` this new
-        // file below. We use chmod below to apply the permissions once the
-        // file is open.
-        node = FS.mknod(path, mode | 511, 0);
+        node = FS.mknod(path, mode, 0);
         created = true;
       }
     }
@@ -2790,8 +3005,10 @@ var FS = {
     if (stream.stream_ops.open) {
       stream.stream_ops.open(stream);
     }
-    if (created) {
-      FS.chmod(node, mode & 511);
+    if (Module["logReadFiles"] && !(flags & 1)) {
+      if (!(path in FS.readFiles)) {
+        FS.readFiles[path] = 1;
+      }
     }
     return stream;
   },
@@ -2801,11 +3018,6 @@ var FS = {
     }
     if (stream.getdents) stream.getdents = null;
     // free readdir state
-    // The fd is going away: wake anything waiting on it (poll/epoll) with
-    // POLLNVAL so a blocking wait unblocks and an epoll registration is evicted
-    // on its next derive. Only sockets/pipes/epoll ever carry a wait-queue, so
-    // for every other stream (incl. nodeless noderawfs stdio) this is a no-op.
-    stream.node?.notifyListeners(32);
     try {
       if (stream.stream_ops.close) {
         stream.stream_ops.close(stream);
@@ -2834,7 +3046,7 @@ var FS = {
     stream.ungotten = [];
     return stream.position;
   },
-  read(stream, buffer, offset, length, position = undefined) {
+  read(stream, buffer, offset, length, position) {
     if (length < 0 || position < 0) {
       throw new FS.ErrnoError(28);
     }
@@ -2850,7 +3062,7 @@ var FS = {
     if (!stream.stream_ops.read) {
       throw new FS.ErrnoError(28);
     }
-    var seeking = typeof position !== "undefined";
+    var seeking = typeof position != "undefined";
     if (!seeking) {
       position = stream.position;
     } else if (!stream.seekable) {
@@ -2860,7 +3072,7 @@ var FS = {
     if (!seeking) stream.position += bytesRead;
     return bytesRead;
   },
-  write(stream, buffer, offset, length, position = undefined, canOwn = undefined) {
+  write(stream, buffer, offset, length, position, canOwn) {
     if (length < 0 || position < 0) {
       throw new FS.ErrnoError(28);
     }
@@ -2880,7 +3092,7 @@ var FS = {
       // seek to the end before writing in append mode
       FS.llseek(stream, 0, 2);
     }
-    var seeking = typeof position !== "undefined";
+    var seeking = typeof position != "undefined";
     if (!seeking) {
       position = stream.position;
     } else if (!stream.seekable) {
@@ -2890,6 +3102,24 @@ var FS = {
     if (!seeking) stream.position += bytesWritten;
     return bytesWritten;
   },
+  allocate(stream, offset, length) {
+    if (FS.isClosed(stream)) {
+      throw new FS.ErrnoError(8);
+    }
+    if (offset < 0 || length <= 0) {
+      throw new FS.ErrnoError(28);
+    }
+    if ((stream.flags & 2097155) === 0) {
+      throw new FS.ErrnoError(8);
+    }
+    if (!FS.isFile(stream.node.mode) && !FS.isDir(stream.node.mode)) {
+      throw new FS.ErrnoError(43);
+    }
+    if (!stream.stream_ops.allocate) {
+      throw new FS.ErrnoError(138);
+    }
+    stream.stream_ops.allocate(stream, offset, length);
+  },
   mmap(stream, length, position, prot, flags) {
     // User requests writing to file (prot & PROT_WRITE != 0).
     // Checking if we have permissions to write to the file unless
@@ -2897,7 +3127,7 @@ var FS = {
     // to write to file opened in read-only mode with MAP_PRIVATE flag,
     // as all modifications will be visible only in the memory of
     // the current process.
-    if ((prot & 2) && !(flags & 2) && (stream.flags & 2097155) !== 2) {
+    if ((prot & 2) !== 0 && (flags & 2) === 0 && (stream.flags & 2097155) !== 2) {
       throw new FS.ErrnoError(2);
     }
     if ((stream.flags & 2097155) === 1) {
@@ -2924,27 +3154,37 @@ var FS = {
     return stream.stream_ops.ioctl(stream, cmd, arg);
   },
   readFile(path, opts = {}) {
-    opts.flags ??= 0;
-    opts.encoding ??= "binary";
+    opts.flags = opts.flags || 0;
+    opts.encoding = opts.encoding || "binary";
     if (opts.encoding !== "utf8" && opts.encoding !== "binary") {
-      abort(`Invalid encoding type "${opts.encoding}"`);
+      throw new Error(`Invalid encoding type "${opts.encoding}"`);
     }
+    var ret;
     var stream = FS.open(path, opts.flags);
     var stat = FS.stat(path);
     var length = stat.size;
     var buf = new Uint8Array(length);
     FS.read(stream, buf, 0, length, 0);
     if (opts.encoding === "utf8") {
-      buf = UTF8ArrayToString(buf);
+      ret = UTF8ArrayToString(buf);
+    } else if (opts.encoding === "binary") {
+      ret = buf;
     }
     FS.close(stream);
-    return buf;
+    return ret;
   },
   writeFile(path, data, opts = {}) {
-    opts.flags ??= 577;
+    opts.flags = opts.flags || 577;
     var stream = FS.open(path, opts.flags, opts.mode);
-    data = FS_fileDataToTypedArray(data);
-    FS.write(stream, data, 0, data.byteLength, undefined, opts.canOwn);
+    if (typeof data == "string") {
+      var buf = new Uint8Array(lengthBytesUTF8(data) + 1);
+      var actualNumBytes = stringToUTF8Array(data, buf, 0, buf.length);
+      FS.write(stream, buf, 0, actualNumBytes, undefined, opts.canOwn);
+    } else if (ArrayBuffer.isView(data)) {
+      FS.write(stream, data, 0, data.byteLength, undefined, opts.canOwn);
+    } else {
+      throw new Error("Unsupported data type");
+    }
     FS.close(stream);
   },
   cwd: () => FS.currentPath,
@@ -2990,9 +3230,8 @@ var FS = {
     // use a buffer to avoid overhead of individual crypto calls per byte
     var randomBuffer = new Uint8Array(1024), randomLeft = 0;
     var randomByte = () => {
-      if (!randomLeft) {
-        randomFill(randomBuffer);
-        randomLeft = randomBuffer.byteLength;
+      if (randomLeft === 0) {
+        randomLeft = randomFill(randomBuffer).byteLength;
       }
       return randomBuffer[--randomLeft];
     };
@@ -3070,13 +3309,16 @@ var FS = {
     var stderr = FS.open("/dev/stderr", 1);
   },
   staticInit() {
-    FS.nameTable.length = 4096;
+    FS.nameTable = new Array(4096);
     FS.mount(MEMFS, {}, "/");
     FS.createDefaultDirectories();
     FS.createDefaultDevices();
     FS.createSpecialDirectories();
+    FS.filesystems = {
+      "MEMFS": MEMFS
+    };
   },
-  init(input = undefined, output = undefined, error = undefined) {
+  init(input, output, error) {
     FS.initialized = true;
     // Allow Module.stdin etc. to provide defaults, if none explicitly passed to us here
     input ??= Module["stdin"];
@@ -3088,13 +3330,22 @@ var FS = {
     FS.initialized = false;
     // force-flush all streams, so we get musl std streams printed out
     // close all of our streams
-    for (var stream of FS.streams) {
-      if (stream) {
-        FS.close(stream);
+    for (var i = 0; i < FS.streams.length; i++) {
+      var stream = FS.streams[i];
+      if (!stream) {
+        continue;
       }
+      FS.close(stream);
     }
   },
-  analyzePath(path, dontResolveLastLink = false) {
+  findObject(path, dontResolveLastLink) {
+    var ret = FS.analyzePath(path, dontResolveLastLink);
+    if (!ret.exists) {
+      return null;
+    }
+    return ret.object;
+  },
+  analyzePath(path, dontResolveLastLink) {
     // operate from within the context of the symlink's target
     try {
       var lookup = FS.lookupPath(path, {
@@ -3134,8 +3385,8 @@ var FS = {
     }
     return ret;
   },
-  createPath(parent, path, canRead = undefined, canWrite = undefined) {
-    parent = typeof parent === "string" ? parent : FS.getPath(parent);
+  createPath(parent, path, canRead, canWrite) {
+    parent = typeof parent == "string" ? parent : FS.getPath(parent);
     var parts = path.split("/").reverse();
     while (parts.length) {
       var part = parts.pop();
@@ -3143,28 +3394,31 @@ var FS = {
       var current = PATH.join2(parent, part);
       try {
         FS.mkdir(current);
-      } catch (e) {
-        if (e.errno != 20) throw e;
-      }
+      } catch (e) {}
+      // ignore EEXIST
       parent = current;
     }
     return current;
   },
-  createFile(parent, name, properties, canRead = undefined, canWrite = undefined) {
-    var path = PATH.join2(typeof parent === "string" ? parent : FS.getPath(parent), name);
+  createFile(parent, name, properties, canRead, canWrite) {
+    var path = PATH.join2(typeof parent == "string" ? parent : FS.getPath(parent), name);
     var mode = FS_getMode(canRead, canWrite);
     return FS.create(path, mode);
   },
-  createDataFile(parent, name, data = undefined, canRead = undefined, canWrite = undefined, canOwn = undefined) {
+  createDataFile(parent, name, data, canRead, canWrite, canOwn) {
     var path = name;
     if (parent) {
-      parent = typeof parent === "string" ? parent : FS.getPath(parent);
+      parent = typeof parent == "string" ? parent : FS.getPath(parent);
       path = name ? PATH.join2(parent, name) : parent;
     }
     var mode = FS_getMode(canRead, canWrite);
     var node = FS.create(path, mode);
     if (data) {
-      data = FS_fileDataToTypedArray(data);
+      if (typeof data == "string") {
+        var arr = new Array(data.length);
+        for (var i = 0, len = data.length; i < len; ++i) arr[i] = data.charCodeAt(i);
+        data = arr;
+      }
       // make sure we can write to the file
       FS.chmod(node, mode | 146);
       var stream = FS.open(node, 577);
@@ -3173,8 +3427,8 @@ var FS = {
       FS.chmod(node, mode);
     }
   },
-  createDevice(parent, name, input = undefined, output = undefined) {
-    var path = PATH.join2(typeof parent === "string" ? parent : FS.getPath(parent), name);
+  createDevice(parent, name, input, output) {
+    var path = PATH.join2(typeof parent == "string" ? parent : FS.getPath(parent), name);
     var mode = FS_getMode(!!input, !!output);
     FS.createDevice.major ??= 64;
     var dev = FS.makedev(FS.createDevice.major++, 0);
@@ -3191,7 +3445,7 @@ var FS = {
         }
       },
       read(stream, buffer, offset, length, pos) {
-        var bytesRead = 0;
+        /* ignored */ var bytesRead = 0;
         for (var i = 0; i < length; i++) {
           var result;
           try {
@@ -3199,7 +3453,7 @@ var FS = {
           } catch (e) {
             throw new FS.ErrnoError(29);
           }
-          if (result === undefined && !bytesRead) {
+          if (result === undefined && bytesRead === 0) {
             throw new FS.ErrnoError(6);
           }
           if (result === null || result === undefined) break;
@@ -3229,18 +3483,19 @@ var FS = {
   },
   forceLoadFile(obj) {
     if (obj.isDevice || obj.isFolder || obj.link || obj.contents) return true;
-    if (globalThis.XMLHttpRequest) {
-      abort("Lazy loading should have been performed (contents set) in createLazyFile, but it was not. Lazy loading only works in web workers. Use --embed-file or --preload-file in emcc on the main thread.");
+    if (typeof XMLHttpRequest != "undefined") {
+      throw new Error("Lazy loading should have been performed (contents set) in createLazyFile, but it was not. Lazy loading only works in web workers. Use --embed-file or --preload-file in emcc on the main thread.");
     } else {
       // Command-line.
       try {
         obj.contents = readBinary(obj.url);
+        obj.usedBytes = obj.contents.length;
       } catch (e) {
         throw new FS.ErrnoError(29);
       }
     }
   },
-  createLazyFile(parent, name, url, canRead = undefined, canWrite = undefined) {
+  createLazyFile(parent, name, url, canRead, canWrite) {
     // Lazy chunked Uint8Array (implements get and length from Uint8Array).
     // Actual getting is abstracted away for eventual reuse.
     class LazyUint8Array {
@@ -3263,7 +3518,7 @@ var FS = {
         var xhr = new XMLHttpRequest;
         xhr.open("HEAD", url, false);
         xhr.send(null);
-        if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 304)) abort(`Couldn't load ${url}. Status: ${xhr.status}`);
+        if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 304)) throw new Error("Couldn't load " + url + ". Status: " + xhr.status);
         var datalength = Number(xhr.getResponseHeader("Content-length"));
         var header;
         var hasByteServing = (header = xhr.getResponseHeader("Accept-Ranges")) && header === "bytes";
@@ -3273,23 +3528,23 @@ var FS = {
         if (!hasByteServing) chunkSize = datalength;
         // Function to get a range from the remote URL.
         var doXHR = (from, to) => {
-          if (from > to) abort(`invalid range (${from}, ${to}) or no bytes requested!`);
-          if (to > datalength - 1) abort(`only ${datalength} bytes available! programmer error!`);
+          if (from > to) throw new Error("invalid range (" + from + ", " + to + ") or no bytes requested!");
+          if (to > datalength - 1) throw new Error("only " + datalength + " bytes available! programmer error!");
           // TODO: Use mozResponseArrayBuffer, responseStream, etc. if available.
           var xhr = new XMLHttpRequest;
           xhr.open("GET", url, false);
-          if (datalength !== chunkSize) xhr.setRequestHeader("Range", `bytes=${from}-${to}`);
+          if (datalength !== chunkSize) xhr.setRequestHeader("Range", "bytes=" + from + "-" + to);
           // Some hints to the browser that we want binary data.
           xhr.responseType = "arraybuffer";
           if (xhr.overrideMimeType) {
             xhr.overrideMimeType("text/plain; charset=x-user-defined");
           }
           xhr.send(null);
-          if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 304)) abort(`Couldn't load ${url}. Status: ${xhr.status}`);
+          if (!(xhr.status >= 200 && xhr.status < 300 || xhr.status === 304)) throw new Error("Couldn't load " + url + ". Status: " + xhr.status);
           if (xhr.response !== undefined) {
             return new Uint8Array(/** @type{Array<number>} */ (xhr.response || []));
           }
-          return intArrayFromString(xhr.responseText ?? "", true);
+          return intArrayFromString(xhr.responseText || "", true);
         };
         var lazyArray = this;
         lazyArray.setDataGetter(chunkNum => {
@@ -3298,10 +3553,10 @@ var FS = {
           // including this byte
           end = Math.min(end, datalength - 1);
           // if datalength-1 is selected, this is the last block
-          if (typeof lazyArray.chunks[chunkNum] === "undefined") {
+          if (typeof lazyArray.chunks[chunkNum] == "undefined") {
             lazyArray.chunks[chunkNum] = doXHR(start, end);
           }
-          if (typeof lazyArray.chunks[chunkNum] === "undefined") abort("doXHR failed!");
+          if (typeof lazyArray.chunks[chunkNum] == "undefined") throw new Error("doXHR failed!");
           return lazyArray.chunks[chunkNum];
         });
         if (usesGzip || !datalength) {
@@ -3329,8 +3584,8 @@ var FS = {
         return this._chunkSize;
       }
     }
-    if (globalThis.XMLHttpRequest) {
-      if (!ENVIRONMENT_IS_WORKER) abort("Cannot do synchronous binary XHRs outside webworkers in modern browsers. Use --embed-file or --preload-file in emcc");
+    if (typeof XMLHttpRequest != "undefined") {
+      if (!ENVIRONMENT_IS_WORKER) throw "Cannot do synchronous binary XHRs outside webworkers in modern browsers. Use --embed-file or --preload-file in emcc";
       var lazyArray = new LazyUint8Array;
       var properties = {
         isDevice: false,
@@ -3362,12 +3617,14 @@ var FS = {
     });
     // override each stream op with one that tries to force load the lazy file first
     var stream_ops = {};
-    for (const [key, fn] of Object.entries(node.stream_ops)) {
+    var keys = Object.keys(node.stream_ops);
+    keys.forEach(key => {
+      var fn = node.stream_ops[key];
       stream_ops[key] = (...args) => {
         FS.forceLoadFile(node);
         return fn(...args);
       };
-    }
+    });
     function writeChunks(stream, buffer, offset, length, position) {
       var contents = stream.node.contents;
       if (position >= contents.length) return 0;
@@ -3408,32 +3665,28 @@ var FS = {
   }
 };
 
-/** @type {!Int32Array} */ var HEAP32;
-
-/** not-@type {!BigInt64Array} */ var HEAP64;
-
-/** @type {!Uint32Array} */ var HEAPU32;
-
 /**
-   * Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the
-   * emscripten HEAP, returns a copy of that string as a Javascript String object.
-   *
-   * @param {number} ptr
-   * @param {number=} maxBytesToRead - An optional length that specifies the
-   *   maximum number of bytes to read. You can omit this parameter to scan the
-   *   string until the first 0 byte. If maxBytesToRead is passed, and the string
-   *   at [ptr, ptr+maxBytesToReadr[ contains a null byte in the middle, then the
-   *   string will cut short at that byte index.
-   * @param {boolean=} ignoreNul - If true, the function will not stop on a NUL character.
-   * @return {string}
-   */ var UTF8ToString = (ptr, maxBytesToRead, ignoreNul) => {
+     * Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the
+     * emscripten HEAP, returns a copy of that string as a Javascript String object.
+     *
+     * @param {number} ptr
+     * @param {number=} maxBytesToRead - An optional length that specifies the
+     *   maximum number of bytes to read. You can omit this parameter to scan the
+     *   string until the first 0 byte. If maxBytesToRead is passed, and the string
+     *   at [ptr, ptr+maxBytesToReadr[ contains a null byte in the middle, then the
+     *   string will cut short at that byte index (i.e. maxBytesToRead will not
+     *   produce a string of exact length [ptr, ptr+maxBytesToRead[) N.B. mixing
+     *   frequent uses of UTF8ToString() with and without maxBytesToRead may throw
+     *   JS JIT optimizations off, so it is worth to consider consistently using one
+     * @return {string}
+     */ var UTF8ToString = (ptr, maxBytesToRead) => {
   ptr >>>= 0;
-  return ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead, ignoreNul) : "";
+  return ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : "";
 };
 
 var SYSCALLS = {
-  currentUmask: 18,
-  calculateAt(dirfd, path, allowEmpty = false) {
+  DEFAULT_POLLMASK: 5,
+  calculateAt(dirfd, path, allowEmpty) {
     if (PATH.isAbs(path)) {
       return path;
     }
@@ -3453,40 +3706,36 @@ var SYSCALLS = {
     }
     return dir + "/" + path;
   },
-  writeStat(buf, stat) {
-    HEAPU32[((buf) >>> 2) >>> 0] = stat.dev;
-    HEAPU32[(((buf) + (4)) >>> 2) >>> 0] = stat.mode;
+  doStat(func, path, buf) {
+    var stat = func(path);
+    HEAP32[((buf) >>> 2) >>> 0] = stat.dev;
+    HEAP32[(((buf) + (4)) >>> 2) >>> 0] = stat.mode;
     HEAPU32[(((buf) + (8)) >>> 2) >>> 0] = stat.nlink;
-    HEAPU32[(((buf) + (12)) >>> 2) >>> 0] = stat.uid;
-    HEAPU32[(((buf) + (16)) >>> 2) >>> 0] = stat.gid;
-    HEAPU32[(((buf) + (20)) >>> 2) >>> 0] = stat.rdev;
-    HEAP64[(((buf) + (24)) >>> 3) >>> 0] = BigInt(stat.size);
+    HEAP32[(((buf) + (12)) >>> 2) >>> 0] = stat.uid;
+    HEAP32[(((buf) + (16)) >>> 2) >>> 0] = stat.gid;
+    HEAP32[(((buf) + (20)) >>> 2) >>> 0] = stat.rdev;
+    (tempI64 = [ stat.size >>> 0, (tempDouble = stat.size, (+(Math.abs(tempDouble))) >= 1 ? (tempDouble > 0 ? (+(Math.floor((tempDouble) / 4294967296))) >>> 0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble))) >>> 0)) / 4294967296))))) >>> 0) : 0) ], 
+    HEAP32[(((buf) + (24)) >>> 2) >>> 0] = tempI64[0], HEAP32[(((buf) + (28)) >>> 2) >>> 0] = tempI64[1]);
     HEAP32[(((buf) + (32)) >>> 2) >>> 0] = 4096;
     HEAP32[(((buf) + (36)) >>> 2) >>> 0] = stat.blocks;
     var atime = stat.atime.getTime();
     var mtime = stat.mtime.getTime();
     var ctime = stat.ctime.getTime();
-    HEAP64[(((buf) + (40)) >>> 3) >>> 0] = BigInt(Math.floor(atime / 1e3));
+    (tempI64 = [ Math.floor(atime / 1e3) >>> 0, (tempDouble = Math.floor(atime / 1e3), 
+    (+(Math.abs(tempDouble))) >= 1 ? (tempDouble > 0 ? (+(Math.floor((tempDouble) / 4294967296))) >>> 0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble))) >>> 0)) / 4294967296))))) >>> 0) : 0) ], 
+    HEAP32[(((buf) + (40)) >>> 2) >>> 0] = tempI64[0], HEAP32[(((buf) + (44)) >>> 2) >>> 0] = tempI64[1]);
     HEAPU32[(((buf) + (48)) >>> 2) >>> 0] = (atime % 1e3) * 1e3 * 1e3;
-    HEAP64[(((buf) + (56)) >>> 3) >>> 0] = BigInt(Math.floor(mtime / 1e3));
+    (tempI64 = [ Math.floor(mtime / 1e3) >>> 0, (tempDouble = Math.floor(mtime / 1e3), 
+    (+(Math.abs(tempDouble))) >= 1 ? (tempDouble > 0 ? (+(Math.floor((tempDouble) / 4294967296))) >>> 0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble))) >>> 0)) / 4294967296))))) >>> 0) : 0) ], 
+    HEAP32[(((buf) + (56)) >>> 2) >>> 0] = tempI64[0], HEAP32[(((buf) + (60)) >>> 2) >>> 0] = tempI64[1]);
     HEAPU32[(((buf) + (64)) >>> 2) >>> 0] = (mtime % 1e3) * 1e3 * 1e3;
-    HEAP64[(((buf) + (72)) >>> 3) >>> 0] = BigInt(Math.floor(ctime / 1e3));
+    (tempI64 = [ Math.floor(ctime / 1e3) >>> 0, (tempDouble = Math.floor(ctime / 1e3), 
+    (+(Math.abs(tempDouble))) >= 1 ? (tempDouble > 0 ? (+(Math.floor((tempDouble) / 4294967296))) >>> 0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble))) >>> 0)) / 4294967296))))) >>> 0) : 0) ], 
+    HEAP32[(((buf) + (72)) >>> 2) >>> 0] = tempI64[0], HEAP32[(((buf) + (76)) >>> 2) >>> 0] = tempI64[1]);
     HEAPU32[(((buf) + (80)) >>> 2) >>> 0] = (ctime % 1e3) * 1e3 * 1e3;
-    HEAP64[(((buf) + (88)) >>> 3) >>> 0] = BigInt(stat.ino);
+    (tempI64 = [ stat.ino >>> 0, (tempDouble = stat.ino, (+(Math.abs(tempDouble))) >= 1 ? (tempDouble > 0 ? (+(Math.floor((tempDouble) / 4294967296))) >>> 0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble))) >>> 0)) / 4294967296))))) >>> 0) : 0) ], 
+    HEAP32[(((buf) + (88)) >>> 2) >>> 0] = tempI64[0], HEAP32[(((buf) + (92)) >>> 2) >>> 0] = tempI64[1]);
     return 0;
-  },
-  writeStatFs(buf, stats) {
-    HEAPU32[(((buf) + (4)) >>> 2) >>> 0] = stats.bsize;
-    HEAPU32[(((buf) + (60)) >>> 2) >>> 0] = stats.bsize;
-    HEAP64[(((buf) + (8)) >>> 3) >>> 0] = BigInt(stats.blocks);
-    HEAP64[(((buf) + (16)) >>> 3) >>> 0] = BigInt(stats.bfree);
-    HEAP64[(((buf) + (24)) >>> 3) >>> 0] = BigInt(stats.bavail);
-    HEAP64[(((buf) + (32)) >>> 3) >>> 0] = BigInt(stats.files);
-    HEAP64[(((buf) + (40)) >>> 3) >>> 0] = BigInt(stats.ffree);
-    HEAPU32[(((buf) + (48)) >>> 2) >>> 0] = stats.fsid;
-    HEAPU32[(((buf) + (64)) >>> 2) >>> 0] = stats.flags;
-    // ST_NOSUID
-    HEAPU32[(((buf) + (56)) >>> 2) >>> 0] = stats.namelen;
   },
   doMsync(addr, stream, len, flags, offset) {
     if (!FS.isFile(stream.node.mode)) {
@@ -3496,7 +3745,7 @@ var SYSCALLS = {
       // MAP_PRIVATE calls need not to be synced back to underlying fs
       return 0;
     }
-    var buffer = HEAPU8.subarray(addr >>> 0, addr + len >>> 0);
+    var buffer = HEAPU8.slice(addr, addr + len);
     FS.msync(stream, buffer, offset, len, flags);
   },
   getStreamFromFD(fd) {
@@ -3517,7 +3766,7 @@ function ___syscall_chdir(path) {
     FS.chdir(path);
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3527,7 +3776,7 @@ function ___syscall_dup(fd) {
     var old = SYSCALLS.getStreamFromFD(fd);
     return FS.dupStream(old).fd;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3552,24 +3801,24 @@ function ___syscall_faccessat(dirfd, path, amode, flags) {
     if (amode & 4) perms += "r";
     if (amode & 2) perms += "w";
     if (amode & 1) perms += "x";
-    if (perms && FS.nodePermissions(node, perms)) {
+    if (perms && /* otherwise, they've just passed F_OK */ FS.nodePermissions(node, perms)) {
       return -2;
     }
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
 
-/** @type {!Int16Array} */ var HEAP16;
-
-var syscallGetVarargI = () => {
+/** @suppress {duplicate } */ var syscallGetVarargI = () => {
   // the `+` prepended here is necessary to convince the JSCompiler that varargs is indeed a number.
   var ret = HEAP32[((+SYSCALLS.varargs) >>> 2) >>> 0];
   SYSCALLS.varargs += 4;
   return ret;
 };
+
+var syscallGetVarargP = syscallGetVarargI;
 
 function ___syscall_fcntl64(fd, cmd, varargs) {
   varargs >>>= 0;
@@ -3602,8 +3851,7 @@ function ___syscall_fcntl64(fd, cmd, varargs) {
      case 4:
       {
         var arg = syscallGetVarargI();
-        var mask = 289792;
-        stream.flags = (stream.flags & ~mask) | (arg & mask);
+        stream.flags |= arg;
         return 0;
       }
 
@@ -3618,15 +3866,12 @@ function ___syscall_fcntl64(fd, cmd, varargs) {
 
      case 13:
      case 14:
-      // Pretend that the locking is successful. These are process-level locks,
-      // and Emscripten programs are a single process. If we supported linking a
-      // filesystem between programs, we'd need to do more here.
-      // See https://github.com/emscripten-core/emscripten/issues/23697
       return 0;
     }
+    // Pretend that the locking is successful.
     return -28;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3634,27 +3879,22 @@ function ___syscall_fcntl64(fd, cmd, varargs) {
 function ___syscall_fstat64(fd, buf) {
   buf >>>= 0;
   try {
-    return SYSCALLS.writeStat(buf, FS.fstat(fd));
+    var stream = SYSCALLS.getStreamFromFD(fd);
+    return SYSCALLS.doStat(FS.stat, stream.path, buf);
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
 
-const INT53_MAX = 9007199254740992;
-
-const INT53_MIN = -9007199254740992;
-
-var bigintToI53Checked = num => (num < INT53_MIN || num > INT53_MAX) ? NaN : Number(num);
-
-function ___syscall_ftruncate64(fd, length) {
-  length = bigintToI53Checked(length);
+function ___syscall_ftruncate64(fd, length_low, length_high) {
+  var length = convertI32PairToI53Checked(length_low, length_high);
   try {
-    if (isNaN(length)) return -22;
+    if (isNaN(length)) return 61;
     FS.ftruncate(fd, length);
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3665,14 +3905,14 @@ function ___syscall_getcwd(buf, size) {
   buf >>>= 0;
   size >>>= 0;
   try {
-    if (!size) return -28;
+    if (size === 0) return -28;
     var cwd = FS.cwd();
     var cwdLengthInBytes = lengthBytesUTF8(cwd) + 1;
     if (size < cwdLengthInBytes) return -68;
     stringToUTF8(cwd, buf, size);
     return cwdLengthInBytes;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3695,13 +3935,15 @@ function ___syscall_getdents64(fd, dirp, count) {
       if (name === ".") {
         id = stream.node.id;
         type = 4;
-      } else if (name === "..") {
+      } else // DT_DIR
+      if (name === "..") {
         var lookup = FS.lookupPath(stream.path, {
           parent: true
         });
         id = lookup.node.id;
         type = 4;
-      } else {
+      } else // DT_DIR
+      {
         var child;
         try {
           child = FS.lookupNode(stream.node, name);
@@ -3714,13 +3956,17 @@ function ___syscall_getdents64(fd, dirp, count) {
           throw e;
         }
         id = child.id;
-        type = FS.isChrdev(child.mode) ? 2 : // character device.
-        FS.isDir(child.mode) ? 4 : // directory
-        FS.isLink(child.mode) ? 10 : // symbolic link.
+        type = FS.isChrdev(child.mode) ? 2 : // DT_CHR, character device.
+        FS.isDir(child.mode) ? 4 : // DT_DIR, directory.
+        FS.isLink(child.mode) ? 10 : // DT_LNK, symbolic link.
         8;
       }
-      HEAP64[((dirp + pos) >>> 3) >>> 0] = BigInt(id);
-      HEAP64[(((dirp + pos) + (8)) >>> 3) >>> 0] = BigInt((idx + 1) * struct_size);
+      // DT_REG, regular file.
+      (tempI64 = [ id >>> 0, (tempDouble = id, (+(Math.abs(tempDouble))) >= 1 ? (tempDouble > 0 ? (+(Math.floor((tempDouble) / 4294967296))) >>> 0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble))) >>> 0)) / 4294967296))))) >>> 0) : 0) ], 
+      HEAP32[((dirp + pos) >>> 2) >>> 0] = tempI64[0], HEAP32[(((dirp + pos) + (4)) >>> 2) >>> 0] = tempI64[1]);
+      (tempI64 = [ (idx + 1) * struct_size >>> 0, (tempDouble = (idx + 1) * struct_size, 
+      (+(Math.abs(tempDouble))) >= 1 ? (tempDouble > 0 ? (+(Math.floor((tempDouble) / 4294967296))) >>> 0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble))) >>> 0)) / 4294967296))))) >>> 0) : 0) ], 
+      HEAP32[(((dirp + pos) + (8)) >>> 2) >>> 0] = tempI64[0], HEAP32[(((dirp + pos) + (12)) >>> 2) >>> 0] = tempI64[1]);
       HEAP16[(((dirp + pos) + (16)) >>> 1) >>> 0] = 280;
       HEAP8[(dirp + pos) + (18) >>> 0] = type;
       stringToUTF8(name, dirp + pos + 19, 256);
@@ -3729,7 +3975,7 @@ function ___syscall_getdents64(fd, dirp, count) {
     FS.llseek(stream, idx * struct_size, 0);
     return pos;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3772,7 +4018,8 @@ function ___syscall_ioctl(fd, op, varargs) {
         return 0;
       }
 
-     case 21506:
+     // no-op, not actually adjusting terminal settings
+      case 21506:
      case 21507:
      case 21508:
       {
@@ -3798,7 +4045,8 @@ function ___syscall_ioctl(fd, op, varargs) {
         return 0;
       }
 
-     case 21519:
+     // no-op, not actually adjusting terminal settings
+      case 21519:
       {
         if (!stream.tty) return -59;
         var argp = syscallGetVarargP();
@@ -3812,8 +4060,8 @@ function ___syscall_ioctl(fd, op, varargs) {
         return -28;
       }
 
-     case 21537:
-     case 21531:
+     // not supported
+      case 21531:
       {
         var argp = syscallGetVarargP();
         return FS.ioctl(stream, op, argp);
@@ -3851,8 +4099,9 @@ function ___syscall_ioctl(fd, op, varargs) {
      default:
       return -28;
     }
-  } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+  } // not supported
+  catch (e) {
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3862,9 +4111,9 @@ function ___syscall_lstat64(path, buf) {
   buf >>>= 0;
   try {
     path = SYSCALLS.getStr(path);
-    return SYSCALLS.writeStat(buf, FS.lstat(path));
+    return SYSCALLS.doStat(FS.lstat, path, buf);
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3874,11 +4123,10 @@ function ___syscall_mkdirat(dirfd, path, mode) {
   try {
     path = SYSCALLS.getStr(path);
     path = SYSCALLS.calculateAt(dirfd, path);
-    mode &= ~SYSCALLS.currentUmask;
-    FS.mkdir(path, mode);
+    FS.mkdir(path, mode, 0);
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3892,9 +4140,9 @@ function ___syscall_newfstatat(dirfd, path, buf, flags) {
     var allowEmpty = flags & 4096;
     flags = flags & (~6400);
     path = SYSCALLS.calculateAt(dirfd, path, allowEmpty);
-    return SYSCALLS.writeStat(buf, nofollow ? FS.lstat(path) : FS.stat(path));
+    return SYSCALLS.doStat(nofollow ? FS.lstat : FS.stat, path, buf);
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3907,12 +4155,9 @@ function ___syscall_openat(dirfd, path, flags, varargs) {
     path = SYSCALLS.getStr(path);
     path = SYSCALLS.calculateAt(dirfd, path);
     var mode = varargs ? syscallGetVarargI() : 0;
-    if (flags & 64) {
-      mode &= ~SYSCALLS.currentUmask;
-    }
     return FS.open(path, flags, mode).fd;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3934,7 +4179,7 @@ function ___syscall_readlinkat(dirfd, path, buf, bufsize) {
     HEAP8[buf + len >>> 0] = endChar;
     return len;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3950,7 +4195,7 @@ function ___syscall_renameat(olddirfd, oldpath, newdirfd, newpath) {
     FS.rename(oldpath, newpath);
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3962,7 +4207,7 @@ function ___syscall_rmdir(path) {
     FS.rmdir(path);
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3972,9 +4217,9 @@ function ___syscall_stat64(path, buf) {
   buf >>>= 0;
   try {
     path = SYSCALLS.getStr(path);
-    return SYSCALLS.writeStat(buf, FS.stat(path));
+    return SYSCALLS.doStat(FS.stat, path, buf);
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3984,10 +4229,21 @@ function ___syscall_statfs64(path, size, buf) {
   size >>>= 0;
   buf >>>= 0;
   try {
-    SYSCALLS.writeStatFs(buf, FS.statfs(SYSCALLS.getStr(path)));
+    var stats = FS.statfs(SYSCALLS.getStr(path));
+    HEAP32[(((buf) + (4)) >>> 2) >>> 0] = stats.bsize;
+    HEAP32[(((buf) + (40)) >>> 2) >>> 0] = stats.bsize;
+    HEAP32[(((buf) + (8)) >>> 2) >>> 0] = stats.blocks;
+    HEAP32[(((buf) + (12)) >>> 2) >>> 0] = stats.bfree;
+    HEAP32[(((buf) + (16)) >>> 2) >>> 0] = stats.bavail;
+    HEAP32[(((buf) + (20)) >>> 2) >>> 0] = stats.files;
+    HEAP32[(((buf) + (24)) >>> 2) >>> 0] = stats.ffree;
+    HEAP32[(((buf) + (28)) >>> 2) >>> 0] = stats.fsid;
+    HEAP32[(((buf) + (44)) >>> 2) >>> 0] = stats.flags;
+    // ST_NOSUID
+    HEAP32[(((buf) + (36)) >>> 2) >>> 0] = stats.namelen;
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -3997,16 +4253,16 @@ function ___syscall_unlinkat(dirfd, path, flags) {
   try {
     path = SYSCALLS.getStr(path);
     path = SYSCALLS.calculateAt(dirfd, path);
-    if (!flags) {
+    if (flags === 0) {
       FS.unlink(path);
     } else if (flags === 512) {
       FS.rmdir(path);
     } else {
-      return -28;
+      abort("Invalid flags passed to unlinkat");
     }
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
@@ -4017,7 +4273,6 @@ function ___syscall_utimensat(dirfd, path, times, flags) {
   path >>>= 0;
   times >>>= 0;
   try {
-    var nofollow = flags & 256;
     path = SYSCALLS.getStr(path);
     path = SYSCALLS.calculateAt(dirfd, path, true);
     var now = Date.now(), atime, mtime;
@@ -4025,45 +4280,55 @@ function ___syscall_utimensat(dirfd, path, times, flags) {
       atime = now;
       mtime = now;
     } else {
-      function readTimespec(ptr) {
-        var tv_nsec = HEAP32[(((ptr) + (8)) >>> 2) >>> 0];
-        if (tv_nsec == 1073741823) {
-          return now;
-        }
-        if (tv_nsec == 1073741822) {
-          return null;
-        }
-        var tv_sec = readI53FromI64(ptr);
-        return (tv_sec * 1e3) + Math.floor(tv_nsec / (1e3 * 1e3));
+      var seconds = readI53FromI64(times);
+      var nanoseconds = HEAP32[(((times) + (8)) >>> 2) >>> 0];
+      if (nanoseconds == 1073741823) {
+        atime = now;
+      } else if (nanoseconds == 1073741822) {
+        atime = null;
+      } else {
+        atime = (seconds * 1e3) + (nanoseconds / (1e3 * 1e3));
       }
-      atime = readTimespec(times);
-      mtime = readTimespec(times + 16);
+      times += 16;
+      seconds = readI53FromI64(times);
+      nanoseconds = HEAP32[(((times) + (8)) >>> 2) >>> 0];
+      if (nanoseconds == 1073741823) {
+        mtime = now;
+      } else if (nanoseconds == 1073741822) {
+        mtime = null;
+      } else {
+        mtime = (seconds * 1e3) + (nanoseconds / (1e3 * 1e3));
+      }
     }
     // null here means UTIME_OMIT was passed. If both were set to UTIME_OMIT then
     // we can skip the call completely.
     if ((mtime ?? atime) !== null) {
-      FS.utime(path, atime, mtime, nofollow);
+      FS.utime(path, atime, mtime);
     }
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
 
 var __abort_js = () => abort("");
 
+function __emscripten_memcpy_js(dest, src, num) {
+  dest >>>= 0;
+  src >>>= 0;
+  num >>>= 0;
+  return HEAPU8.copyWithin(dest >>> 0, src >>> 0, src + num >>> 0);
+}
+
 var __emscripten_throw_longjmp = () => {
-  throw new EmscriptenSjLj;
+  throw Infinity;
 };
 
-function __gmtime_js(time, tmPtr) {
-  time = bigintToI53Checked(time);
+function __gmtime_js(time_low, time_high, tmPtr) {
+  var time = convertI32PairToI53Checked(time_low, time_high);
   tmPtr >>>= 0;
   var date = new Date(time * 1e3);
-  if (isNaN(date.getTime())) {
-    return 1;
-  }
   HEAP32[((tmPtr) >>> 2) >>> 0] = date.getUTCSeconds();
   HEAP32[(((tmPtr) + (4)) >>> 2) >>> 0] = date.getUTCMinutes();
   HEAP32[(((tmPtr) + (8)) >>> 2) >>> 0] = date.getUTCHours();
@@ -4074,14 +4339,13 @@ function __gmtime_js(time, tmPtr) {
   var start = Date.UTC(date.getUTCFullYear(), 0, 1, 0, 0, 0, 0);
   var yday = ((date.getTime() - start) / (1e3 * 60 * 60 * 24)) | 0;
   HEAP32[(((tmPtr) + (28)) >>> 2) >>> 0] = yday;
-  return 0;
 }
+
+var isLeapYear = year => year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
 
 var MONTH_DAYS_LEAP_CUMULATIVE = [ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 ];
 
 var MONTH_DAYS_REGULAR_CUMULATIVE = [ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 ];
-
-var isLeapYear = year => year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
 
 var ydayFromDate = date => {
   var leap = isLeapYear(date.getFullYear());
@@ -4091,13 +4355,10 @@ var ydayFromDate = date => {
   return yday;
 };
 
-function __localtime_js(time, tmPtr) {
-  time = bigintToI53Checked(time);
+function __localtime_js(time_low, time_high, tmPtr) {
+  var time = convertI32PairToI53Checked(time_low, time_high);
   tmPtr >>>= 0;
   var date = new Date(time * 1e3);
-  if (isNaN(date.getTime())) {
-    return 1;
-  }
   HEAP32[((tmPtr) >>> 2) >>> 0] = date.getSeconds();
   HEAP32[(((tmPtr) + (4)) >>> 2) >>> 0] = date.getMinutes();
   HEAP32[(((tmPtr) + (8)) >>> 2) >>> 0] = date.getHours();
@@ -4114,15 +4375,15 @@ function __localtime_js(time, tmPtr) {
   var winterOffset = start.getTimezoneOffset();
   var dst = (summerOffset != winterOffset && date.getTimezoneOffset() == Math.min(winterOffset, summerOffset)) | 0;
   HEAP32[(((tmPtr) + (32)) >>> 2) >>> 0] = dst;
-  return 0;
 }
 
-function __mmap_js(len, prot, flags, fd, offset, allocated, addr) {
+function __mmap_js(len, prot, flags, fd, offset_low, offset_high, allocated, addr) {
   len >>>= 0;
-  offset = bigintToI53Checked(offset);
+  var offset = convertI32PairToI53Checked(offset_low, offset_high);
   allocated >>>= 0;
   addr >>>= 0;
   try {
+    if (isNaN(offset)) return 61;
     var stream = SYSCALLS.getStreamFromFD(fd);
     var res = FS.mmap(stream, len, offset, prot, flags);
     var ptr = res.ptr;
@@ -4130,41 +4391,39 @@ function __mmap_js(len, prot, flags, fd, offset, allocated, addr) {
     HEAPU32[((addr) >>> 2) >>> 0] = ptr;
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
 
-function __munmap_js(addr, len, prot, flags, fd, offset) {
+function __munmap_js(addr, len, prot, flags, fd, offset_low, offset_high) {
   addr >>>= 0;
   len >>>= 0;
-  offset = bigintToI53Checked(offset);
+  var offset = convertI32PairToI53Checked(offset_low, offset_high);
   try {
     var stream = SYSCALLS.getStreamFromFD(fd);
     if (prot & 2) {
       SYSCALLS.doMsync(addr, stream, len, flags, offset);
     }
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return -e.errno;
   }
 }
 
 var __timegm_js = function(tmPtr) {
   tmPtr >>>= 0;
-  var ret = ((() => {
+  var ret = (() => {
     var time = Date.UTC(HEAP32[(((tmPtr) + (20)) >>> 2) >>> 0] + 1900, HEAP32[(((tmPtr) + (16)) >>> 2) >>> 0], HEAP32[(((tmPtr) + (12)) >>> 2) >>> 0], HEAP32[(((tmPtr) + (8)) >>> 2) >>> 0], HEAP32[(((tmPtr) + (4)) >>> 2) >>> 0], HEAP32[((tmPtr) >>> 2) >>> 0], 0);
     var date = new Date(time);
-    if (isNaN(date.getTime())) {
-      return -1;
-    }
     HEAP32[(((tmPtr) + (24)) >>> 2) >>> 0] = date.getUTCDay();
     var start = Date.UTC(date.getUTCFullYear(), 0, 1, 0, 0, 0, 0);
     var yday = ((date.getTime() - start) / (1e3 * 60 * 60 * 24)) | 0;
     HEAP32[(((tmPtr) + (28)) >>> 2) >>> 0] = yday;
     return date.getTime() / 1e3;
-  }))();
-  return BigInt(ret);
+  })();
+  return (setTempRet0((tempDouble = ret, (+(Math.abs(tempDouble))) >= 1 ? (tempDouble > 0 ? (+(Math.floor((tempDouble) / 4294967296))) >>> 0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble))) >>> 0)) / 4294967296))))) >>> 0) : 0)), 
+  ret >>> 0);
 };
 
 var __tzset_js = function(timezone, daylight, std_name, dst_name) {
@@ -4213,16 +4472,16 @@ var __tzset_js = function(timezone, daylight, std_name, dst_name) {
   }
 };
 
-var checkWasiClock = clock_id => clock_id >= 0 && clock_id <= 3;
-
-const nowIsMonotonic = 1;
+var _emscripten_get_now = () => performance.now();
 
 var _emscripten_date_now = () => Date.now();
 
-var _emscripten_get_now = () => performance.now();
+var nowIsMonotonic = 1;
 
-function _clock_time_get(clk_id, ignored_precision, ptime) {
-  ignored_precision = bigintToI53Checked(ignored_precision);
+var checkWasiClock = clock_id => clock_id >= 0 && clock_id <= 3;
+
+function _clock_time_get(clk_id, ignored_precision_low, ignored_precision_high, ptime) {
+  var ignored_precision = convertI32PairToI53Checked(ignored_precision_low, ignored_precision_high);
   ptime >>>= 0;
   if (!checkWasiClock(clk_id)) {
     return 28;
@@ -4237,12 +4496,11 @@ function _clock_time_get(clk_id, ignored_precision, ptime) {
     return 52;
   }
   // "now" is in ms, and wasi times are in ns.
-  var nsec = Math.round(now * 1e6);
-  HEAP64[((ptime) >>> 3) >>> 0] = BigInt(nsec);
+  var nsec = Math.round(now * 1e3 * 1e3);
+  (tempI64 = [ nsec >>> 0, (tempDouble = nsec, (+(Math.abs(tempDouble))) >= 1 ? (tempDouble > 0 ? (+(Math.floor((tempDouble) / 4294967296))) >>> 0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble))) >>> 0)) / 4294967296))))) >>> 0) : 0) ], 
+  HEAP32[((ptime) >>> 2) >>> 0] = tempI64[0], HEAP32[(((ptime) + (4)) >>> 2) >>> 0] = tempI64[1]);
   return 0;
 }
-
-/** @type {!Float64Array} */ var HEAPF64;
 
 var readEmAsmArgsArray = [];
 
@@ -4258,7 +4516,7 @@ var readEmAsmArgs = (sigPtr, buf) => {
     wide &= (ch != 112);
     buf += wide && (buf % 8) ? 4 : 0;
     readEmAsmArgsArray.push(// Special case for pointers under wasm64 or CAN_ADDRESS_2GB mode.
-    ch == 112 ? HEAPU32[((buf) >>> 2) >>> 0] : ch == 106 ? HEAP64[((buf) >>> 3) >>> 0] : ch == 105 ? HEAP32[((buf) >>> 2) >>> 0] : HEAPF64[((buf) >>> 3) >>> 0]);
+    ch == 112 ? HEAPU32[((buf) >>> 2) >>> 0] : ch == 105 ? HEAP32[((buf) >>> 2) >>> 0] : HEAPF64[((buf) >>> 3) >>> 0]);
     buf += wide ? 8 : 4;
   }
   return readEmAsmArgsArray;
@@ -4289,17 +4547,19 @@ function _emscripten_get_heap_max() {
 var _emscripten_has_asyncify = () => 1;
 
 var growMemory = size => {
-  var oldHeapSize = wasmMemory.buffer.byteLength;
-  var pages = ((size - oldHeapSize + 65535) / 65536) | 0;
+  var b = wasmMemory.buffer;
+  var pages = ((size - b.byteLength + 65535) / 65536) | 0;
   try {
     // round size grow request up to wasm page size (fixed 64KB per spec)
     wasmMemory.grow(pages);
     // .grow() takes a delta compared to the previous size
     updateMemoryViews();
     return 1;
-  } catch (e) {}
+  } /*success*/ catch (e) {}
 };
 
+// implicit 0 return to save code size (caller will cast "undefined" into 0
+// anyhow)
 function _emscripten_resize_heap(requestedSize) {
   requestedSize >>>= 0;
   var oldSize = HEAPU8.length;
@@ -4344,18 +4604,10 @@ function _emscripten_resize_heap(requestedSize) {
   return false;
 }
 
-/** @type {!Float32Array} */ var HEAPF32;
-
-/** @type {!Uint16Array} */ var HEAPU16;
-
-/** not-@type {!BigUint64Array} */ var HEAPU64;
-
 function _emscripten_run_script(ptr) {
   ptr >>>= 0;
   eval(UTF8ToString(ptr));
 }
-
-const ASYNCIFY_STACK_SIZE = 4096;
 
 var handleException = e => {
   // Certain exception types we do not treat as errors since they are used for
@@ -4382,10 +4634,12 @@ var _proc_exit = code => {
   quit_(code, new ExitStatus(code));
 };
 
-/** @param {boolean|number=} implicit */ var exitJS = (status, implicit) => {
+/** @suppress {duplicate } */ /** @param {boolean|number=} implicit */ var exitJS = (status, implicit) => {
   EXITSTATUS = status;
   _proc_exit(status);
 };
+
+var _exit = exitJS;
 
 var maybeExit = () => {
   if (!keepRuntimeAlive()) {
@@ -4397,248 +4651,35 @@ var maybeExit = () => {
   }
 };
 
-var callUserCallback = (func, ...args) => {
+var callUserCallback = func => {
   if (ABORT) {
     return;
   }
   try {
-    return func(...args);
+    func();
+    maybeExit();
   } catch (e) {
     handleException(e);
-  } finally {
-    maybeExit();
   }
 };
 
-var runAndAbortIfError = func => {
-  try {
-    return func();
-  } catch (e) {
-    abort(e);
-  }
-};
+/** @param {number=} timeout */ var safeSetTimeout = (func, timeout) => setTimeout(() => {
+  callUserCallback(func);
+}, timeout);
 
-var Asyncify = {
-  instrumentWasmImports(imports) {
-    var importPattern = /^(invoke_.*|__asyncjs__.*)$/;
-    for (let [x, original] of Object.entries(imports)) {
-      if (typeof original === "function") {
-        let isAsyncifyImport = original.isAsync || importPattern.test(x);
-      }
-    }
-  },
-  instrumentFunction(original) {
-    var wrapper = (...args) => {
-      Asyncify.exportCallStack.push(original);
-      try {
-        return original(...args);
-      } finally {
-        if (!ABORT) {
-          var top = Asyncify.exportCallStack.pop();
-          Asyncify.maybeStopUnwind();
-        }
-      }
-    };
-    Asyncify.funcWrappers.set(original, wrapper);
-    return wrapper;
-  },
-  instrumentWasmExports(exports) {
-    var ret = {};
-    for (let [x, original] of Object.entries(exports)) {
-      if (typeof original === "function") {
-        var wrapper = Asyncify.instrumentFunction(original);
-        ret[x] = wrapper;
-      } else {
-        ret[x] = original;
-      }
-    }
-    return ret;
-  },
-  State: {
-    Normal: 0,
-    Unwinding: 1,
-    Rewinding: 2,
-    Disabled: 3
-  },
-  state: 0,
-  currData: null,
-  handleSleepReturnValue: 0,
-  exportCallStack: [],
-  callstackFuncToId: new Map,
-  callStackIdToFunc: new Map,
-  funcWrappers: new Map,
-  callStackId: 0,
-  asyncPromiseHandlers: null,
-  sleepCallbacks: [],
-  getCallStackId(func) {
-    if (!Asyncify.callstackFuncToId.has(func)) {
-      var id = Asyncify.callStackId++;
-      Asyncify.callstackFuncToId.set(func, id);
-      Asyncify.callStackIdToFunc.set(id, func);
-    }
-    return Asyncify.callstackFuncToId.get(func);
-  },
-  maybeStopUnwind() {
-    if (Asyncify.currData && Asyncify.state === Asyncify.State.Unwinding && !Asyncify.exportCallStack.length) {
-      // We just finished unwinding.
-      // Be sure to set the state before calling any other functions to avoid
-      // possible infinite recursion here (For example in debug pthread builds
-      // the dbg() function itself can call back into WebAssembly to get the
-      // current pthread_self() pointer).
-      Asyncify.state = Asyncify.State.Normal;
-      // Keep the runtime alive so that a re-wind can be done later.
-      runAndAbortIfError(_asyncify_stop_unwind);
-      if (typeof Fibers !== "undefined") {
-        Fibers.trampoline();
-      }
-    }
-  },
-  whenDone() {
-    return new Promise((resolve, reject) => {
-      Asyncify.asyncPromiseHandlers = {
-        resolve,
-        reject
-      };
-    });
-  },
-  allocateData() {
-    // An asyncify data structure has three fields:
-    //  0  current stack pos
-    //  4  max stack pos
-    //  8  id of function at bottom of the call stack (callStackIdToFunc[id] == wasm func)
-    // The Asyncify ABI only interprets the first two fields, the rest is for the runtime.
-    // We also embed a stack in the same memory region here, right next to the structure.
-    // This struct is also defined as asyncify_data_t in emscripten/fiber.h
-    var ptr = _malloc(12 + ASYNCIFY_STACK_SIZE);
-    Asyncify.setDataHeader(ptr, ptr + 12, ASYNCIFY_STACK_SIZE);
-    Asyncify.setDataRewindFunc(ptr);
-    return ptr;
-  },
-  setDataHeader(ptr, stack, stackSize) {
-    HEAPU32[((ptr) >>> 2) >>> 0] = stack;
-    HEAPU32[(((ptr) + (4)) >>> 2) >>> 0] = stack + stackSize;
-  },
-  setDataRewindFunc(ptr) {
-    var bottomOfCallStack = Asyncify.exportCallStack[0];
-    var rewindId = Asyncify.getCallStackId(bottomOfCallStack);
-    HEAP32[(((ptr) + (8)) >>> 2) >>> 0] = rewindId;
-  },
-  getDataRewindFunc(ptr) {
-    var id = HEAP32[(((ptr) + (8)) >>> 2) >>> 0];
-    var func = Asyncify.callStackIdToFunc.get(id);
-    return func;
-  },
-  doRewind(ptr) {
-    var original = Asyncify.getDataRewindFunc(ptr);
-    var func = Asyncify.funcWrappers.get(original);
-    // Once we have rewound and the stack we no longer need to artificially
-    // keep the runtime alive.
-    return callUserCallback(func);
-  },
-  handleSleep(startAsync) {
-    if (ABORT) return;
-    if (Asyncify.state === Asyncify.State.Normal) {
-      // Prepare to sleep. Call startAsync, and see what happens:
-      // if the code decided to call our callback synchronously,
-      // then no async operation was in fact begun, and we don't
-      // need to do anything.
-      var reachedCallback = false;
-      var reachedAfterCallback = false;
-      startAsync((handleSleepReturnValue = 0) => {
-        if (ABORT) return;
-        Asyncify.handleSleepReturnValue = handleSleepReturnValue;
-        reachedCallback = true;
-        if (!reachedAfterCallback) {
-          // We are happening synchronously, so no need for async.
-          return;
-        }
-        Asyncify.state = Asyncify.State.Rewinding;
-        runAndAbortIfError(() => _asyncify_start_rewind(Asyncify.currData));
-        if (typeof MainLoop !== "undefined" && MainLoop.func) {
-          MainLoop.resume();
-        }
-        var asyncWasmReturnValue, isError = false;
-        try {
-          asyncWasmReturnValue = Asyncify.doRewind(Asyncify.currData);
-        } catch (err) {
-          asyncWasmReturnValue = err;
-          isError = true;
-        }
-        // Track whether the return value was handled by any promise handlers.
-        var handled = false;
-        if (!Asyncify.currData) {
-          // All asynchronous execution has finished.
-          // `asyncWasmReturnValue` now contains the final
-          // return value of the exported async WASM function.
-          // Note: `asyncWasmReturnValue` is distinct from
-          // `Asyncify.handleSleepReturnValue`.
-          // `Asyncify.handleSleepReturnValue` contains the return
-          // value of the last C function to have executed
-          // `Asyncify.handleSleep()`, whereas `asyncWasmReturnValue`
-          // contains the return value of the exported WASM function
-          // that may have called C functions that
-          // call `Asyncify.handleSleep()`.
-          var asyncPromiseHandlers = Asyncify.asyncPromiseHandlers;
-          if (asyncPromiseHandlers) {
-            Asyncify.asyncPromiseHandlers = null;
-            (isError ? asyncPromiseHandlers.reject : asyncPromiseHandlers.resolve)(asyncWasmReturnValue);
-            handled = true;
-          }
-        }
-        if (isError && !handled) {
-          // If there was an error and it was not handled by now, we have no choice but to
-          // rethrow that error into the global scope where it can be caught only by
-          // `onerror` or `onunhandledpromiserejection`.
-          throw asyncWasmReturnValue;
-        }
-      });
-      reachedAfterCallback = true;
-      if (!reachedCallback) {
-        // A true async operation was begun; start a sleep.
-        Asyncify.state = Asyncify.State.Unwinding;
-        // TODO: reuse, don't alloc/free every sleep
-        Asyncify.currData = Asyncify.allocateData();
-        if (typeof MainLoop !== "undefined" && MainLoop.func) {
-          MainLoop.pause();
-        }
-        runAndAbortIfError(() => _asyncify_start_unwind(Asyncify.currData));
-      }
-    } else if (Asyncify.state === Asyncify.State.Rewinding) {
-      // Stop a resume.
-      Asyncify.state = Asyncify.State.Normal;
-      runAndAbortIfError(_asyncify_stop_rewind);
-      _free(Asyncify.currData);
-      Asyncify.currData = null;
-      // Call all sleep callbacks now that the sleep-resume is all done.
-      for (var cb of Asyncify.sleepCallbacks) {
-        callUserCallback(cb);
-      }
-    } else {
-      abort(`invalid state: ${Asyncify.state}`);
-    }
-    return Asyncify.handleSleepReturnValue;
-  },
-  handleAsync: startAsync => Asyncify.handleSleep(async wakeUp => {
-    // TODO: add error handling as a second param when handleSleep implements it.
-    wakeUp(await startAsync());
-  })
-};
-
-var _emscripten_sleep = function(ms) {
-  let innerFunc = () => new Promise(resolve => setTimeout(resolve, ms));
-  return Asyncify.handleAsync(innerFunc);
-};
+var _emscripten_sleep = ms => Asyncify.handleSleep(wakeUp => safeSetTimeout(wakeUp, ms));
 
 _emscripten_sleep.isAsync = true;
 
 var ENV = {};
 
-var getExecutableName = () => thisProgram;
+var getExecutableName = () => thisProgram || "./this.program";
 
 var getEnvStrings = () => {
   if (!getEnvStrings.strings) {
     // Default values.
-    var lang = (globalThis.navigator?.language ?? "C").replace("-", "_") + ".UTF-8";
+    // Browser language detection #8751
+    var lang = ((typeof navigator == "object" && navigator.languages && navigator.languages[0]) || "C").replace("-", "_") + ".UTF-8";
     var env = {
       "USER": "web_user",
       "LOGNAME": "web_user",
@@ -4664,32 +4705,37 @@ var getEnvStrings = () => {
   return getEnvStrings.strings;
 };
 
-function _environ_get(__environ, environ_buf) {
+var stringToAscii = (str, buffer) => {
+  for (var i = 0; i < str.length; ++i) {
+    HEAP8[buffer++ >>> 0] = str.charCodeAt(i);
+  }
+  // Null-terminate the string
+  HEAP8[buffer >>> 0] = 0;
+};
+
+var _environ_get = function(__environ, environ_buf) {
   __environ >>>= 0;
   environ_buf >>>= 0;
   var bufSize = 0;
-  var envp = 0;
-  for (var string of getEnvStrings()) {
+  getEnvStrings().forEach((string, i) => {
     var ptr = environ_buf + bufSize;
-    HEAPU32[(((__environ) + (envp)) >>> 2) >>> 0] = ptr;
-    bufSize += stringToUTF8(string, ptr, Infinity) + 1;
-    envp += 4;
-  }
+    HEAPU32[(((__environ) + (i * 4)) >>> 2) >>> 0] = ptr;
+    stringToAscii(string, ptr);
+    bufSize += string.length + 1;
+  });
   return 0;
-}
+};
 
-function _environ_sizes_get(penviron_count, penviron_buf_size) {
+var _environ_sizes_get = function(penviron_count, penviron_buf_size) {
   penviron_count >>>= 0;
   penviron_buf_size >>>= 0;
   var strings = getEnvStrings();
   HEAPU32[((penviron_count) >>> 2) >>> 0] = strings.length;
   var bufSize = 0;
-  for (var string of strings) {
-    bufSize += lengthBytesUTF8(string) + 1;
-  }
+  strings.forEach(string => bufSize += string.length + 1);
   HEAPU32[((penviron_buf_size) >>> 2) >>> 0] = bufSize;
   return 0;
-}
+};
 
 function _fd_close(fd) {
   try {
@@ -4697,7 +4743,7 @@ function _fd_close(fd) {
     FS.close(stream);
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return e.errno;
   }
 }
@@ -4716,11 +4762,13 @@ function _fd_fdstat_get(fd, pbuf) {
     }
     HEAP8[pbuf >>> 0] = type;
     HEAP16[(((pbuf) + (2)) >>> 1) >>> 0] = flags;
-    HEAP64[(((pbuf) + (8)) >>> 3) >>> 0] = BigInt(rightsBase);
-    HEAP64[(((pbuf) + (16)) >>> 3) >>> 0] = BigInt(rightsInheriting);
+    (tempI64 = [ rightsBase >>> 0, (tempDouble = rightsBase, (+(Math.abs(tempDouble))) >= 1 ? (tempDouble > 0 ? (+(Math.floor((tempDouble) / 4294967296))) >>> 0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble))) >>> 0)) / 4294967296))))) >>> 0) : 0) ], 
+    HEAP32[(((pbuf) + (8)) >>> 2) >>> 0] = tempI64[0], HEAP32[(((pbuf) + (12)) >>> 2) >>> 0] = tempI64[1]);
+    (tempI64 = [ rightsInheriting >>> 0, (tempDouble = rightsInheriting, (+(Math.abs(tempDouble))) >= 1 ? (tempDouble > 0 ? (+(Math.floor((tempDouble) / 4294967296))) >>> 0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble))) >>> 0)) / 4294967296))))) >>> 0) : 0) ], 
+    HEAP32[(((pbuf) + (16)) >>> 2) >>> 0] = tempI64[0], HEAP32[(((pbuf) + (20)) >>> 2) >>> 0] = tempI64[1]);
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return e.errno;
   }
 }
@@ -4731,41 +4779,31 @@ function _fd_fdstat_get(fd, pbuf) {
     var ptr = HEAPU32[((iov) >>> 2) >>> 0];
     var len = HEAPU32[(((iov) + (4)) >>> 2) >>> 0];
     iov += 8;
-    try {
-      var curr = FS.read(stream, HEAP8, ptr, len, offset);
-    } catch (e) {
-      // On a non-blocking stream a subsequent read may would-block after we
-      // already gathered data. POSIX readv is a single gather-read: return
-      // what we have rather than failing the whole call.
-      if (ret > 0 && e instanceof FS.ErrnoError && (e.errno == 6 || e.errno == 6)) {
-        break;
-      }
-      throw e;
-    }
+    var curr = FS.read(stream, HEAP8, ptr, len, offset);
     if (curr < 0) return -1;
     ret += curr;
     if (curr < len) break;
     // nothing more to read
-    if (typeof offset !== "undefined") {
+    if (typeof offset != "undefined") {
       offset += curr;
     }
   }
   return ret;
 };
 
-function _fd_pread(fd, iov, iovcnt, offset, pnum) {
+function _fd_pread(fd, iov, iovcnt, offset_low, offset_high, pnum) {
   iov >>>= 0;
   iovcnt >>>= 0;
-  offset = bigintToI53Checked(offset);
+  var offset = convertI32PairToI53Checked(offset_low, offset_high);
   pnum >>>= 0;
   try {
-    if (isNaN(offset)) return 22;
+    if (isNaN(offset)) return 61;
     var stream = SYSCALLS.getStreamFromFD(fd);
     var num = doReadv(stream, iov, iovcnt, offset);
     HEAPU32[((pnum) >>> 2) >>> 0] = num;
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return e.errno;
   }
 }
@@ -4780,50 +4818,47 @@ function _fd_read(fd, iov, iovcnt, pnum) {
     HEAPU32[((pnum) >>> 2) >>> 0] = num;
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return e.errno;
   }
 }
 
-function _fd_seek(fd, offset, whence, newOffset) {
-  offset = bigintToI53Checked(offset);
+function _fd_seek(fd, offset_low, offset_high, whence, newOffset) {
+  var offset = convertI32PairToI53Checked(offset_low, offset_high);
   newOffset >>>= 0;
   try {
-    if (isNaN(offset)) return 22;
+    if (isNaN(offset)) return 61;
     var stream = SYSCALLS.getStreamFromFD(fd);
     FS.llseek(stream, offset, whence);
-    HEAP64[((newOffset) >>> 3) >>> 0] = BigInt(stream.position);
-    if (stream.getdents && !offset && whence === 0) stream.getdents = null;
+    (tempI64 = [ stream.position >>> 0, (tempDouble = stream.position, (+(Math.abs(tempDouble))) >= 1 ? (tempDouble > 0 ? (+(Math.floor((tempDouble) / 4294967296))) >>> 0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble))) >>> 0)) / 4294967296))))) >>> 0) : 0) ], 
+    HEAP32[((newOffset) >>> 2) >>> 0] = tempI64[0], HEAP32[(((newOffset) + (4)) >>> 2) >>> 0] = tempI64[1]);
+    if (stream.getdents && offset === 0 && whence === 0) stream.getdents = null;
     // reset readdir state
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return e.errno;
   }
 }
 
 /** @param {number=} offset */ var doWritev = (stream, iov, iovcnt, offset) => {
-  // Gather all iovecs into one contiguous buffer and issue a single
-  // FS.write, matching POSIX writev's single gather-write semantics (as
-  // __syscall_sendmsg already does). Per-iovec writes fragment a stream
-  // socket send into multiple segments, breaking stream byte semantics.
-  if (iovcnt == 1) {
-    // Single iovec: write directly from HEAP8, no gather buffer needed.
-    return FS.write(stream, HEAP8, HEAPU32[((iov) >>> 2) >>> 0], HEAPU32[(((iov) + (4)) >>> 2) >>> 0], offset);
-  }
-  var total = 0;
-  for (var i = 0, p = iov; i < iovcnt; i++, p += 8) {
-    total += HEAPU32[(((p) + (4)) >>> 2) >>> 0];
-  }
-  var view = new Uint8Array(total);
-  var voff = 0;
-  for (var i = 0; i < iovcnt; i++, iov += 8) {
+  var ret = 0;
+  for (var i = 0; i < iovcnt; i++) {
     var ptr = HEAPU32[((iov) >>> 2) >>> 0];
     var len = HEAPU32[(((iov) + (4)) >>> 2) >>> 0];
-    view.set(HEAPU8.subarray(ptr >>> 0, ptr + len >>> 0), voff);
-    voff += len;
+    iov += 8;
+    var curr = FS.write(stream, HEAP8, ptr, len, offset);
+    if (curr < 0) return -1;
+    ret += curr;
+    if (curr < len) {
+      // No more space to write.
+      break;
+    }
+    if (typeof offset != "undefined") {
+      offset += curr;
+    }
   }
-  return FS.write(stream, view, 0, total, offset);
+  return ret;
 };
 
 function _fd_write(fd, iov, iovcnt, pnum) {
@@ -4836,19 +4871,272 @@ function _fd_write(fd, iov, iovcnt, pnum) {
     HEAPU32[((pnum) >>> 2) >>> 0] = num;
     return 0;
   } catch (e) {
-    if (typeof FS === "undefined" || !(e.name === "ErrnoError")) throw e;
+    if (typeof FS == "undefined" || !(e.name === "ErrnoError")) throw e;
     return e.errno;
   }
 }
 
+var listenOnce = (object, event, func) => object.addEventListener(event, func, {
+  "once": true
+});
+
+var dynCallLegacy = (sig, ptr, args) => {
+  sig = sig.replace(/p/g, "i");
+  var f = Module["dynCall_" + sig];
+  return f(ptr, ...args);
+};
+
 var wasmTableMirror = [];
+
+/** @type {WebAssembly.Table} */ var wasmTable;
 
 var getWasmTableEntry = funcPtr => {
   var func = wasmTableMirror[funcPtr];
   if (!func) {
+    if (funcPtr >= wasmTableMirror.length) wasmTableMirror.length = funcPtr + 1;
     /** @suppress {checkTypes} */ wasmTableMirror[funcPtr] = func = wasmTable.get(funcPtr);
   }
   return func;
+};
+
+var runAndAbortIfError = func => {
+  try {
+    return func();
+  } catch (e) {
+    abort(e);
+  }
+};
+
+var sigToWasmTypes = sig => {
+  var typeNames = {
+    "i": "i32",
+    "j": "i64",
+    "f": "f32",
+    "d": "f64",
+    "e": "externref",
+    "p": "i32"
+  };
+  var type = {
+    parameters: [],
+    results: sig[0] == "v" ? [] : [ typeNames[sig[0]] ]
+  };
+  for (var i = 1; i < sig.length; ++i) {
+    type.parameters.push(typeNames[sig[i]]);
+  }
+  return type;
+};
+
+var runtimeKeepalivePush = () => {
+  runtimeKeepaliveCounter += 1;
+};
+
+var runtimeKeepalivePop = () => {
+  runtimeKeepaliveCounter -= 1;
+};
+
+var Asyncify = {
+  instrumentWasmImports(imports) {
+    var importPattern = /^(invoke_.*|__asyncjs__.*)$/;
+    for (let [x, original] of Object.entries(imports)) {
+      if (typeof original == "function") {
+        let isAsyncifyImport = original.isAsync || importPattern.test(x);
+      }
+    }
+  },
+  instrumentWasmExports(exports) {
+    var ret = {};
+    for (let [x, original] of Object.entries(exports)) {
+      if (typeof original == "function") {
+        ret[x] = (...args) => {
+          Asyncify.exportCallStack.push(x);
+          try {
+            return original(...args);
+          } finally {
+            if (!ABORT) {
+              var y = Asyncify.exportCallStack.pop();
+              Asyncify.maybeStopUnwind();
+            }
+          }
+        };
+      } else {
+        ret[x] = original;
+      }
+    }
+    return ret;
+  },
+  State: {
+    Normal: 0,
+    Unwinding: 1,
+    Rewinding: 2,
+    Disabled: 3
+  },
+  state: 0,
+  StackSize: 4096,
+  currData: null,
+  handleSleepReturnValue: 0,
+  exportCallStack: [],
+  callStackNameToId: {},
+  callStackIdToName: {},
+  callStackId: 0,
+  asyncPromiseHandlers: null,
+  sleepCallbacks: [],
+  getCallStackId(funcName) {
+    var id = Asyncify.callStackNameToId[funcName];
+    if (id === undefined) {
+      id = Asyncify.callStackId++;
+      Asyncify.callStackNameToId[funcName] = id;
+      Asyncify.callStackIdToName[id] = funcName;
+    }
+    return id;
+  },
+  maybeStopUnwind() {
+    if (Asyncify.currData && Asyncify.state === Asyncify.State.Unwinding && Asyncify.exportCallStack.length === 0) {
+      // We just finished unwinding.
+      // Be sure to set the state before calling any other functions to avoid
+      // possible infinite recursion here (For example in debug pthread builds
+      // the dbg() function itself can call back into WebAssembly to get the
+      // current pthread_self() pointer).
+      Asyncify.state = Asyncify.State.Normal;
+      // Keep the runtime alive so that a re-wind can be done later.
+      runAndAbortIfError(_asyncify_stop_unwind);
+      if (typeof Fibers != "undefined") {
+        Fibers.trampoline();
+      }
+    }
+  },
+  whenDone() {
+    return new Promise((resolve, reject) => {
+      Asyncify.asyncPromiseHandlers = {
+        resolve,
+        reject
+      };
+    });
+  },
+  allocateData() {
+    // An asyncify data structure has three fields:
+    //  0  current stack pos
+    //  4  max stack pos
+    //  8  id of function at bottom of the call stack (callStackIdToName[id] == name of js function)
+    // The Asyncify ABI only interprets the first two fields, the rest is for the runtime.
+    // We also embed a stack in the same memory region here, right next to the structure.
+    // This struct is also defined as asyncify_data_t in emscripten/fiber.h
+    var ptr = _malloc(12 + Asyncify.StackSize);
+    Asyncify.setDataHeader(ptr, ptr + 12, Asyncify.StackSize);
+    Asyncify.setDataRewindFunc(ptr);
+    return ptr;
+  },
+  setDataHeader(ptr, stack, stackSize) {
+    HEAPU32[((ptr) >>> 2) >>> 0] = stack;
+    HEAPU32[(((ptr) + (4)) >>> 2) >>> 0] = stack + stackSize;
+  },
+  setDataRewindFunc(ptr) {
+    var bottomOfCallStack = Asyncify.exportCallStack[0];
+    var rewindId = Asyncify.getCallStackId(bottomOfCallStack);
+    HEAP32[(((ptr) + (8)) >>> 2) >>> 0] = rewindId;
+  },
+  getDataRewindFuncName(ptr) {
+    var id = HEAP32[(((ptr) + (8)) >>> 2) >>> 0];
+    var name = Asyncify.callStackIdToName[id];
+    return name;
+  },
+  getDataRewindFunc(name) {
+    var func = wasmExports[name];
+    return func;
+  },
+  doRewind(ptr) {
+    var name = Asyncify.getDataRewindFuncName(ptr);
+    var func = Asyncify.getDataRewindFunc(name);
+    // Once we have rewound and the stack we no longer need to artificially
+    // keep the runtime alive.
+    return func();
+  },
+  handleSleep(startAsync) {
+    if (ABORT) return;
+    if (Asyncify.state === Asyncify.State.Normal) {
+      // Prepare to sleep. Call startAsync, and see what happens:
+      // if the code decided to call our callback synchronously,
+      // then no async operation was in fact begun, and we don't
+      // need to do anything.
+      var reachedCallback = false;
+      var reachedAfterCallback = false;
+      startAsync((handleSleepReturnValue = 0) => {
+        if (ABORT) return;
+        Asyncify.handleSleepReturnValue = handleSleepReturnValue;
+        reachedCallback = true;
+        if (!reachedAfterCallback) {
+          // We are happening synchronously, so no need for async.
+          return;
+        }
+        Asyncify.state = Asyncify.State.Rewinding;
+        runAndAbortIfError(() => _asyncify_start_rewind(Asyncify.currData));
+        if (typeof MainLoop != "undefined" && MainLoop.func) {
+          MainLoop.resume();
+        }
+        var asyncWasmReturnValue, isError = false;
+        try {
+          asyncWasmReturnValue = Asyncify.doRewind(Asyncify.currData);
+        } catch (err) {
+          asyncWasmReturnValue = err;
+          isError = true;
+        }
+        // Track whether the return value was handled by any promise handlers.
+        var handled = false;
+        if (!Asyncify.currData) {
+          // All asynchronous execution has finished.
+          // `asyncWasmReturnValue` now contains the final
+          // return value of the exported async WASM function.
+          // Note: `asyncWasmReturnValue` is distinct from
+          // `Asyncify.handleSleepReturnValue`.
+          // `Asyncify.handleSleepReturnValue` contains the return
+          // value of the last C function to have executed
+          // `Asyncify.handleSleep()`, where as `asyncWasmReturnValue`
+          // contains the return value of the exported WASM function
+          // that may have called C functions that
+          // call `Asyncify.handleSleep()`.
+          var asyncPromiseHandlers = Asyncify.asyncPromiseHandlers;
+          if (asyncPromiseHandlers) {
+            Asyncify.asyncPromiseHandlers = null;
+            (isError ? asyncPromiseHandlers.reject : asyncPromiseHandlers.resolve)(asyncWasmReturnValue);
+            handled = true;
+          }
+        }
+        if (isError && !handled) {
+          // If there was an error and it was not handled by now, we have no choice but to
+          // rethrow that error into the global scope where it can be caught only by
+          // `onerror` or `onunhandledpromiserejection`.
+          throw asyncWasmReturnValue;
+        }
+      });
+      reachedAfterCallback = true;
+      if (!reachedCallback) {
+        // A true async operation was begun; start a sleep.
+        Asyncify.state = Asyncify.State.Unwinding;
+        // TODO: reuse, don't alloc/free every sleep
+        Asyncify.currData = Asyncify.allocateData();
+        if (typeof MainLoop != "undefined" && MainLoop.func) {
+          MainLoop.pause();
+        }
+        runAndAbortIfError(() => _asyncify_start_unwind(Asyncify.currData));
+      }
+    } else if (Asyncify.state === Asyncify.State.Rewinding) {
+      // Stop a resume.
+      Asyncify.state = Asyncify.State.Normal;
+      runAndAbortIfError(_asyncify_stop_rewind);
+      _free(Asyncify.currData);
+      Asyncify.currData = null;
+      // Call all sleep callbacks now that the sleep-resume is all done.
+      Asyncify.sleepCallbacks.forEach(callUserCallback);
+    } else {
+      abort(`invalid state: ${Asyncify.state}`);
+    }
+    return Asyncify.handleSleepReturnValue;
+  },
+  handleAsync(startAsync) {
+    return Asyncify.handleSleep(wakeUp => {
+      // TODO: add error handling as a second param when handleSleep implements it.
+      startAsync().then(wakeUp);
+    });
+  }
 };
 
 var getCFunc = ident => {
@@ -4857,12 +5145,8 @@ var getCFunc = ident => {
   return func;
 };
 
-var runtimeKeepalivePop = () => {
-  runtimeKeepaliveCounter -= 1;
-};
-
-var runtimeKeepalivePush = () => {
-  runtimeKeepaliveCounter += 1;
+var writeArrayToMemory = (array, buffer) => {
+  HEAP8.set(array, buffer >>> 0);
 };
 
 var stackAlloc = sz => __emscripten_stack_alloc(sz);
@@ -4874,16 +5158,12 @@ var stringToUTF8OnStack = str => {
   return ret;
 };
 
-var writeArrayToMemory = (array, buffer) => {
-  HEAP8.set(array, buffer >>> 0);
-};
-
 /**
-   * @param {string|null=} returnType
-   * @param {Array=} argTypes
-   * @param {Array=} args
-   * @param {Object=} opts
-   */ var ccall = (ident, returnType, argTypes, args, opts) => {
+     * @param {string|null=} returnType
+     * @param {Array=} argTypes
+     * @param {Arguments|Array=} args
+     * @param {Object=} opts
+     */ var ccall = (ident, returnType, argTypes, args, opts) => {
   // For fast lookup of conversion functions
   var toC = {
     "string": str => {
@@ -4904,7 +5184,6 @@ var writeArrayToMemory = (array, buffer) => {
     if (returnType === "string") {
       return UTF8ToString(ret);
     }
-    if (returnType === "pointer") return ret >>> 0;
     if (returnType === "boolean") return Boolean(ret);
     return ret;
   }
@@ -4915,7 +5194,7 @@ var writeArrayToMemory = (array, buffer) => {
     for (var i = 0; i < args.length; i++) {
       var converter = toC[argTypes[i]];
       if (converter) {
-        if (!stack) stack = stackSave();
+        if (stack === 0) stack = stackSave();
         cArgs[i] = converter(args[i]);
       } else {
         cArgs[i] = args[i];
@@ -4927,7 +5206,7 @@ var writeArrayToMemory = (array, buffer) => {
   var ret = func(...cArgs);
   function onDone(ret) {
     runtimeKeepalivePop();
-    if (stack) stackRestore(stack);
+    if (stack !== 0) stackRestore(stack);
     return convertReturnValue(ret);
   }
   var asyncMode = opts?.async;
@@ -4947,10 +5226,10 @@ var writeArrayToMemory = (array, buffer) => {
 };
 
 /**
-   * @param {string=} returnType
-   * @param {Array=} argTypes
-   * @param {Object=} opts
-   */ var cwrap = (ident, returnType, argTypes, opts) => {
+     * @param {string=} returnType
+     * @param {Array=} argTypes
+     * @param {Object=} opts
+     */ var cwrap = (ident, returnType, argTypes, opts) => {
   // When the function takes numbers and returns a number, we can just return
   // the original function
   var numericArgs = !argTypes || argTypes.every(type => type === "number" || type === "boolean");
@@ -4961,52 +5240,74 @@ var writeArrayToMemory = (array, buffer) => {
   return (...args) => ccall(ident, returnType, argTypes, args, opts);
 };
 
-var uleb128EncodeWithLen = arr => {
-  const n = arr.length;
-  // Note: this LEB128 length encoding produces extra byte for n < 128,
-  // but we don't care as it's only used in a temporary representation.
-  return [ (n % 128) | 128, n >> 7, ...arr ];
+var uleb128Encode = (n, target) => {
+  if (n < 128) {
+    target.push(n);
+  } else {
+    target.push((n % 128) | 128, n >> 7);
+  }
 };
 
-var wasmTypeCodes = {
-  "i": 127,
-  // i32
-  "p": 127,
-  // i32
-  "j": 126,
-  // i64
-  "f": 125,
-  // f32
-  "d": 124,
-  // f64
-  "e": 111
+var generateFuncType = (sig, target) => {
+  var sigRet = sig.slice(0, 1);
+  var sigParam = sig.slice(1);
+  var typeCodes = {
+    "i": 127,
+    // i32
+    "p": 127,
+    // i32
+    "j": 126,
+    // i64
+    "f": 125,
+    // f32
+    "d": 124,
+    // f64
+    "e": 111
+  };
+  // Parameters, length + signatures
+  target.push(96);
+  /* form: func */ uleb128Encode(sigParam.length, target);
+  for (var i = 0; i < sigParam.length; ++i) {
+    target.push(typeCodes[sigParam[i]]);
+  }
+  // Return values, length + signatures
+  // With no multi-return in MVP, either 0 (void) or 1 (anything else)
+  if (sigRet == "v") {
+    target.push(0);
+  } else {
+    target.push(1, typeCodes[sigRet]);
+  }
 };
-
-var generateTypePack = types => uleb128EncodeWithLen(Array.from(types, type => {
-  var code = wasmTypeCodes[type];
-  return code;
-}));
 
 var convertJsFunctionToWasm = (func, sig) => {
-  // TODO: If the type reflection proposal ever makes progress we can use
-  // it here instead of creatign a new module.
-  var bytes = Uint8Array.of(0, 97, 115, 109, // magic ("\0asm")
-  1, 0, 0, 0, // version: 1
-  1, // Type section code
+  // If the type reflection proposal is available, use the new
+  // "WebAssembly.Function" constructor.
+  // Otherwise, construct a minimal wasm module importing the JS function and
+  // re-exporting it.
+  if (typeof WebAssembly.Function == "function") {
+    return new WebAssembly.Function(sigToWasmTypes(sig), func);
+  }
   // The module is static, with the exception of the type section, which is
   // generated based on the signature passed in.
-  ...uleb128EncodeWithLen([ 1, // count: 1
-  96, // param types
-  ...generateTypePack(sig.slice(1)), // return types (for now only supporting [] if `void` and single [T] otherwise)
-  ...generateTypePack(sig[0] === "v" ? "" : sig[0]) ]), // The rest of the module is static
-  2, 7, // import section
+  var typeSectionBody = [ 1 ];
+  // count: 1
+  generateFuncType(sig, typeSectionBody);
+  // Rest of the module is static
+  var bytes = [ 0, 97, 115, 109, // magic ("\0asm")
+  1, 0, 0, 0, // version: 1
+  1 ];
+  // Write the overall length of the type section followed by the body
+  uleb128Encode(typeSectionBody.length, bytes);
+  bytes.push(...typeSectionBody);
+  // The rest of the module is static
+  bytes.push(2, 7, // import section
   // (import "e" "f" (func 0 (type 0)))
   1, 1, 101, 1, 102, 0, 0, 7, 5, // export section
   // (export "f" (func 0 (type 0)))
   1, 1, 102, 0, 0);
   // We can compile this wasm module synchronously because it is very small.
   // This accepts an import (at "e.f"), that it reroutes to an export (at "f")
-  var module = new WebAssembly.Module(bytes);
+  var module = new WebAssembly.Module(new Uint8Array(bytes));
   var instance = new WebAssembly.Instance(module, {
     "e": {
       "f": func
@@ -5014,19 +5315,6 @@ var convertJsFunctionToWasm = (func, sig) => {
   });
   var wrappedFunc = instance.exports["f"];
   return wrappedFunc;
-};
-
-var functionsInTableMap;
-
-var freeTableIndexes = [];
-
-var getEmptyTableSlot = () => {
-  // Reuse a free index if there is one, otherwise grow.
-  if (freeTableIndexes.length) {
-    return freeTableIndexes.pop();
-  }
-  // Grow the table
-  return wasmTable["grow"](1);
 };
 
 var updateTableMap = (offset, count) => {
@@ -5041,6 +5329,8 @@ var updateTableMap = (offset, count) => {
   }
 };
 
+var functionsInTableMap;
+
 var getFunctionAddress = func => {
   // First, create the map if this is the first use.
   if (!functionsInTableMap) {
@@ -5048,6 +5338,25 @@ var getFunctionAddress = func => {
     updateTableMap(0, wasmTable.length);
   }
   return functionsInTableMap.get(func) || 0;
+};
+
+var freeTableIndexes = [];
+
+var getEmptyTableSlot = () => {
+  // Reuse a free index if there is one, otherwise grow.
+  if (freeTableIndexes.length) {
+    return freeTableIndexes.pop();
+  }
+  // Grow the table
+  try {
+    /** @suppress {checkTypes} */ wasmTable.grow(1);
+  } catch (err) {
+    if (!(err instanceof RangeError)) {
+      throw err;
+    }
+    throw "Unable to grow wasm table. Set ALLOW_TABLE_GROWTH.";
+  }
+  return wasmTable.length - 1;
 };
 
 var setWasmTableEntry = (idx, func) => {
@@ -5069,7 +5378,7 @@ var setWasmTableEntry = (idx, func) => {
   var ret = getEmptyTableSlot();
   // Set the new value.
   try {
-    // Attempting to call this with JS function will cause table.set() to fail
+    // Attempting to call this with JS function will cause of table.set() to fail
     setWasmTableEntry(ret, func);
   } catch (err) {
     if (!(err instanceof TypeError)) {
@@ -5088,149 +5397,40 @@ var removeFunction = index => {
   freeTableIndexes.push(index);
 };
 
-var FS_createPath = (...args) => FS.createPath(...args);
+var FS_createPath = FS.createPath;
 
-var FS_unlink = (...args) => FS.unlink(...args);
+var FS_unlink = path => FS.unlink(path);
 
-var FS_createLazyFile = (...args) => FS.createLazyFile(...args);
+var FS_createLazyFile = FS.createLazyFile;
 
-var FS_createDevice = (...args) => FS.createDevice(...args);
-
-var syscallGetVarargP = syscallGetVarargI;
-
-var _exit = exitJS;
+var FS_createDevice = FS.createDevice;
 
 FS.createPreloadedFile = FS_createPreloadedFile;
 
-FS.preloadFile = FS_preloadFile;
-
 FS.staticInit();
 
-// End JS library code
-// include: postlibrary.js
-// This file is included after the automatically-generated JS library code
-// but before the wasm module is created.
-{
-  // Begin ATMODULES hooks
-  if (Module["noExitRuntime"]) noExitRuntime = Module["noExitRuntime"];
-  if (Module["print"]) out = Module["print"];
-  if (Module["printErr"]) err = Module["printErr"];
-  // End ATMODULES hooks
-  if (Module["arguments"]) programArgs = Module["arguments"];
-  if (Module["thisProgram"]) thisProgram = Module["thisProgram"];
-  var preInit = Module["preInit"];
-  if (preInit) {
-    if (typeof preInit === "function") Module["preInit"] = preInit = [ preInit ];
-    // Written as a loop so that preInit functions that themselves add more
-    // preInit functions.  Is this actually needed?
-    while (preInit.length > 0) {
-      preInit.shift()();
-    }
-  }
-}
+// Set module methods based on EXPORTED_RUNTIME_METHODS
+Module["FS_createPath"] = FS.createPath;
 
-// Begin runtime exports
-Module["addRunDependency"] = addRunDependency;
+Module["FS_createDataFile"] = FS.createDataFile;
 
-Module["removeRunDependency"] = removeRunDependency;
+Module["FS_createPreloadedFile"] = FS.createPreloadedFile;
 
-Module["ccall"] = ccall;
+Module["FS_unlink"] = FS.unlink;
 
-Module["cwrap"] = cwrap;
+Module["FS_createLazyFile"] = FS.createLazyFile;
 
-Module["addFunction"] = addFunction;
+Module["FS_createDevice"] = FS.createDevice;
 
-Module["removeFunction"] = removeFunction;
+// This error may happen quite a bit. To avoid overhead we reuse it (and
+// suffer a lack of stack info).
+MEMFS.doesNotExistError = new FS.ErrnoError(44);
 
-Module["UTF8ToString"] = UTF8ToString;
-
-Module["stringToUTF8"] = stringToUTF8;
-
-Module["FS_preloadFile"] = FS_preloadFile;
-
-Module["FS_unlink"] = FS_unlink;
-
-Module["FS_createPath"] = FS_createPath;
-
-Module["FS_createDevice"] = FS_createDevice;
-
-Module["FS"] = FS;
-
-Module["FS_createDataFile"] = FS_createDataFile;
-
-Module["FS_createLazyFile"] = FS_createLazyFile;
-
-// End runtime exports
-// Begin JS library exports
-// End JS library exports
-// end include: postlibrary.js
-var ASM_CONSTS = {
-  17085900: ($0, $1) => {
-    if (window.HoverWave) HoverWave.write($0, $1);
-  },
-  17085951: ($0, $1) => {
-    if (window.HoverWave) HoverWave.sndPlay($0, $1);
-  },
-  17086004: ($0, $1) => {
-    if (window.HoverMidi) HoverMidi.short($1);
-  },
-  17086051: ($0, $1) => {
-    if (window.HoverMidi) HoverMidi.stream($0, $1);
-  }
-};
-
-// Imports from the Wasm binary.
-var _free, _malloc, _hle_ws_poll, _hw_boot, _hw_dashres, _hw_run, _hw_key, _hw_char, _hw_mouse, _hw_screen_ptr, _hw_screen_dims, _hw_presented, _hw_palette, _hw_frame, _hw_alive, _emscripten_builtin_memalign, _setThrew, __emscripten_stack_restore, __emscripten_stack_alloc, _emscripten_stack_get_current, dynCall_ii, dynCall_v, dynCall_vi, dynCall_iii, dynCall_iiiii, dynCall_iiii, dynCall_iiiiii, dynCall_iiiiiiiii, dynCall_iiiiiii, dynCall_viiiiiiii, dynCall_iiiiiiii, dynCall_viii, dynCall_viiii, dynCall_vii, dynCall_viiiii, dynCall_iiiiiiiiii, dynCall_jiji, dynCall_ji, dynCall_iidiiiii, _asyncify_start_unwind, _asyncify_stop_unwind, _asyncify_start_rewind, _asyncify_stop_rewind, memory, __indirect_function_table, wasmMemory, wasmTable;
-
-function assignWasmExports(wasmExports) {
-  _free = wasmExports["free"];
-  _malloc = Module["_malloc"] = wasmExports["malloc"];
-  _hle_ws_poll = Module["_hle_ws_poll"] = wasmExports["hle_ws_poll"];
-  _hw_boot = Module["_hw_boot"] = wasmExports["hw_boot"];
-  _hw_dashres = Module["_hw_dashres"] = wasmExports["hw_dashres"];
-  _hw_run = Module["_hw_run"] = wasmExports["hw_run"];
-  _hw_key = Module["_hw_key"] = wasmExports["hw_key"];
-  _hw_char = Module["_hw_char"] = wasmExports["hw_char"];
-  _hw_mouse = Module["_hw_mouse"] = wasmExports["hw_mouse"];
-  _hw_screen_ptr = Module["_hw_screen_ptr"] = wasmExports["hw_screen_ptr"];
-  _hw_screen_dims = Module["_hw_screen_dims"] = wasmExports["hw_screen_dims"];
-  _hw_presented = Module["_hw_presented"] = wasmExports["hw_presented"];
-  _hw_palette = Module["_hw_palette"] = wasmExports["hw_palette"];
-  _hw_frame = Module["_hw_frame"] = wasmExports["hw_frame"];
-  _hw_alive = Module["_hw_alive"] = wasmExports["hw_alive"];
-  _emscripten_builtin_memalign = wasmExports["emscripten_builtin_memalign"];
-  _setThrew = wasmExports["setThrew"];
-  __emscripten_stack_restore = wasmExports["_emscripten_stack_restore"];
-  __emscripten_stack_alloc = wasmExports["_emscripten_stack_alloc"];
-  _emscripten_stack_get_current = wasmExports["emscripten_stack_get_current"];
-  dynCall_ii = dynCalls["ii"] = wasmExports["dynCall_ii"];
-  dynCall_v = dynCalls["v"] = wasmExports["dynCall_v"];
-  dynCall_vi = dynCalls["vi"] = wasmExports["dynCall_vi"];
-  dynCall_iii = dynCalls["iii"] = wasmExports["dynCall_iii"];
-  dynCall_iiiii = dynCalls["iiiii"] = wasmExports["dynCall_iiiii"];
-  dynCall_iiii = dynCalls["iiii"] = wasmExports["dynCall_iiii"];
-  dynCall_iiiiii = dynCalls["iiiiii"] = wasmExports["dynCall_iiiiii"];
-  dynCall_iiiiiiiii = dynCalls["iiiiiiiii"] = wasmExports["dynCall_iiiiiiiii"];
-  dynCall_iiiiiii = dynCalls["iiiiiii"] = wasmExports["dynCall_iiiiiii"];
-  dynCall_viiiiiiii = dynCalls["viiiiiiii"] = wasmExports["dynCall_viiiiiiii"];
-  dynCall_iiiiiiii = dynCalls["iiiiiiii"] = wasmExports["dynCall_iiiiiiii"];
-  dynCall_viii = dynCalls["viii"] = wasmExports["dynCall_viii"];
-  dynCall_viiii = dynCalls["viiii"] = wasmExports["dynCall_viiii"];
-  dynCall_vii = dynCalls["vii"] = wasmExports["dynCall_vii"];
-  dynCall_viiiii = dynCalls["viiiii"] = wasmExports["dynCall_viiiii"];
-  dynCall_iiiiiiiiii = dynCalls["iiiiiiiiii"] = wasmExports["dynCall_iiiiiiiiii"];
-  dynCall_jiji = dynCalls["jiji"] = wasmExports["dynCall_jiji"];
-  dynCall_ji = dynCalls["ji"] = wasmExports["dynCall_ji"];
-  dynCall_iidiiiii = dynCalls["iidiiiii"] = wasmExports["dynCall_iidiiiii"];
-  _asyncify_start_unwind = wasmExports["asyncify_start_unwind"];
-  _asyncify_stop_unwind = wasmExports["asyncify_stop_unwind"];
-  _asyncify_start_rewind = wasmExports["asyncify_start_rewind"];
-  _asyncify_stop_rewind = wasmExports["asyncify_stop_rewind"];
-  memory = wasmMemory = wasmExports["memory"];
-  __indirect_function_table = wasmTable = wasmExports["__indirect_function_table"];
-}
+/** @suppress {checkTypes} */ MEMFS.doesNotExistError.stack = "<generic error, no stack>";
 
 var wasmImports = {
+  /** @export */ __cxa_begin_catch: ___cxa_begin_catch,
+  /** @export */ __cxa_find_matching_catch_3: ___cxa_find_matching_catch_3,
   /** @export */ __syscall_chdir: ___syscall_chdir,
   /** @export */ __syscall_dup: ___syscall_dup,
   /** @export */ __syscall_faccessat: ___syscall_faccessat,
@@ -5252,6 +5452,7 @@ var wasmImports = {
   /** @export */ __syscall_unlinkat: ___syscall_unlinkat,
   /** @export */ __syscall_utimensat: ___syscall_utimensat,
   /** @export */ _abort_js: __abort_js,
+  /** @export */ _emscripten_memcpy_js: __emscripten_memcpy_js,
   /** @export */ _emscripten_throw_longjmp: __emscripten_throw_longjmp,
   /** @export */ _gmtime_js: __gmtime_js,
   /** @export */ _localtime_js: __localtime_js,
@@ -5277,10 +5478,121 @@ var wasmImports = {
   /** @export */ fd_read: _fd_read,
   /** @export */ fd_seek: _fd_seek,
   /** @export */ fd_write: _fd_write,
+  /** @export */ invoke_ii,
   /** @export */ invoke_iii,
+  /** @export */ invoke_iiii,
   /** @export */ invoke_iiiii,
+  /** @export */ invoke_v,
+  /** @export */ invoke_vi,
+  /** @export */ invoke_vii,
   /** @export */ invoke_viiii
 };
+
+var wasmExports;
+
+createWasm();
+
+var ___wasm_call_ctors = () => (___wasm_call_ctors = wasmExports["__wasm_call_ctors"])();
+
+var _free = a0 => (_free = wasmExports["free"])(a0);
+
+var _malloc = Module["_malloc"] = a0 => (_malloc = Module["_malloc"] = wasmExports["malloc"])(a0);
+
+var _hle_ws_poll = Module["_hle_ws_poll"] = () => (_hle_ws_poll = Module["_hle_ws_poll"] = wasmExports["hle_ws_poll"])();
+
+var _hw_boot = Module["_hw_boot"] = () => (_hw_boot = Module["_hw_boot"] = wasmExports["hw_boot"])();
+
+var _hw_dashres = Module["_hw_dashres"] = () => (_hw_dashres = Module["_hw_dashres"] = wasmExports["hw_dashres"])();
+
+var _hw_run = Module["_hw_run"] = () => (_hw_run = Module["_hw_run"] = wasmExports["hw_run"])();
+
+var _hw_key = Module["_hw_key"] = (a0, a1, a2) => (_hw_key = Module["_hw_key"] = wasmExports["hw_key"])(a0, a1, a2);
+
+var _hw_char = Module["_hw_char"] = a0 => (_hw_char = Module["_hw_char"] = wasmExports["hw_char"])(a0);
+
+var _hw_mouse = Module["_hw_mouse"] = (a0, a1, a2) => (_hw_mouse = Module["_hw_mouse"] = wasmExports["hw_mouse"])(a0, a1, a2);
+
+var _hw_screen_ptr = Module["_hw_screen_ptr"] = () => (_hw_screen_ptr = Module["_hw_screen_ptr"] = wasmExports["hw_screen_ptr"])();
+
+var _hw_screen_dims = Module["_hw_screen_dims"] = a0 => (_hw_screen_dims = Module["_hw_screen_dims"] = wasmExports["hw_screen_dims"])(a0);
+
+var _hw_presented = Module["_hw_presented"] = () => (_hw_presented = Module["_hw_presented"] = wasmExports["hw_presented"])();
+
+var _hw_palette = Module["_hw_palette"] = a0 => (_hw_palette = Module["_hw_palette"] = wasmExports["hw_palette"])(a0);
+
+var _hw_frame = Module["_hw_frame"] = () => (_hw_frame = Module["_hw_frame"] = wasmExports["hw_frame"])();
+
+var _hw_alive = Module["_hw_alive"] = () => (_hw_alive = Module["_hw_alive"] = wasmExports["hw_alive"])();
+
+var _emscripten_builtin_memalign = (a0, a1) => (_emscripten_builtin_memalign = wasmExports["emscripten_builtin_memalign"])(a0, a1);
+
+var _setThrew = (a0, a1) => (_setThrew = wasmExports["setThrew"])(a0, a1);
+
+var __emscripten_tempret_set = a0 => (__emscripten_tempret_set = wasmExports["_emscripten_tempret_set"])(a0);
+
+var __emscripten_stack_restore = a0 => (__emscripten_stack_restore = wasmExports["_emscripten_stack_restore"])(a0);
+
+var __emscripten_stack_alloc = a0 => (__emscripten_stack_alloc = wasmExports["_emscripten_stack_alloc"])(a0);
+
+var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports["emscripten_stack_get_current"])();
+
+var ___cxa_free_exception = a0 => (___cxa_free_exception = wasmExports["__cxa_free_exception"])(a0);
+
+var ___cxa_increment_exception_refcount = a0 => (___cxa_increment_exception_refcount = wasmExports["__cxa_increment_exception_refcount"])(a0);
+
+var ___cxa_decrement_exception_refcount = a0 => (___cxa_decrement_exception_refcount = wasmExports["__cxa_decrement_exception_refcount"])(a0);
+
+var ___cxa_can_catch = (a0, a1, a2) => (___cxa_can_catch = wasmExports["__cxa_can_catch"])(a0, a1, a2);
+
+var ___cxa_get_exception_ptr = a0 => (___cxa_get_exception_ptr = wasmExports["__cxa_get_exception_ptr"])(a0);
+
+var dynCall_ii = Module["dynCall_ii"] = (a0, a1) => (dynCall_ii = Module["dynCall_ii"] = wasmExports["dynCall_ii"])(a0, a1);
+
+var dynCall_v = Module["dynCall_v"] = a0 => (dynCall_v = Module["dynCall_v"] = wasmExports["dynCall_v"])(a0);
+
+var dynCall_vi = Module["dynCall_vi"] = (a0, a1) => (dynCall_vi = Module["dynCall_vi"] = wasmExports["dynCall_vi"])(a0, a1);
+
+var dynCall_iii = Module["dynCall_iii"] = (a0, a1, a2) => (dynCall_iii = Module["dynCall_iii"] = wasmExports["dynCall_iii"])(a0, a1, a2);
+
+var dynCall_iiiii = Module["dynCall_iiiii"] = (a0, a1, a2, a3, a4) => (dynCall_iiiii = Module["dynCall_iiiii"] = wasmExports["dynCall_iiiii"])(a0, a1, a2, a3, a4);
+
+var dynCall_viiii = Module["dynCall_viiii"] = (a0, a1, a2, a3, a4) => (dynCall_viiii = Module["dynCall_viiii"] = wasmExports["dynCall_viiii"])(a0, a1, a2, a3, a4);
+
+var dynCall_jiji = Module["dynCall_jiji"] = (a0, a1, a2, a3, a4) => (dynCall_jiji = Module["dynCall_jiji"] = wasmExports["dynCall_jiji"])(a0, a1, a2, a3, a4);
+
+var dynCall_ji = Module["dynCall_ji"] = (a0, a1) => (dynCall_ji = Module["dynCall_ji"] = wasmExports["dynCall_ji"])(a0, a1);
+
+var dynCall_viiiii = Module["dynCall_viiiii"] = (a0, a1, a2, a3, a4, a5) => (dynCall_viiiii = Module["dynCall_viiiii"] = wasmExports["dynCall_viiiii"])(a0, a1, a2, a3, a4, a5);
+
+var dynCall_iiiiii = Module["dynCall_iiiiii"] = (a0, a1, a2, a3, a4, a5) => (dynCall_iiiiii = Module["dynCall_iiiiii"] = wasmExports["dynCall_iiiiii"])(a0, a1, a2, a3, a4, a5);
+
+var dynCall_iiii = Module["dynCall_iiii"] = (a0, a1, a2, a3) => (dynCall_iiii = Module["dynCall_iiii"] = wasmExports["dynCall_iiii"])(a0, a1, a2, a3);
+
+var dynCall_iiiiiiiii = Module["dynCall_iiiiiiiii"] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (dynCall_iiiiiiiii = Module["dynCall_iiiiiiiii"] = wasmExports["dynCall_iiiiiiiii"])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+
+var dynCall_iiiiiii = Module["dynCall_iiiiiii"] = (a0, a1, a2, a3, a4, a5, a6) => (dynCall_iiiiiii = Module["dynCall_iiiiiii"] = wasmExports["dynCall_iiiiiii"])(a0, a1, a2, a3, a4, a5, a6);
+
+var dynCall_viiiiiiii = Module["dynCall_viiiiiiii"] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (dynCall_viiiiiiii = Module["dynCall_viiiiiiii"] = wasmExports["dynCall_viiiiiiii"])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+
+var dynCall_iiiiiiii = Module["dynCall_iiiiiiii"] = (a0, a1, a2, a3, a4, a5, a6, a7) => (dynCall_iiiiiiii = Module["dynCall_iiiiiiii"] = wasmExports["dynCall_iiiiiiii"])(a0, a1, a2, a3, a4, a5, a6, a7);
+
+var dynCall_viii = Module["dynCall_viii"] = (a0, a1, a2, a3) => (dynCall_viii = Module["dynCall_viii"] = wasmExports["dynCall_viii"])(a0, a1, a2, a3);
+
+var dynCall_vii = Module["dynCall_vii"] = (a0, a1, a2) => (dynCall_vii = Module["dynCall_vii"] = wasmExports["dynCall_vii"])(a0, a1, a2);
+
+var dynCall_iiiiiiiiii = Module["dynCall_iiiiiiiiii"] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (dynCall_iiiiiiiiii = Module["dynCall_iiiiiiiiii"] = wasmExports["dynCall_iiiiiiiiii"])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+
+var dynCall_iidiiii = Module["dynCall_iidiiii"] = (a0, a1, a2, a3, a4, a5, a6) => (dynCall_iidiiii = Module["dynCall_iidiiii"] = wasmExports["dynCall_iidiiii"])(a0, a1, a2, a3, a4, a5, a6);
+
+var dynCall_viiiiii = Module["dynCall_viiiiii"] = (a0, a1, a2, a3, a4, a5, a6) => (dynCall_viiiiii = Module["dynCall_viiiiii"] = wasmExports["dynCall_viiiiii"])(a0, a1, a2, a3, a4, a5, a6);
+
+var _asyncify_start_unwind = a0 => (_asyncify_start_unwind = wasmExports["asyncify_start_unwind"])(a0);
+
+var _asyncify_stop_unwind = () => (_asyncify_stop_unwind = wasmExports["asyncify_stop_unwind"])();
+
+var _asyncify_start_rewind = a0 => (_asyncify_start_rewind = wasmExports["asyncify_start_rewind"])(a0);
+
+var _asyncify_stop_rewind = () => (_asyncify_stop_rewind = wasmExports["asyncify_stop_rewind"])();
 
 function invoke_viiii(index, a1, a2, a3, a4) {
   var sp = stackSave();
@@ -5288,7 +5600,7 @@ function invoke_viiii(index, a1, a2, a3, a4) {
     dynCall_viiii(index, a1, a2, a3, a4);
   } catch (e) {
     stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
+    if (e !== e + 0) throw e;
     _setThrew(1, 0);
   }
 }
@@ -5299,7 +5611,7 @@ function invoke_iii(index, a1, a2) {
     return dynCall_iii(index, a1, a2);
   } catch (e) {
     stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
+    if (e !== e + 0) throw e;
     _setThrew(1, 0);
   }
 }
@@ -5310,7 +5622,62 @@ function invoke_iiiii(index, a1, a2, a3, a4) {
     return dynCall_iiiii(index, a1, a2, a3, a4);
   } catch (e) {
     stackRestore(sp);
-    if (!(e instanceof EmscriptenEH)) throw e;
+    if (e !== e + 0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_v(index) {
+  var sp = stackSave();
+  try {
+    dynCall_v(index);
+  } catch (e) {
+    stackRestore(sp);
+    if (e !== e + 0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiii(index, a1, a2, a3) {
+  var sp = stackSave();
+  try {
+    return dynCall_iiii(index, a1, a2, a3);
+  } catch (e) {
+    stackRestore(sp);
+    if (e !== e + 0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_ii(index, a1) {
+  var sp = stackSave();
+  try {
+    return dynCall_ii(index, a1);
+  } catch (e) {
+    stackRestore(sp);
+    if (e !== e + 0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vii(index, a1, a2) {
+  var sp = stackSave();
+  try {
+    dynCall_vii(index, a1, a2);
+  } catch (e) {
+    stackRestore(sp);
+    if (e !== e + 0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vi(index, a1) {
+  var sp = stackSave();
+  try {
+    dynCall_vi(index, a1);
+  } catch (e) {
+    stackRestore(sp);
+    if (e !== e + 0) throw e;
     _setThrew(1, 0);
   }
 }
@@ -5319,42 +5686,96 @@ function invoke_iiiii(index, a1, a2, a3, a4) {
 // that it is recognised by metadce and minify-import-export-names
 // passes.
 function applySignatureConversions(wasmExports) {
+  // First, make a copy of the incoming exports object
+  wasmExports = Object.assign({}, wasmExports);
   var makeWrapper_pp = f => a0 => f(a0) >>> 0;
   var makeWrapper_ppp = f => (a0, a1) => f(a0, a1) >>> 0;
   var makeWrapper_p = f => () => f() >>> 0;
-  var origExports = wasmExports;
-  wasmExports = {};
-  wasmExports["malloc"] = makeWrapper_pp(origExports["malloc"]);
-  wasmExports["emscripten_builtin_memalign"] = makeWrapper_ppp(origExports["emscripten_builtin_memalign"]);
-  wasmExports["_emscripten_stack_alloc"] = makeWrapper_pp(origExports["_emscripten_stack_alloc"]);
-  wasmExports["emscripten_stack_get_current"] = makeWrapper_p(origExports["emscripten_stack_get_current"]);
-  Object.setPrototypeOf(wasmExports, origExports);
+  wasmExports["malloc"] = makeWrapper_pp(wasmExports["malloc"]);
+  wasmExports["emscripten_builtin_memalign"] = makeWrapper_ppp(wasmExports["emscripten_builtin_memalign"]);
+  wasmExports["_emscripten_stack_alloc"] = makeWrapper_pp(wasmExports["_emscripten_stack_alloc"]);
+  wasmExports["emscripten_stack_get_current"] = makeWrapper_p(wasmExports["emscripten_stack_get_current"]);
+  wasmExports["__cxa_get_exception_ptr"] = makeWrapper_pp(wasmExports["__cxa_get_exception_ptr"]);
   return wasmExports;
 }
 
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
-async function run() {
+Module["addRunDependency"] = addRunDependency;
+
+Module["removeRunDependency"] = removeRunDependency;
+
+Module["ccall"] = ccall;
+
+Module["cwrap"] = cwrap;
+
+Module["addFunction"] = addFunction;
+
+Module["removeFunction"] = removeFunction;
+
+Module["UTF8ToString"] = UTF8ToString;
+
+Module["stringToUTF8"] = stringToUTF8;
+
+Module["FS_createPreloadedFile"] = FS_createPreloadedFile;
+
+Module["FS_unlink"] = FS_unlink;
+
+Module["FS_createPath"] = FS_createPath;
+
+Module["FS_createDevice"] = FS_createDevice;
+
+Module["FS"] = FS;
+
+Module["FS_createDataFile"] = FS_createDataFile;
+
+Module["FS_createLazyFile"] = FS_createLazyFile;
+
+var calledRun;
+
+dependenciesFulfilled = function runCaller() {
+  // If run has never been called, and we should call run (INVOKE_RUN is true, and Module.noInitialRun is not false)
+  if (!calledRun) run();
+  if (!calledRun) dependenciesFulfilled = runCaller;
+};
+
+// try this again later, after new deps are fulfilled
+function run() {
+  if (runDependencies > 0) {
+    return;
+  }
   preRun();
-  if (runDependencies) {
-    await resolveRunDependencies();
+  // a preRun added a dependency, run will be called later
+  if (runDependencies > 0) {
+    return;
   }
-  var setStatus = Module["setStatus"];
-  if (setStatus) {
-    setStatus("Running...");
-    // Yield to the event loop to allow the browser to paint "Running..."
-    await new Promise(resolve => setTimeout(resolve, 1));
-    // Then we want to clear the status text, but only after the rest of this function runs.
-    setTimeout(setStatus, 1, "");
+  function doRun() {
+    // run may have just been called through dependencies being fulfilled just in this very frame,
+    // or while the async setStatus time below was happening
+    if (calledRun) return;
+    calledRun = true;
+    Module["calledRun"] = true;
+    if (ABORT) return;
+    initRuntime();
+    Module["onRuntimeInitialized"]?.();
+    postRun();
   }
-  if (ABORT) return;
-  initRuntime();
-  Module["onRuntimeInitialized"]?.();
-  postRun();
+  if (Module["setStatus"]) {
+    Module["setStatus"]("Running...");
+    setTimeout(() => {
+      setTimeout(() => Module["setStatus"](""), 1);
+      doRun();
+    }, 1);
+  } else {
+    doRun();
+  }
 }
 
-var wasmExports;
+if (Module["preInit"]) {
+  if (typeof Module["preInit"] == "function") Module["preInit"] = [ Module["preInit"] ];
+  while (Module["preInit"].length > 0) {
+    Module["preInit"].pop()();
+  }
+}
 
-// With async instantation wasmExports is assigned asynchronously when the
-// instance is received.
-createWasm().then(() => run());
+run();

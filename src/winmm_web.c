@@ -191,6 +191,7 @@ static void d_midiOutClose(void) { RET(MMSYSERR_NOERROR, 1); }
 /* ---------------- joystick: none ---------------- */
 static void d_joyGetPos(void) { RET(JOYERR_UNPLUGGED, 2); }
 static void d_joyGetDevCapsA(void) { RET(JOYERR_UNPLUGGED, 3); }
+static void d_joyGetPosEx(void) { RET(JOYERR_UNPLUGGED, 3); }
 
 const win32hle_shim *win32hle_web_winmm_shims(void);
 
@@ -233,6 +234,7 @@ static const win32hle_shim g_winmm_web[] = {
     { "midiStreamStop",       d_midiStreamReset },
     { "joyGetPos",            d_joyGetPos },
     { "joyGetDevCapsA",       d_joyGetDevCapsA },
+    { "joyGetPosEx",          d_joyGetPosEx },
     { NULL, NULL }
 };
 
@@ -243,7 +245,7 @@ static void m_timeBeginPeriod(void) { RET(MMSYSERR_NOERROR, 1); }
 
 /* ---------------- mmio: real file-backed RIFF I/O (sounds, music) ------- */
 #define MMIOERR_UNSEEKABLE 3u
-typedef struct { int fd; long base, pos; int valid; } mmh_t;
+typedef struct { int is_mem; int fd; uint32_t buf, size; long pos; int valid; } mmh_t;
 static mmh_t g_mmh[16];
 
 static FILE *mmio_fopen_ci(const char *path) {   /* case-insensitive on MEMFS */
@@ -293,13 +295,44 @@ static FILE *mmio_fopen_ci(const char *path) {   /* case-insensitive on MEMFS */
     return NULL;
 }
 
-static void m_mmioOpenA(void) {                /* (name, info, flags) */
-    uint32_t name = A32(0);
-    if (!name) RET(0, 3);
-    FILE *f = mmio_fopen_ci((const char *)hle_ptr(name));
-    if (!f) { fprintf(stderr, "[mmio] open failed: %s\n", (const char *)hle_ptr(name)); RET(0, 3); return; }
+static void m_mmioOpenA(void) {                /* (name, lpMMIOInfo, flags) */
+    uint32_t name = A32(0), info = A32(1);
+    if (!name && !info) RET(0, 3);
+    { static int nprobe = 0; if (nprobe++ < 6)
+        fprintf(stderr, "[mmioO] name=%u info=%u info+4=%08X info+20=%u info+24=%u\n",
+                name, info, info ? MEM32(info + 4) : 0, info ? MEM32(info + 20) : 0, info ? MEM32(info + 24) : 0); }
+    if (info && MEM32(info + 4) == 0x204D454Du) {         /* 'MEM ' */
+        uint32_t buf = MEM32(info + 24), size = MEM32(info + 20);
+        if (!size) size = MEM32(info + 48);               /* adwInfo[0] */
+        if (!buf) buf = MEM32(info + 52);                 /* adwInfo[1] */
+        for (int i = 0; i < 16; i++) if (!g_mmh[i].valid) {
+            g_mmh[i] = (mmh_t){ .is_mem = 1, .buf = buf, .size = size, .pos = 0, .valid = 1 };
+            MEM32(info + 28) = buf;                        /* pchNext */
+            MEM32(info + 32) = buf + size;                 /* pchEndRead */
+            MEM32(info + 36) = buf + size;                 /* pchEndWrite */
+            MEM32(info + 44) = 0;                          /* lDiskOffset */
+            MEM32(info + 12) = 0;                          /* wErrorRet */
+            RET(0xD100 + (uint32_t)i, 3);
+            return;
+        }
+        RET(0, 3);
+        return;
+    }
+    /* the guest path (C:\HOVER\...) must go through the drive mapping */
+    char host[512];
+    char guest[300];
+    snprintf(guest, sizeof guest - 1, "%s", (const char *)hle_ptr(name));
+    guest[sizeof guest - 1] = 0;
+    if (!hle_host_path(guest, host, sizeof host)) {
+        fprintf(stderr, "[mmio] no drive for: %s\n", guest);
+        RET(0, 3);
+        return;
+    }
+    FILE *f = mmio_fopen_ci(host);
+    { static int n_log = 0; if (n_log++ < 4) fprintf(stderr, "[mmio] '%s' -> '%s' f=%p\n", guest, host, (void *)f); }
+    if (!f) { fprintf(stderr, "[mmio] open failed: %s\n", host); RET(0, 3); return; }
     for (int i = 0; i < 16; i++) if (!g_mmh[i].valid) {
-        g_mmh[i] = (mmh_t){ .fd = (int)(intptr_t)f, .base = 0, .pos = 0, .valid = 1 };
+        g_mmh[i] = (mmh_t){ .is_mem = 0, .fd = (int)(intptr_t)f, .pos = 0, .valid = 1 };
         RET(0xD000 + (uint32_t)i, 3);
         return;
     }
@@ -308,21 +341,32 @@ static void m_mmioOpenA(void) {                /* (name, info, flags) */
 }
 static mmh_t *mmh(uint32_t h) {
     if (h >= 0xD000 && h < 0xD010 && g_mmh[h - 0xD000].valid) return &g_mmh[h - 0xD000];
+    if (h >= 0xD100 && h < 0xD110 && g_mmh[h - 0xD100].valid) return &g_mmh[h - 0xD100];
     return NULL;
 }
 static void m_mmioClose(void) {
     mmh_t *m = mmh(A32(0));
-    if (m) { fclose((FILE *)(intptr_t)m->fd); m->valid = 0; }
+    if (m) { if (!m->is_mem) fclose((FILE *)(intptr_t)m->fd); m->valid = 0; }
     RET(0, 1);
 }
 static void m_mmioRead(void) {
     mmh_t *m = mmh(A32(0));
     if (!m) RET((uint32_t)-1, 3);
     uint32_t n = A32(2);
+    if (m->is_mem) {
+        long avail = (long)m->size - m->pos;
+        if (avail < 0) avail = 0;
+        if (n > (uint32_t)avail) n = (uint32_t)avail;
+        if (n) memcpy((void *)hle_ptr(A32(1)), (const void *)hle_ptr(m->buf + m->pos), n);
+        m->pos += (long)n;
+        RET(n, 3);
+        return;
+    }
     FILE *f = (FILE *)(intptr_t)m->fd;
     fseek(f, m->pos, SEEK_SET);
     size_t r = fread((void *)hle_ptr(A32(1)), 1, n, f);
     m->pos += (long)r;
+    { static int nr = 0; if (nr++ < 12) fprintf(stderr, "[mmioR] h=%u n=%u read=%zu pos->%ld\n", A32(0), n, r, m->pos); }
     RET((uint32_t)r, 3);
 }
 static void m_mmioSeek_d(void);
@@ -330,16 +374,63 @@ static void m_mmioDescend(void) {              /* (h, pmmck, pmmckParent, flags)
     mmh_t *m = mmh(A32(0));
     if (!m) RET(MMIOERR_UNSEEKABLE, 4);
     uint32_t ck = A32(1), parent = A32(2), flags = A32(3);
+    if (m->is_mem) {
+        long scan = m->pos;
+        uint32_t want = ck ? MEM32(ck) : 0;
+        uint32_t flags = A32(3);
+        /* 0 = MMIO_FINDRIFF (a RIFF whose form type is want), 1 = MMIO_FINDLIST,
+         * 4 = MMIO_FINDCHUNK (a chunk whose ID is want) */
+        int mode = (flags == 1u) ? 1 : ((flags == 4u) ? 4 : 0);
+        while (scan + 8 <= (long)m->size) {
+            uint32_t hdr0 = MEM32(m->buf + scan), hdr1 = MEM32(m->buf + scan + 4);
+            uint32_t form = (scan + 12 <= (long)m->size) ? MEM32(m->buf + scan + 8) : 0;
+            int match = 1;
+            if (mode == 0) match = (hdr0 == 0x46464952u /*RIFF*/ && form == want);
+            else if (mode == 1) match = (hdr0 == 0x5453494Cu /*LIST*/ && form == want);
+            else match = (hdr0 == want);
+            if (parent) {
+                long pstart = (long)MEM32(parent + 8), pend = pstart + (long)MEM32(parent + 4);
+                if (scan < pstart || scan + 8 > pend) match = 0;
+            }
+            if (match) {
+                if (ck) {
+                    MEM32(ck) = hdr0;
+                    MEM32(ck + 4) = hdr1;
+                    MEM32(ck + 8) = (uint32_t)(mode == 4 ? scan + 8 : scan + 12);
+                    MEM32(ck + 12) = form;
+                }
+                m->pos = (mode == 4) ? scan + 8 : scan + 12;
+                { static int nd = 0; if (nd++ < 10) fprintf(stderr, "[mmioD] mem ck=%08X size=%u pos->%ld\n", hdr0, hdr1, m->pos); }
+                RET(0, 4);
+                return;
+            }
+            scan += 8 + (long)hdr1 + (hdr1 & 1);
+        }
+        RET(0x101u, 4);
+        return;
+    }
     FILE *f = (FILE *)(intptr_t)m->fd;
     long start = m->pos;
     uint32_t want = ck ? MEM32(ck) : 0;
+    /* 0 = MMIO_FINDRIFF (a RIFF whose form type is want), 1 = MMIO_FINDLIST,
+     * 4 = MMIO_FINDCHUNK (a chunk whose ID is want); else: chunk ID match */
+    int mode = (flags == 1u) ? 1 : ((flags == 4u) ? 4 : 0);
     long scan = start;
     for (;;) {
-        uint32_t hdr[2];
-        if (fseek(f, scan, SEEK_SET) != 0 || fread(hdr, 1, 8, f) != 8) break;
+        uint32_t hdr[2], form = 0;
+        if (fseek(f, scan, SEEK_SET) != 0 || fread(hdr, 1, 8, f) != 8) {
+            { static int nf = 0; if (nf++ < 8) fprintf(stderr, "[mmioD] FILE walk-end pos=%ld\n", scan); }
+            break;
+        }
+        if (mode != 4) {
+            if (fseek(f, scan + 8, SEEK_SET) != 0 || fread(&form, 1, 4, f) != 4) form = 0;
+        }
+        { static int ng = 0; if (ng++ < 10) fprintf(stderr, "[mmioD] FILE ck=%c%c%c%c form=%08X size=%u scan=%ld\n", (hdr[0]&255), ((hdr[0]>>8)&255), ((hdr[0]>>16)&255), ((hdr[0]>>24)&255), form, hdr[1], scan); }
         uint32_t size = hdr[1];
         int match = 1;
-        if (want) match = (hdr[0] == want);
+        if (mode == 0) match = (hdr[0] == 0x46464952u /*RIFF*/ && form == want);
+        else if (mode == 1) match = (hdr[0] == 0x5453494Cu /*LIST*/ && form == want);
+        else match = (hdr[0] == want);
         if (parent) {                            /* must be inside the parent chunk */
             long pstart = MEM32(parent + 8), pend = pstart + (long)MEM32(parent + 4);
             if (scan < pstart || scan + 8 > pend) match = 0;
@@ -348,10 +439,11 @@ static void m_mmioDescend(void) {              /* (h, pmmck, pmmckParent, flags)
             if (ck) {
                 MEM32(ck) = hdr[0];
                 MEM32(ck + 4) = size;
-                MEM32(ck + 8) = scan;            /* dwDataOffset */
-                MEM32(ck + 12) = (uint32_t)(hdr[0] & 0xFFFF); /*fccType low*/
+                MEM32(ck + 8) = (uint32_t)((mode == 4) ? scan + 8 : scan + 12);
+                MEM32(ck + 12) = (mode == 4) ? 0 : form;
             }
-            m->pos = scan + 8;
+            m->pos = (mode == 4) ? scan + 8 : scan + 12;
+            { static int nd = 0; if (nd++ < 12) fprintf(stderr, "[mmioD] hit mode=%d size=%u pos->%ld\n", mode, size, m->pos); }
             RET(0, 4);                           /* MMSYSERR_NOERROR */
         }
         scan += 8 + size + (size & 1);

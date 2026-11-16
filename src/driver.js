@@ -6,7 +6,7 @@
  * music, and localStorage-backed registry persistence. */
 "use strict";
 
-let Module = {
+var Module = {
   preRun: [],
   canvas: null,
   print: s => console.log(s),
@@ -236,8 +236,19 @@ async function start() {
       Module.FS.mkdirTree(alias);
       for (const e of entries) {
         const st = Module.FS.stat(dir + "/" + e);
-        if (Module.FS.isDir(st.mode)) aliasTree(dir + "/" + e, alias + "/" + e);
-        else Module.FS.writeFile(alias + "/" + e, Module.FS.readFile(dir + "/" + e));
+        if (Module.FS.isDir(st.mode)) {
+          const cap = e.charAt(0).toUpperCase() + e.slice(1).toLowerCase();   /* Mixed, Music */
+          aliasTree(dir + "/" + e, alias + "/" + e);
+          aliasTree(dir + "/" + e, alias + "/" + e.toLowerCase());
+          aliasTree(dir + "/" + e, alias + "/" + cap);
+          continue;
+        }
+        const data = Module.FS.readFile(dir + "/" + e);
+        Module.FS.writeFile(alias + "/" + e, data);
+        Module.FS.writeFile(alias + "/" + e.toLowerCase(), data);
+        const dot = e.lastIndexOf(".");
+        if (dot > 0) Module.FS.writeFile(alias + "/" + e.slice(0, dot) + e.slice(dot).toLowerCase(), data);
+        if (dot > 0) Module.FS.writeFile(alias + "/" + e.slice(0, dot).toLowerCase() + e.slice(dot), data);
       }
     } catch (e) {}
   }
@@ -286,5 +297,6 @@ function sendKey(down, e) {
 }
 
 /* ------------------------------------------------ boot */
+Module.locateFile = p => p + "?v=" + Date.now();   /* bypass any wasm cache */
 window.Module = Module;
 Module.onRuntimeInitialized = () => { start(); };

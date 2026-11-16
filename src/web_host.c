@@ -22,6 +22,7 @@ uint32_t web_now_ms(void) { return (uint32_t)emscripten_get_now(); }
 void web_timers_service(void);
 const win32hle_shim *win32hle_web_winmm_shims(void);
 const win32hle_shim *win32hle_web_mmio_shims(void);
+int hw_dashres(void);
 const win32hle_shim *win32hle_web_misc_shims(void);
 int hle_gdi_window_palette(uint32_t *out);
 void hle_ws_poll(void);
@@ -56,8 +57,23 @@ static void present_hook(void) { g_presented = 1; }
 
 /* ------------------------------------------------ pump */
 static uint32_t g_last_yield, g_last_paint;
+static uint32_t g_last_beat;
 static void pump(void) {
-    web_timers_service();
+    /* web_timers_service(); -- moved to hw_frame only: firing guest code
+     * re-entrantly from inside a shim (the pump runs mid-shim) corrupts the
+     * suspended guest state under asyncify. */
+    {   /* heartbeat: where is the guest? */
+        static int hle_dbg_blts, hle_dbg_win_blts, hle_dbg_getdc, hle_dbg_beginpaint, hle_dbg_msgs;
+        (void)hle_dbg_beginpaint;
+        uint32_t now = web_now_ms();
+        if (now - g_last_beat >= 2000) {
+            g_last_beat = now;
+            static int beats;
+            if (beats++ < 25)
+                fprintf(stderr, "[beat] blts=%d win=%d getdc=%d msgs=%d presented=%d\n",
+                        hle_dbg_blts, hle_dbg_win_blts, hle_dbg_getdc, hle_dbg_msgs, g_presented);
+        }
+    }
     uint32_t now = web_now_ms();
     if (now - g_last_paint >= 50) {          /* keep the guest's window painting */
         uint32_t h = hle_first_hwnd();
@@ -92,6 +108,7 @@ int hw_boot(void) {
     win32hle_register(win32hle_ole32);
     win32hle_register(win32hle_storage);
     win32hle_register(win32hle_advapi32);
+    win32hle_register(win32hle_misc41);
 
     hle_set_drive('C', "/c");
 
@@ -110,6 +127,7 @@ int hw_boot(void) {
     int unresolved = recomp_pe_bind(&g_img, hle_resolve);
     fprintf(stderr, "[web] booted: entry 0x%08X, unresolved %d\n", g_img.entry, unresolved);
 
+    hw_dashres();                          /* DASHRES.DLL: resources only, before the surface */
     void *p = hle_heap_alloc((uint32_t)SURF_W * SURF_H, 1);
     if (p) {
         g_surf = hle_va(p);
@@ -194,6 +212,10 @@ static void x_ClosePrinter(void) { RET(1, 1); }
 static void x_DocumentPropertiesA(void) { RET(-1u, 7); }
 static void x_TerminateThread(void) { RET(1, 2); }
 static void x_RegQueryValueA(void) { RET(2u /*ERROR_FILE_NOT_FOUND*/, 4); }
+static void x_SetThreadAffinityMask(void) { RET(1, 2); }
+static void x_ChangeDisplaySettingsA(void) { RET(0, 4); }
+static void x_SetScrollInfo(void) { RET(1, 3); }
+static void x_GetScrollInfo(void) { RET(1, 3); }
 
 const win32hle_shim *win32hle_web_misc_shims(void);
 static const win32hle_shim g_misc[] = {
@@ -205,6 +227,9 @@ static const win32hle_shim g_misc[] = {
     { "DocumentPropertiesA", x_DocumentPropertiesA },
     { "TerminateThread", x_TerminateThread },
     { "RegQueryValueA", x_RegQueryValueA },
+    { "SetThreadAffinityMask", x_SetThreadAffinityMask },
+    { "ChangeDisplaySettingsA", x_ChangeDisplaySettingsA },
+    { "SetScrollInfo", x_SetScrollInfo }, { "GetScrollInfo", x_GetScrollInfo },
     { NULL, NULL }
 };
 const win32hle_shim *win32hle_web_misc_shims(void) { return g_misc; }

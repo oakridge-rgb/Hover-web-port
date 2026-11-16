@@ -33,11 +33,14 @@ LIBS="$RECOMP/win32hle/host_lite.c \
  $RECOMP/win32hle/lz32.c \
  $RECOMP/win32hle/ole32.c \
  $WEB/winmm_web.c \
+ $RECOMP/win32hle/misc41.c \
  $WEB/web_hooks.c \
  $WEB/web_host.c"
 
 FILES=$(ls $GEN/recomp_[0-9]*.c $GEN/recomp_dispatch.c)
 emcc $FLAGS $LIBS $FILES \
   --preload-file /home/z/my-project/hover-data/HOVER@/c/HOVER \
+  --preload-file /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf@/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf \
+  --preload-file /usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf@/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf \
   -o /home/z/my-project/download/hover/hover.js 2>&1 | tail -25
-echo "BUILD DONE: $?"
+echo "BUILD DONE: ${PIPESTATUS[0]}"
